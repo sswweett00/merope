@@ -3,7 +3,6 @@ package realtime
 import (
 	"context"
 	"encoding/json"
-	"hash/fnv"
 	"log/slog"
 	"sync"
 
@@ -12,6 +11,7 @@ import (
 )
 
 const ShardCount = 32
+const maxWSMessageSize = 64 * 1024
 
 type Client struct {
 	UserID string
@@ -44,15 +44,12 @@ func NewHub(pub events.Publisher) *Hub {
 		pub:        pub,
 	}
 	for i := 0; i < ShardCount; i++ {
-		h.shards[i] = &shard{
-			clients: make(map[string][]*Client),
-		}
+		h.shards[i] = &shard{clients: make(map[string][]*Client)}
 	}
 	return h
 }
 
 func (h *Hub) getShard(userID string) *shard {
-	// Optimized zero-allocation hashing for high-performance sharding
 	hash := uint32(2166136261)
 	for i := 0; i < len(userID); i++ {
 		hash ^= uint32(userID[i])
@@ -67,6 +64,9 @@ func (h *Hub) Run(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case client := <-h.register:
+			if client == nil || client.Conn == nil || client.UserID == "" {
+				continue
+			}
 			s := h.getShard(client.UserID)
 			s.mu.Lock()
 			s.clients[client.UserID] = append(s.clients[client.UserID], client)
@@ -75,6 +75,9 @@ func (h *Hub) Run(ctx context.Context) {
 			go h.handleIncoming(client)
 
 		case client := <-h.unregister:
+			if client == nil {
+				continue
+			}
 			s := h.getShard(client.UserID)
 			s.mu.Lock()
 			if clients, ok := s.clients[client.UserID]; ok {
@@ -96,9 +99,14 @@ func (h *Hub) Run(ctx context.Context) {
 
 func (h *Hub) handleIncoming(client *Client) {
 	defer func() {
-		h.unregister <- client
+		select {
+		case h.unregister <- client:
+		default:
+			_ = client.Conn.Close()
+		}
 	}()
 
+	client.Conn.SetReadLimit(maxWSMessageSize)
 	for {
 		_, msg, err := client.Conn.ReadMessage()
 		if err != nil {
@@ -106,33 +114,27 @@ func (h *Hub) handleIncoming(client *Client) {
 		}
 
 		var wsMsg WSMessage
-		if err := json.Unmarshal(msg, &wsMsg); err != nil {
+		if err := json.Unmarshal(msg, &wsMsg); err != nil || wsMsg.Type == "" {
 			continue
 		}
-
 		wsMsg.From = client.UserID
 
-		// If it's a direct message to another user, we might need to route it through NATS
-		// if the user is not on this instance.
-		if wsMsg.To != "" {
-			err := h.pub.Publish(context.Background(), "ws.route."+wsMsg.To, events.Event{
+		if wsMsg.To != "" && h.pub != nil {
+			if err := h.pub.Publish(context.Background(), "ws.route."+wsMsg.To, events.Event{
 				Type:    "WS_MSG",
 				Payload: wsMsg,
-			})
-			if err != nil {
+			}); err != nil {
 				slog.Error("Failed to publish WS message to NATS", "error", err)
 			}
 		}
 	}
 }
 
-// LocalDelivery sends a message to users connected to THIS instance
 func (h *Hub) LocalDelivery(toUserID string, msg WSMessage) {
 	data, _ := json.Marshal(msg)
 	s := h.getShard(toUserID)
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-
 	if clients, ok := s.clients[toUserID]; ok {
 		for _, client := range clients {
 			_ = client.Conn.WriteMessage(websocket.TextMessage, data)
@@ -145,7 +147,6 @@ func (h *Hub) Broadcast(userID string, payload interface{}) {
 	s := h.getShard(userID)
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-
 	if clients, ok := s.clients[userID]; ok {
 		for _, client := range clients {
 			_ = client.Conn.WriteMessage(websocket.TextMessage, data)
@@ -153,17 +154,10 @@ func (h *Hub) Broadcast(userID string, payload interface{}) {
 	}
 }
 
-func (h *Hub) Register() chan<- *Client {
-	return h.register
-}
-
-func (h *Hub) Unregister() chan<- *Client {
-	return h.unregister
-}
+func (h *Hub) Register() chan<- *Client { return h.register }
+func (h *Hub) Unregister() chan<- *Client { return h.unregister }
 
 func (h *Hub) Stop() {
-	close(h.register)
-	close(h.unregister)
 	for i := 0; i < ShardCount; i++ {
 		s := h.shards[i]
 		s.mu.Lock()
