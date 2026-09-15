@@ -82,6 +82,19 @@ func (h *IdentityHandler) Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"code": errors.ErrBadRequest, "message": "Invalid request body"})
 	}
 	req.Email = strings.ToLower(strings.TrimSpace(security.SanitizeHTML(req.Email)))
+
+	// Defense in depth: the global auth limiter is IP-scoped; this additional
+	// limiter follows the credential identifier to reduce distributed
+	// credential-stuffing against one account without storing the raw email in Redis.
+	loginKey := "login:" + security.HashDeviceID(req.Email)
+	allowed, err := security.RateLimitCheck(c.Context(), h.rdb, loginKey, 10, 15*time.Minute)
+	if err != nil {
+		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"code": "AUTH_LIMIT_UNAVAILABLE", "message": "Authentication service unavailable"})
+	}
+	if !allowed {
+		return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{"code": "AUTH_RATE_LIMITED", "message": "Too many authentication attempts"})
+	}
+
 	user, token, mfaRequired, err := h.service.Login(c.Context(), req.Email, req.Password, req.Fingerprint, c.IP(), c.Get("User-Agent"))
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"code": errors.ErrAuthFailed, "message": "Invalid credentials"})
@@ -123,6 +136,16 @@ func (h *IdentityHandler) VerifyMFA(c *fiber.Ctx) error {
 	if userID == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"code": errors.ErrAuthFailed, "message": "Authentication required"})
 	}
+
+	mfaKey := "mfa:" + security.HashDeviceID(userID)
+	allowed, err := security.RateLimitCheck(c.Context(), h.rdb, mfaKey, 5, 10*time.Minute)
+	if err != nil {
+		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"code": "MFA_LIMIT_UNAVAILABLE", "message": "Authentication service unavailable"})
+	}
+	if !allowed {
+		return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{"code": "MFA_RATE_LIMITED", "message": "Too many MFA attempts"})
+	}
+
 	valid, err := h.service.VerifyMFA(c.Context(), userID, req.Code)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": errors.ErrInternal, "message": "Unable to verify MFA"})
