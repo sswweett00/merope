@@ -21,6 +21,9 @@ func NewE2EEService(repo domain.E2EERepository, bus events.Publisher) domain.E2E
 
 // EnableE2EE activates end-to-end encryption for a chat room and notifies all members.
 func (s *e2eeService) EnableE2EE(ctx context.Context, roomID, initiatorID string) error {
+	if s.repo == nil {
+		return fmt.Errorf("e2ee repository unavailable")
+	}
 	if err := s.repo.SetE2EEStatus(ctx, roomID, true); err != nil {
 		return fmt.Errorf("failed to enable E2EE: %w", err)
 	}
@@ -30,18 +33,22 @@ func (s *e2eeService) EnableE2EE(ctx context.Context, roomID, initiatorID string
 		return fmt.Errorf("failed to get room members: %w", err)
 	}
 
-	for _, member := range members {
-		if member.ID == initiatorID {
-			continue
+	if s.bus != nil {
+		for _, member := range members {
+			if member == nil || member.ID == initiatorID {
+				continue
+			}
+			if err := s.bus.Publish(ctx, "e2ee.key_bundle_requested", events.Event{
+				Type: "E2EE_KEY_BUNDLE_REQUESTED",
+				Payload: map[string]string{
+					"room_id":      roomID,
+					"requester_id": initiatorID,
+					"recipient_id": member.ID,
+				},
+			}); err != nil {
+				return fmt.Errorf("failed to publish E2EE key bundle request: %w", err)
+			}
 		}
-		_ = s.bus.Publish(ctx, "e2ee.key_bundle_requested", events.Event{
-			Type: "E2EE_KEY_BUNDLE_REQUESTED",
-			Payload: map[string]string{
-				"room_id":       roomID,
-				"requester_id":  initiatorID,
-				"recipient_id":  member.ID,
-			},
-		})
 	}
 
 	return nil
@@ -49,20 +56,32 @@ func (s *e2eeService) EnableE2EE(ctx context.Context, roomID, initiatorID string
 
 // DisableE2EE deactivates end-to-end encryption for a chat room.
 func (s *e2eeService) DisableE2EE(ctx context.Context, roomID string) error {
+	if s.repo == nil {
+		return fmt.Errorf("e2ee repository unavailable")
+	}
 	return s.repo.SetE2EEStatus(ctx, roomID, false)
 }
 
 // RecordKeyRotation logs a new public key rotation for a user in a room.
 func (s *e2eeService) RecordKeyRotation(ctx context.Context, roomID, userID, publicKeyID, deviceID string) error {
+	if s.repo == nil {
+		return fmt.Errorf("e2ee repository unavailable")
+	}
 	return s.repo.RecordKeyRotation(ctx, roomID, userID, publicKeyID, deviceID)
 }
 
 // GetKeyRotations returns the key rotation history for a room.
 func (s *e2eeService) GetKeyRotations(ctx context.Context, roomID string) ([]*domain.E2EEKeyRotation, error) {
+	if s.repo == nil {
+		return nil, fmt.Errorf("e2ee repository unavailable")
+	}
 	return s.repo.GetKeyRotations(ctx, roomID)
 }
 
 // IsRoomE2EE reports whether a room has end-to-end encryption enabled.
 func (s *e2eeService) IsRoomE2EE(ctx context.Context, roomID string) (bool, error) {
+	if s.repo == nil {
+		return false, fmt.Errorf("e2ee repository unavailable")
+	}
 	return s.repo.GetE2EEStatus(ctx, roomID)
 }
