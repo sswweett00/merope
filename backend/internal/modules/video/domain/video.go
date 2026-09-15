@@ -49,20 +49,21 @@ type Hotspot struct {
 }
 
 type VideoCall struct {
-	ID            string
-	HostID        string
-	Title         string
-	Description   string
-	IsPublic      bool
-	MaxParticipants int32
+	ID                  string
+	HostID              string
+	Title               string
+	Description         string
+	IsPublic            bool
+	MaxParticipants     int32
 	CurrentParticipants int32
-	StartTime     time.Time
-	EndTime       *time.Time
-	Status        string // scheduled, live, ended, cancelled
-	RecordingURL  *string
-	ThumbnailURL  string
-	Category      string
-	Tags          []string
+	StartTime           time.Time
+	EndTime             *time.Time
+	UpdatedAt           time.Time
+	Status              string // scheduled, live, ended, cancelled
+	RecordingURL        *string
+	ThumbnailURL        string
+	Category            string
+	Tags                []string
 }
 
 type StreamSession struct {
@@ -88,20 +89,20 @@ type VideoRepository interface {
 	AddHotspot(ctx context.Context, hotspot *Hotspot) error
 	GetHotspots(ctx context.Context, postID string) ([]*Hotspot, error)
 	CreateBranch(ctx context.Context, parentID, childID, remixType string) error
-	
+
 	// Video Calls
 	CreateVideoCall(ctx context.Context, call *VideoCall) error
 	GetVideoCall(ctx context.Context, callID string) (*VideoCall, error)
 	UpdateVideoCall(ctx context.Context, callID string, updates *VideoCall) error
 	ListVideoCalls(ctx context.Context, userID string, status string, limit, offset int32) ([]*VideoCall, error)
-	
+
 	// Live Streaming
 	CreateStreamSession(ctx context.Context, session *StreamSession) error
 	GetStreamSession(ctx context.Context, sessionID string) (*StreamSession, error)
 	UpdateStreamSession(ctx context.Context, sessionID string, updates *StreamSession) error
 	EndStreamSession(ctx context.Context, sessionID string) error
 	GetActiveStreams(ctx context.Context, limit int32) ([]*StreamSession, error)
-	
+
 	// Analytics
 	IncrementViewCount(ctx context.Context, videoID string) error
 	UpdateLiveViewers(ctx context.Context, videoID string, count int32) error
@@ -111,7 +112,7 @@ type VideoService interface {
 	RegisterVideo(ctx context.Context, postID string, duration int32) error
 	AddInteractiveHotspot(ctx context.Context, postID string, ts float64, x, y float64, action string, payload map[string]interface{}) error
 	SyncWatchHub(ctx context.Context, hubID, state string, ts float64) error
-	
+
 	// Video Call Management
 	StartVideoCall(ctx context.Context, hostID, title, description string, maxParticipants int32) (*VideoCall, error)
 	JoinVideoCall(ctx context.Context, callID, userID string) error
@@ -119,18 +120,18 @@ type VideoService interface {
 	EndVideoCall(ctx context.Context, callID, userID string) error
 	ScheduleVideoCall(ctx context.Context, hostID, title, description string, scheduledTime time.Time) (*VideoCall, error)
 	GetUserVideoCalls(ctx context.Context, userID string, status string) ([]*VideoCall, error)
-	
+
 	// Live Streaming
 	StartLiveStream(ctx context.Context, userID, title, description string) (*StreamSession, error)
 	EndLiveStream(ctx context.Context, sessionID string) error
 	GetActiveStreams(ctx context.Context) ([]*StreamSession, error)
 	GetStreamByUser(ctx context.Context, userID string) (*StreamSession, error)
-	
+
 	// Video Processing
 	GenerateThumbnail(ctx context.Context, videoID string) (string, error)
 	TranscodeVideo(ctx context.Context, videoID string, targetQuality string) error
 	ExtractSubtitles(ctx context.Context, videoID string) ([]*VideoTrack, error)
-	
+
 	// Video Analytics
 	RecordView(ctx context.Context, videoID, userID string) error
 	GetVideoAnalytics(ctx context.Context, videoID string) (map[string]interface{}, error)
