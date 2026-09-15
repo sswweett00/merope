@@ -14,17 +14,10 @@ Future<void> main() async {
   MediaKit.ensureInitialized();
   await _configurePlatformSecurity();
 
-  const baseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'https://api.merope.enterprise:8443',
-  );
+  const baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'https://api.merope.enterprise:8443');
   const certPin = String.fromEnvironment('SSL_CERT_SHA256');
 
-  await ApiClient().init(
-    baseUrl: baseUrl,
-    expectedCertSha256: certPin.isNotEmpty ? certPin : null,
-  );
-
+  await ApiClient().init(baseUrl: baseUrl, expectedCertSha256: certPin.isNotEmpty ? certPin : null);
   runApp(const ProviderScope(child: MeropeApp()));
 }
 
@@ -33,10 +26,6 @@ Future<void> _configurePlatformSecurity() async {
   try {
     await FlutterWindowManager.addFlags(FlutterWindowManager.FLAG_SECURE);
   } catch (error, stackTrace) {
-    MeropeLogger.warn(
-      'Unable to enable Android FLAG_SECURE',
-      error: error,
-      stackTrace: stackTrace,
-    );
+    MeropeLogger.error('Unable to enable Android FLAG_SECURE', error: error, stack: stackTrace);
   }
 }
