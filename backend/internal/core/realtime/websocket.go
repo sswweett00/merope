@@ -5,17 +5,27 @@ import (
 	"encoding/json"
 	"log/slog"
 	"sync"
+	"time"
 
 	"github.com/gofiber/contrib/websocket"
 	"local/merope/internal/core/events"
 )
 
-const ShardCount = 32
-const maxWSMessageSize = 64 * 1024
+const (
+	ShardCount         = 32
+	maxWSMessageSize   = 64 * 1024
+	maxWSTypeLength    = 64
+	maxWSTargetLength  = 128
+	wsReadTimeout      = 2 * time.Minute
+	wsWriteTimeout     = 10 * time.Second
+	wsPingInterval     = 45 * time.Second
+	wsPublishTimeout   = 5 * time.Second
+)
 
 type Client struct {
 	UserID string
 	Conn   *websocket.Conn
+	writeMu sync.Mutex
 }
 
 type shard struct {
@@ -71,7 +81,7 @@ func (h *Hub) Run(ctx context.Context) {
 			s.mu.Lock()
 			s.clients[client.UserID] = append(s.clients[client.UserID], client)
 			s.mu.Unlock()
-			slog.Debug("WebSocket client registered", "user_id", client.UserID)
+			slog.Debug("WebSocket client registered")
 			go h.handleIncoming(client)
 
 		case client := <-h.unregister:
@@ -92,7 +102,7 @@ func (h *Hub) Run(ctx context.Context) {
 				}
 			}
 			s.mu.Unlock()
-			slog.Debug("WebSocket client unregistered", "user_id", client.UserID)
+			slog.Debug("WebSocket client unregistered")
 		}
 	}
 }
@@ -107,49 +117,103 @@ func (h *Hub) handleIncoming(client *Client) {
 	}()
 
 	client.Conn.SetReadLimit(maxWSMessageSize)
+	_ = client.Conn.SetReadDeadline(time.Now().Add(wsReadTimeout))
+	client.Conn.SetPongHandler(func(string) error {
+		return client.Conn.SetReadDeadline(time.Now().Add(wsReadTimeout))
+	})
+
+	done := make(chan struct{})
+	defer close(done)
+	go h.pingLoop(client, done)
+
 	for {
 		_, msg, err := client.Conn.ReadMessage()
 		if err != nil {
 			break
 		}
+		_ = client.Conn.SetReadDeadline(time.Now().Add(wsReadTimeout))
 
 		var wsMsg WSMessage
-		if err := json.Unmarshal(msg, &wsMsg); err != nil || wsMsg.Type == "" {
+		if err := json.Unmarshal(msg, &wsMsg); err != nil || wsMsg.Type == "" || len(wsMsg.Type) > maxWSTypeLength || len(wsMsg.To) > maxWSTargetLength {
+			continue
+		}
+		if len(wsMsg.Payload) > maxWSMessageSize {
 			continue
 		}
 		wsMsg.From = client.UserID
 
 		if wsMsg.To != "" && h.pub != nil {
-			if err := h.pub.Publish(context.Background(), "ws.route."+wsMsg.To, events.Event{
+			ctx, cancel := context.WithTimeout(context.Background(), wsPublishTimeout)
+			err := h.pub.Publish(ctx, "ws.route."+wsMsg.To, events.Event{
 				Type:    "WS_MSG",
 				Payload: wsMsg,
-			}); err != nil {
+			})
+			cancel()
+			if err != nil {
 				slog.Error("Failed to publish WS message to NATS", "error", err)
 			}
 		}
 	}
 }
 
+func (h *Hub) pingLoop(client *Client, done <-chan struct{}) {
+	ticker := time.NewTicker(wsPingInterval)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-done:
+			return
+		case <-ticker.C:
+			client.writeMu.Lock()
+			_ = client.Conn.SetWriteDeadline(time.Now().Add(wsWriteTimeout))
+			err := client.Conn.WriteControl(websocket.PingMessage, nil, time.Now().Add(wsWriteTimeout))
+			client.writeMu.Unlock()
+			if err != nil {
+				_ = client.Conn.Close()
+				return
+			}
+		}
+	}
+}
+
+func (c *Client) writeText(data []byte) error {
+	if c == nil || c.Conn == nil {
+		return context.Canceled
+	}
+	c.writeMu.Lock()
+	defer c.writeMu.Unlock()
+	_ = c.Conn.SetWriteDeadline(time.Now().Add(wsWriteTimeout))
+	return c.Conn.WriteMessage(websocket.TextMessage, data)
+}
+
 func (h *Hub) LocalDelivery(toUserID string, msg WSMessage) {
-	data, _ := json.Marshal(msg)
+	data, err := json.Marshal(msg)
+	if err != nil || len(data) > maxWSMessageSize {
+		return
+	}
 	s := h.getShard(toUserID)
 	s.mu.RLock()
-	defer s.mu.RUnlock()
-	if clients, ok := s.clients[toUserID]; ok {
-		for _, client := range clients {
-			_ = client.Conn.WriteMessage(websocket.TextMessage, data)
+	clients := append([]*Client(nil), s.clients[toUserID]...)
+	s.mu.RUnlock()
+	for _, client := range clients {
+		if err := client.writeText(data); err != nil {
+			_ = client.Conn.Close()
 		}
 	}
 }
 
 func (h *Hub) Broadcast(userID string, payload interface{}) {
-	data, _ := json.Marshal(payload)
+	data, err := json.Marshal(payload)
+	if err != nil || len(data) > maxWSMessageSize {
+		return
+	}
 	s := h.getShard(userID)
 	s.mu.RLock()
-	defer s.mu.RUnlock()
-	if clients, ok := s.clients[userID]; ok {
-		for _, client := range clients {
-			_ = client.Conn.WriteMessage(websocket.TextMessage, data)
+	clients := append([]*Client(nil), s.clients[userID]...)
+	s.mu.RUnlock()
+	for _, client := range clients {
+		if err := client.writeText(data); err != nil {
+			_ = client.Conn.Close()
 		}
 	}
 }
