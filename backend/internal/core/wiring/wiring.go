@@ -124,11 +124,12 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	contHandler := contentTransport.NewContentHandler(contService)
 
 	msgRepo := messagingInfra.NewPostgresMessagingRepository(queries, pgPool)
+	e2eeService := messagingService.NewE2EEService(msgRepo, bus)
 	var msgService messagingDomain.MessagingService
 	if scyllaClient != nil {
-		msgService = messagingService.NewHighPerformanceService(msgRepo, messagingInfra.NewScyllaMessagingRepository(scyllaClient), bus, orchestrator, nil, nil)
+		msgService = messagingService.NewHighPerformanceService(msgRepo, messagingInfra.NewScyllaMessagingRepository(scyllaClient), bus, orchestrator, msgRepo, e2eeService)
 	} else {
-		msgService = messagingService.NewMessagingService(msgRepo, idService, nil, nil, bus, nil, nil)
+		msgService = messagingService.NewMessagingService(msgRepo, idService, msgRepo, e2eeService, bus, bus, nil)
 	}
 	msgHandler := messagingTransport.NewMessagingHandler(msgService)
 
@@ -186,6 +187,7 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	auth.Post("/register", idHandler.Register)
 	auth.Post("/login", idHandler.Login)
 	auth.Post("/refresh", idHandler.RefreshToken)
+	auth.Post("/mfa/verify", idHandler.VerifyMFA)
 	auth.Get("/me", security.AuthMiddleware(cfg.JWTSecret, rdb.Conn), security.RBACMiddleware(rbacEnforcer), idHandler.Me)
 	auth.Post("/logout", security.AuthMiddleware(cfg.JWTSecret, rdb.Conn), security.RBACMiddleware(rbacEnforcer), idHandler.Logout)
 
