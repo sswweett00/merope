@@ -141,6 +141,11 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 
 	handlers := &Handlers{Identity: idHandler, Content: contHandler, Messaging: msgHandler, Social: socHandler, Lumia: lumHandler, VeritasGuard: veritasGuard}
 
+	rbacEnforcer, err := security.NewDefaultEnforcer()
+	if err != nil {
+		log.Fatalf("failed to initialize RBAC: %v", err)
+	}
+
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
@@ -176,10 +181,10 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	auth.Post("/register", idHandler.Register)
 	auth.Post("/login", idHandler.Login)
 	auth.Post("/refresh", idHandler.RefreshToken)
-	auth.Get("/me", security.AuthMiddleware(cfg.JWTSecret, rdb.Conn), idHandler.Me)
-	auth.Post("/logout", security.AuthMiddleware(cfg.JWTSecret, rdb.Conn), idHandler.Logout)
+	auth.Get("/me", security.AuthMiddleware(cfg.JWTSecret, rdb.Conn), security.RBACMiddleware(rbacEnforcer), idHandler.Me)
+	auth.Post("/logout", security.AuthMiddleware(cfg.JWTSecret, rdb.Conn), security.RBACMiddleware(rbacEnforcer), idHandler.Logout)
 
-	protected := api.Group("/", security.AuthMiddleware(cfg.JWTSecret, rdb.Conn))
+	protected := api.Group("/", security.AuthMiddleware(cfg.JWTSecret, rdb.Conn), security.RBACMiddleware(rbacEnforcer))
 
 	messaging := protected.Group("/messaging")
 	messaging.Get("/rooms", msgHandler.GetRooms)
