@@ -3,6 +3,7 @@ package wiring
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -148,6 +149,10 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
+		BodyLimit:             4 * 1024 * 1024,
+		ReadTimeout:           15 * time.Second,
+		WriteTimeout:          30 * time.Second,
+		IdleTimeout:           60 * time.Second,
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
 			status := errors.ToHTTPStatus(err)
 			if status < 400 {
