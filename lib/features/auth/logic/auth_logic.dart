@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:merope_core/data/services/auth_api.dart';
-import 'package:merope_core/data/services/social_api.dart';
+import 'package:merope_core/security/session_storage.dart';
 import 'package:merope_models/auth/auth_user.dart';
 import 'package:merope_core/security/aether_auth_shield.dart';
 import 'package:merope_core/utils/enterprise_logger.dart';
@@ -41,16 +41,17 @@ class AuthController extends StateNotifier<AuthState> {
     checkAuth();
   }
   final Ref _ref;
+  final SessionStorage _sessionStorage = SessionStorage();
 
   Future<void> checkAuth() async {
-    final api = _ref.read(socialApiServiceProvider);
-    final result = await api.getCurrentUser();
+    final token = await _sessionStorage.getToken();
+    final user = await _sessionStorage.getUser();
 
-    if (result.isSuccess) {
-      state = AuthState(isAuthenticated: true, isInitialised: true, user: result.data);
-    } else {
-      state = const AuthState(isAuthenticated: false, isInitialised: true);
-    }
+    state = AuthState(
+      isAuthenticated: token != null && user != null,
+      isInitialised: true,
+      user: user,
+    );
   }
 
   Future<bool> login(String email, String password) async {
@@ -62,14 +63,12 @@ class AuthController extends StateNotifier<AuthState> {
     if (result.isSuccess && result.data != null) {
       final shield = _ref.read(aetherAuthShieldProvider.notifier);
 
-      // Execute biometric challenge for secure login session
       final biometricSuccess = await shield.authenticateBiometrically();
       if (!biometricSuccess) {
         state = state.copyWith(isLoading: false, error: 'Biometric authentication failed');
         return false;
       }
 
-      // Generate device signature for token binding
       final sig = await shield.getSecureDeviceSignature();
       MeropeLogger.info('Binding session to device signature: $sig');
 
