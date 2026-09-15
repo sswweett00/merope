@@ -1,14 +1,12 @@
 package transport
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"local/merope/internal/core/errors"
-	"local/merope/internal/core/pool"
 	"local/merope/internal/modules/messaging/domain"
 )
 
@@ -132,13 +130,6 @@ func (h *MessagingContractHandler) SendMessage(c *fiber.Ctx) error {
 		expiresAt = &t
 	}
 
-	buf := pool.GetBuffer()
-	buf.WriteString("MSG_INCOMING|")
-	buf.WriteString(senderID)
-	buf.WriteByte('|')
-	buf.WriteString(roomID)
-	pool.PutBuffer(buf)
-
 	msg := &domain.ChatMessage{
 		RoomID:           roomID,
 		SenderID:         senderID,
@@ -200,7 +191,7 @@ func serializeMessage(msg *domain.ChatMessage) fiber.Map {
 		"timestamp":         msg.CreatedAt.UnixMilli(),
 		"created_at":        msg.CreatedAt.UnixMilli(),
 		"updated_at":        msg.UpdatedAt.UnixMilli(),
-		"blocks":             []fiber.Map{},
+		"blocks":            []fiber.Map{},
 	}
 }
 
@@ -209,8 +200,4 @@ func unixMilliPtr(t *time.Time) interface{} {
 		return nil
 	}
 	return t.UnixMilli()
-}
-
-func (h *MessagingContractHandler) String() string {
-	return fmt.Sprintf("MessagingContractHandler{%T}", h.service)
 }
