@@ -2,14 +2,15 @@ package infra
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"local/merope/internal/database/db"
+	"time"
+
 	"local/merope/internal/core/audit"
+	"local/merope/internal/core/util"
+	"local/merope/internal/database/db"
 	"local/merope/internal/modules/identity/domain"
 	"local/merope/internal/platform/redis"
-	"local/merope/internal/core/util"
-	"encoding/json"
-	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -42,7 +43,6 @@ func (r *HybridIdentityRepository) resolveSystem(ctx context.Context, userID str
 		return domain.SystemType(val), nil
 	}
 
-	// Zenith: Use Core DB for Global User Registry resolution
 	var sys string
 	err = r.personalRepo.queries.GetGlobalUserRegistry(ctx, util.StringToUUID(userID)).Scan(&sys)
 	if err == nil {
@@ -57,7 +57,6 @@ func (r *HybridIdentityRepository) CreateUser(ctx context.Context, u *domain.Use
 	repo := r.getRepoBySystem(u.SystemType)
 	err := repo.CreateUser(ctx, u)
 	if err == nil {
-		// Update global registry
 		_ = r.cache.Conn.Set(ctx, "sys:"+u.ID, string(u.SystemType), 0).Err()
 	}
 	return err
@@ -69,7 +68,6 @@ func (r *HybridIdentityRepository) GetUserByID(ctx context.Context, id string) (
 }
 
 func (r *HybridIdentityRepository) GetUserByIdentifier(ctx context.Context, identifier string) (*domain.User, error) {
-	// For identifier lookup (login), we might need to check both if not cached
 	user, err := r.personalRepo.GetUserByIdentifier(ctx, identifier)
 	if err == nil {
 		user.SystemType = domain.SystemPersonal
@@ -143,7 +141,7 @@ func (r *HybridIdentityRepository) GetKeywordFilters(ctx context.Context, userID
 }
 
 func (r *HybridIdentityRepository) BlacklistToken(ctx context.Context, tokenID string, expiration time.Duration) error {
-	return r.personalRepo.BlacklistToken(ctx, tokenID, expiration) // Shared cache usually
+	return r.personalRepo.BlacklistToken(ctx, tokenID, expiration)
 }
 
 func (r *HybridIdentityRepository) StoreRefreshToken(ctx context.Context, userID, refreshToken string, expiration time.Duration) error {
@@ -182,11 +180,11 @@ func (r *PostgresIdentityRepository) CreateUser(ctx context.Context, u *domain.U
 	u.UpdatedAt = dbUser.UpdatedAt.Time
 
 	r.auditor.Record(ctx, audit.Event{
-		Action:   "USER_CREATED",
-		UserID:   u.ID,
-		Entity:   "user",
-		EntityID: u.ID,
-		Status:   "success",
+		Action:    "USER_CREATED",
+		UserID:    u.ID,
+		Entity:    "user",
+		EntityID:  u.ID,
+		Status:    "success",
 		Timestamp: time.Now(),
 	})
 
@@ -198,6 +196,7 @@ func (r *PostgresIdentityRepository) GetUserByID(ctx context.Context, id string)
 	if val, err := r.cache.Conn.Get(ctx, cacheKey).Result(); err == nil {
 		var u domain.User
 		if err := json.Unmarshal([]byte(val), &u); err == nil {
+			r.hydrateRuntimeState(ctx, &u)
 			return &u, nil
 		}
 	}
@@ -213,9 +212,10 @@ func (r *PostgresIdentityRepository) GetUserByID(ctx context.Context, id string)
 	}
 
 	u := r.mapUser(&dbUser)
+	r.hydrateRuntimeState(ctx, u)
 
 	data, _ := json.Marshal(u)
-	_ = r.cache.Conn.Set(ctx, cacheKey, data, 1*time.Hour).Err()
+	_ = r.cache.Conn.Set(ctx, cacheKey, data, time.Hour).Err()
 
 	return u, nil
 }
@@ -226,7 +226,9 @@ func (r *PostgresIdentityRepository) GetUserByIdentifier(ctx context.Context, id
 		return nil, fmt.Errorf("failed to get user by identifier: %w", err)
 	}
 
-	return r.mapUser(&dbUser), nil
+	u := r.mapUser(&dbUser)
+	r.hydrateRuntimeState(ctx, u)
+	return u, nil
 }
 
 func (r *PostgresIdentityRepository) UpdateUser(ctx context.Context, u *domain.User) error {
@@ -243,6 +245,9 @@ func (r *PostgresIdentityRepository) UpdateUser(ctx context.Context, u *domain.U
 	}
 
 	_, err := r.queries.UpdateUser(ctx, params)
+	if err == nil {
+		_ = r.cache.Conn.Del(ctx, "user:"+u.ID).Err()
+	}
 	return err
 }
 
@@ -265,6 +270,14 @@ func (r *PostgresIdentityRepository) mapUser(dbUser *db.User) *domain.User {
 	}
 
 	return u
+}
+
+func (r *PostgresIdentityRepository) hydrateRuntimeState(ctx context.Context, u *domain.User) {
+	uid, err := pgtype.UUID{}.Scan(u.ID)
+	_ = uid
+	if err != nil {
+		return
+	}
 }
 
 func (r *PostgresIdentityRepository) UpdateMFA(ctx context.Context, userID string, enabled bool, secret string) error {
@@ -334,8 +347,29 @@ func (r *PostgresIdentityRepository) RevokeSession(ctx context.Context, sessionI
 	return r.queries.DeactivateSession(ctx, db.DeactivateSessionParams{ID: sid, UserID: uid})
 }
 
-func (r *PostgresIdentityRepository) UpdateOnlineStatus(ctx context.Context, userID string, isOnline bool) error { return nil }
-func (r *PostgresIdentityRepository) SetProfileLock(ctx context.Context, userID string, locked bool) error { return nil }
+func (r *PostgresIdentityRepository) UpdateOnlineStatus(ctx context.Context, userID string, isOnline bool) error {
+	var uid pgtype.UUID
+	if err := uid.Scan(userID); err != nil {
+		return fmt.Errorf("invalid uuid: %w", err)
+	}
+	if err := r.queries.UpsertUserPresence(ctx, uid, isOnline); err != nil {
+		return err
+	}
+	_ = r.cache.Conn.Del(ctx, "user:"+userID).Err()
+	return nil
+}
+
+func (r *PostgresIdentityRepository) SetProfileLock(ctx context.Context, userID string, locked bool) error {
+	var uid pgtype.UUID
+	if err := uid.Scan(userID); err != nil {
+		return fmt.Errorf("invalid uuid: %w", err)
+	}
+	if err := r.queries.SetProfileLockState(ctx, uid, locked); err != nil {
+		return err
+	}
+	_ = r.cache.Conn.Del(ctx, "user:"+userID).Err()
+	return nil
+}
 
 func (r *PostgresIdentityRepository) IncrementFailedLogin(ctx context.Context, userID string) error {
 	var uid pgtype.UUID
@@ -364,8 +398,21 @@ func (r *PostgresIdentityRepository) LockAccount(ctx context.Context, userID str
 	})
 }
 
-func (r *PostgresIdentityRepository) AddKeywordFilter(ctx context.Context, userID, keyword string) error { return nil }
-func (r *PostgresIdentityRepository) GetKeywordFilters(ctx context.Context, userID string) ([]string, error) { return nil, nil }
+func (r *PostgresIdentityRepository) AddKeywordFilter(ctx context.Context, userID, keyword string) error {
+	var uid pgtype.UUID
+	if err := uid.Scan(userID); err != nil {
+		return fmt.Errorf("invalid uuid: %w", err)
+	}
+	return r.queries.AddKeywordFilter(ctx, uid, keyword)
+}
+
+func (r *PostgresIdentityRepository) GetKeywordFilters(ctx context.Context, userID string) ([]string, error) {
+	var uid pgtype.UUID
+	if err := uid.Scan(userID); err != nil {
+		return nil, fmt.Errorf("invalid uuid: %w", err)
+	}
+	return r.queries.GetKeywordFilters(ctx, uid)
+}
 
 func (r *PostgresIdentityRepository) BlacklistToken(ctx context.Context, tokenID string, expiration time.Duration) error {
 	return r.cache.Conn.Set(ctx, "bl:"+tokenID, "1", expiration).Err()
