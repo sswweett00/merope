@@ -2,14 +2,11 @@ package realtime
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"sync"
 	"time"
 
-	"github.com/nats-io/nats.go"
-	"github.com/pion/webrtc/v3"
-	"github.com/redis/go-redis/v9"
+	"github.com/pion/webrtc/v4"
 )
 
 /// SFURouter V9 - Nirvana Layer (Self-Healing Gossip & CRDT).
@@ -45,6 +42,8 @@ func NewSFURouter() *SFURouter {
 // Mechanic: Distributed Room Takeover (Self-Healing)
 func (r *SFURouter) MonitorCluster(ctx context.Context) {
 	ticker := time.NewTicker(500 * time.Millisecond)
+	defer ticker.Stop()
+
 	for {
 		select {
 		case <-ticker.C:
