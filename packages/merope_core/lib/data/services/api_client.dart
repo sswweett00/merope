@@ -33,14 +33,17 @@ class ApiClient {
       },
     ));
 
-    // Enforce TLS 1.3 and SSL Pinning
+    // Never bypass normal platform certificate validation. A pin is an
+    // additional check, not a replacement for the system trust store.
     if (!kIsWeb) {
       (dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
         final client = HttpClient();
         client.badCertificateCallback = (X509Certificate cert, String host, int port) {
-          if (expectedCertSha256 == null) return true;
-          final fingerprint = sha256.convert(cert.der).toString();
-          return fingerprint == expectedCertSha256;
+          if (expectedCertSha256 == null || expectedCertSha256.trim().isEmpty) {
+            return false;
+          }
+          final fingerprint = sha256.convert(cert.der).toString().toLowerCase();
+          return fingerprint == expectedCertSha256.trim().toLowerCase();
         };
         return client;
       };
@@ -48,6 +51,7 @@ class ApiClient {
 
     dio.transformer = BackgroundTransformer(_isolateManager);
 
+    dio.interceptors.add(ApiVersionInterceptor());
     dio.interceptors.add(AuthInterceptor(_sessionStorage, onRefresh: () => refreshCallback?.call() ?? Future.value(false)));
     dio.interceptors.add(RetryInterceptor(dio));
     if (kDebugMode) {
@@ -115,6 +119,35 @@ class ApiClient {
   }
 }
 
+class ApiVersionInterceptor extends Interceptor {
+  static const _modules = <String>{
+    'auth',
+    'messaging',
+    'content',
+    'social',
+    'lumia',
+    'privacy',
+    'finance',
+    'developer',
+    'growth',
+    'search',
+  };
+
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    final path = options.path;
+    if (!path.startsWith('/api/v10/')) {
+      final normalized = path.startsWith('/') ? path.substring(1) : path;
+      final slash = normalized.indexOf('/');
+      final module = slash == -1 ? normalized : normalized.substring(0, slash);
+      if (_modules.contains(module)) {
+        options.path = '/api/v10/$normalized';
+      }
+    }
+    handler.next(options);
+  }
+}
+
 class BackgroundTransformer extends SyncTransformer {
   BackgroundTransformer(this._isolateManager);
   final IsolateManager _isolateManager;
@@ -126,9 +159,8 @@ class BackgroundTransformer extends SyncTransformer {
   ) async {
     final dynamic data = await super.transformResponse(options, responseBody);
 
-    // If response type is JSON and payload is reasonably large, offload to isolate
     if (options.responseType == ResponseType.json && data is String) {
-       return _isolateManager.parseJson(data);
+      return _isolateManager.parseJson(data);
     }
     return data;
   }
@@ -148,7 +180,6 @@ class AuthInterceptor extends Interceptor {
       final authValue = 'Bearer $token';
       options.headers['Authorization'] = authValue;
 
-      // Zenith: Aether Token Binding (Signature)
       try {
         final signature = await AetherAuthShield.signApexChallenge(authValue);
         options.headers['X-Aether-Signature'] = signature;
@@ -238,9 +269,9 @@ class RetryInterceptor extends Interceptor {
 
   bool _shouldRetry(DioException err) {
     return err.type == DioExceptionType.connectionTimeout ||
-           err.type == DioExceptionType.receiveTimeout ||
-           err.type == DioExceptionType.connectionError ||
-           (err.response?.statusCode != null && err.response!.statusCode! >= 500);
+        err.type == DioExceptionType.receiveTimeout ||
+        err.type == DioExceptionType.connectionError ||
+        (err.response?.statusCode != null && err.response!.statusCode! >= 500);
   }
 }
 
@@ -257,12 +288,5 @@ class ApiResult<T> {
   R fold<R>(R Function(T data) success, R Function(dynamic error) failure) {
     if (isSuccess) return success(data as T);
     return failure(error);
-  }
-}
-
-extension ApiResultExt<T> on Future<ApiResult<T>> {
-  Future<T?> unwrap() async {
-    final result = await this;
-    return result.data;
   }
 }
