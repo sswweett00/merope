@@ -4,7 +4,6 @@ import (
     "context"
     "fmt"
 
-    "github.com/jackc/pgx/v5"
     "github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -62,6 +61,3 @@ func (q *Queries) BlockUserAtomically(ctx context.Context, blockerID, blockedID 
     }
     return nil
 }
-
-// Keep pgx imported by generated-package extension code for future transactional helpers.
-var _ = pgx.ErrNoRows
