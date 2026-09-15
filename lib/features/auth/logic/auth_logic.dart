@@ -1,0 +1,134 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:merope_core/data/services/auth_api.dart';
+import 'package:merope_core/data/services/social_api.dart';
+import 'package:merope_models/auth/auth_user.dart';
+import 'package:merope_core/security/aether_auth_shield.dart';
+import 'package:merope_core/utils/enterprise_logger.dart';
+
+class AuthState {
+  const AuthState({
+    this.isAuthenticated = false,
+    this.user,
+    this.isInitialised = false,
+    this.isLoading = false,
+    this.error,
+  });
+  final bool isAuthenticated;
+  final AuthUser? user;
+  final bool isInitialised;
+  final bool isLoading;
+  final String? error;
+
+  AuthState copyWith({
+    bool? isAuthenticated,
+    AuthUser? user,
+    bool? isInitialised,
+    bool? isLoading,
+    String? error,
+  }) {
+    return AuthState(
+      isAuthenticated: isAuthenticated ?? this.isAuthenticated,
+      user: user ?? this.user,
+      isInitialised: isInitialised ?? this.isInitialised,
+      isLoading: isLoading ?? this.isLoading,
+      error: error ?? this.error,
+    );
+  }
+}
+
+class AuthController extends StateNotifier<AuthState> {
+  AuthController(this._ref) : super(const AuthState()) {
+    checkAuth();
+  }
+  final Ref _ref;
+
+  Future<void> checkAuth() async {
+    final api = _ref.read(socialApiServiceProvider);
+    final result = await api.getCurrentUser();
+
+    if (result.isSuccess) {
+      state = AuthState(isAuthenticated: true, isInitialised: true, user: result.data);
+    } else {
+      state = const AuthState(isAuthenticated: false, isInitialised: true);
+    }
+  }
+
+  Future<bool> login(String email, String password) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    final api = _ref.read(authApiServiceProvider);
+    final result = await api.login(email: email, password: password);
+
+    if (result.isSuccess && result.data != null) {
+      final shield = _ref.read(aetherAuthShieldProvider.notifier);
+
+      // Execute biometric challenge for secure login session
+      final biometricSuccess = await shield.authenticateBiometrically();
+      if (!biometricSuccess) {
+        state = state.copyWith(isLoading: false, error: 'Biometric authentication failed');
+        return false;
+      }
+
+      // Generate device signature for token binding
+      final sig = await shield.getSecureDeviceSignature();
+      MeropeLogger.info('Binding session to device signature: $sig');
+
+      state = state.copyWith(
+        isAuthenticated: true,
+        user: result.data,
+        isLoading: false,
+      );
+      return true;
+    }
+
+    final errorMessage = result.error?.toString() ?? 'Login failed';
+    state = state.copyWith(isLoading: false, error: errorMessage);
+    MeropeLogger.error('Login failed: $errorMessage');
+    return false;
+  }
+
+  Future<bool> register({
+    required String username,
+    required String email,
+    required String password,
+    String? displayName,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    final api = _ref.read(authApiServiceProvider);
+    final result = await api.register(
+      username: username,
+      email: email,
+      password: password,
+      displayName: displayName,
+    );
+
+    if (result.isSuccess && result.data != null) {
+      state = state.copyWith(
+        isAuthenticated: true,
+        user: result.data,
+        isLoading: false,
+      );
+      return true;
+    }
+
+    final errorMessage = result.error?.toString() ?? 'Registration failed';
+    state = state.copyWith(isLoading: false, error: errorMessage);
+    MeropeLogger.error('Registration failed: $errorMessage');
+    return false;
+  }
+
+  void logout() {
+    _ref.read(authApiServiceProvider).logout();
+    state = const AuthState();
+  }
+
+  void clearError() {
+    state = state.copyWith(error: null);
+  }
+}
+
+final authControllerProvider =
+    StateNotifierProvider<AuthController, AuthState>((ref) {
+  return AuthController(ref);
+});

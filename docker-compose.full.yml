@@ -1,0 +1,251 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: merope_user
+      POSTGRES_PASSWORD: merope_secure_password
+      POSTGRES_DB: merope_db
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/db/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U merope_user -d merope_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+    networks:
+      - merope-net
+
+  redis:
+    image: redis:7.4-alpine
+    command: redis-server --requirepass "" --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lfu
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    networks:
+      - merope-net
+
+  nats:
+    image: nats:2-alpine
+    command: ["-c", "/etc/nats/nats.conf", "-m", "8222"]
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    volumes:
+      - ./deploy/nats.conf:/etc/nats/nats.conf:ro
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "4222"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    networks:
+      - merope-net
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: merope_admin
+      MINIO_ROOT_PASSWORD: merope_minio_secret_key
+      MINIO_DEFAULT_BUCKETS: merope-media
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    networks:
+      - merope-net
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.12-alpine
+    environment:
+      CLICKHOUSE_DB: merope_audit
+      CLICKHOUSE_USER: merope
+      CLICKHOUSE_PASSWORD: merope_audit_password
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+      - ./backend/db/clickhouse_schema.sql:/docker-entrypoint-initdb.d/clickhouse_schema.sql
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8123/ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+    networks:
+      - merope-net
+
+  scylla:
+    image: scylladb/scylla:6.0.0
+    command: ["--smp", "2", "--memory", "2G", "--overprovision-memory", "0", "--authenticator", "AllowAllAuthenticator", "--authorizer", "AllowAllAuthorizer"]
+    ports:
+      - "9042:9042"
+    volumes:
+      - scylla_data:/var/lib/scylla
+    healthcheck:
+      test: ["CMD", "cqlsh", "-e", "describe cluster"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: "2"
+    networks:
+      - merope-net
+    restart: on-failure
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.16.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+    networks:
+      - merope-net
+
+  merope-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      ENV: production
+      PORT: 8080
+      DATABASE_URL: postgres://merope_user:merope_secure_password@postgres:5432/merope_db?sslmode=disable
+      JWT_SECRET: ${JWT_SECRET:-change-me-to-a-strong-secret-at-least-32-chars}
+      NATS_URL: nats://nats:4222
+      REDIS_ADDR: redis:6379
+      REDIS_PASSWORD: ""
+      STORAGE_ENDPOINT: http://minio:9000
+      STORAGE_REGION: us-east-1
+      STORAGE_ACCESS_KEY: merope_admin
+      STORAGE_SECRET_KEY: merope_minio_secret_key
+      STORAGE_BUCKET: merope-media
+      STORAGE_PUBLIC_URL_PREFIX: http://localhost:9000/merope-media
+      CLICKHOUSE_ADDR: clickhouse:9000
+      CLICKHOUSE_DB: merope_audit
+      SCYLLA_HOSTS: scylla:9042
+      SCYLLA_KEYSPACE: merope
+      SCYLLA_USERNAME: ""
+      SCYLLA_PASSWORD: ""
+      SCYLLA_CONSISTENCY: LOCAL_QUORUM
+      SCYLLA_TIMEOUT: 10s
+      ELASTICSEARCH_ADDR: http://elasticsearch:9200
+      CORS_ALLOWED_ORIGINS: http://localhost:3000,http://localhost:8080
+      FCM_SERVICE_ACCOUNT_PATH: /tmp/fcm-service-account.json
+      AI_MODEL_PATH: /models
+    ports:
+      - "8080:8080"
+    volumes:
+      - ai_models:/models
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+      scylla:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health", "||", "exit", "1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: "1"
+    networks:
+      - merope-net
+    restart: on-failure
+
+  merope-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      merope-api:
+        condition: service_healthy
+    networks:
+      - merope-net
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  minio_data:
+    driver: local
+  clickhouse_data:
+    driver: local
+  scylla_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+  ai_models:
+    driver: local
+
+networks:
+  merope-net:
+    driver: bridge

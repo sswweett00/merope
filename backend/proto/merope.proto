@@ -1,0 +1,314 @@
+syntax = "proto3";
+
+package merope;
+
+option go_package = "merope-backend/proto";
+
+// Authentication Service
+service AuthService {
+  rpc Login (LoginRequest) returns (AuthResponse);
+  rpc Register (RegisterRequest) returns (AuthResponse);
+  rpc RefreshToken (RefreshTokenRequest) returns (AuthResponse);
+}
+
+// Sync & Message Stream Service
+service SyncService {
+  rpc StreamSync (stream SyncOperation) returns (stream SyncOperation);
+  rpc BroadcastSignal (SignalRequest) returns (SignalResponse);
+  rpc EditSignal (EditSignalRequest) returns (SignalResponse);
+  rpc DeleteSignal (DeleteSignalRequest) returns (EmptyResponse);
+  rpc ResonateSignal (ResonateRequest) returns (EmptyResponse);
+  rpc SignalRTC (stream RTCEvent) returns (stream RTCEvent);
+}
+
+// Social & Discovery Service
+service SocialService {
+  rpc GlobalScan (ScanRequest) returns (NodeListResponse);
+  rpc ReportSignal (ReportRequest) returns (EmptyResponse);
+  rpc SyncNode (SyncRequest) returns (EmptyResponse);
+  rpc GetMutualSyncs (MutualSyncsRequest) returns (NodeListResponse);
+}
+
+// Nearby & Location Service
+service NearbyService {
+  rpc UpdateLocation (LocationRequest) returns (EmptyResponse);
+  rpc GetNearbyUsers (NearbyRequest) returns (NodeListResponse);
+}
+
+// Finance & Escrow Service
+service FinanceService {
+  rpc CreateEscrow (EscrowRequest) returns (EscrowResponse);
+  rpc ReleaseEscrow (EscrowActionRequest) returns (EmptyResponse);
+  rpc RefundEscrow (EscrowActionRequest) returns (EmptyResponse);
+  rpc GetWalletBalance (EmptyRequest) returns (BalanceResponse);
+}
+
+// Developer & Bot Service
+service DeveloperService {
+  rpc CreateBot (BotRequest) returns (BotResponse);
+  rpc ListBots (EmptyRequest) returns (BotListResponse);
+  rpc RegisterWebhook (WebhookRequest) returns (EmptyResponse);
+}
+
+// AI & Context Service
+service AIContextService {
+  rpc SummarizeConversation (SummarizeRequest) returns (SummarizeResponse);
+  rpc GetSmartReplies (SmartReplyRequest) returns (SmartReplyResponse);
+}
+
+// Analytics Service
+service AnalyticsService {
+  rpc TrackEvent (EventRequest) returns (EmptyResponse);
+}
+
+// Privacy & Security Service
+service PrivacyService {
+  rpc Toggle2FA (Toggle2FARequest) returns (AuthResponse);
+  rpc ListSessions (EmptyRequest) returns (SessionListResponse);
+  rpc RevokeSession (RevokeSessionRequest) returns (EmptyResponse);
+  rpc UpdatePrivacy (PrivacySettingsRequest) returns (EmptyResponse);
+  rpc UpdateIdentityKeys (IdentityKeyRequest) returns (EmptyResponse);
+  rpc UploadPreKeys (PreKeyRequest) returns (EmptyResponse);
+  rpc GetPreKeyBundle (PreKeyBundleRequest) returns (PreKeyBundleResponse);
+}
+
+message PreKeyRequest {
+  string device_id = 1;
+  SignedPreKey signed_pre_key = 2;
+  repeated OneTimePreKey one_time_pre_keys = 3;
+}
+
+message SignedPreKey {
+  int32 key_id = 1;
+  bytes public_key = 2;
+  bytes signature = 3;
+}
+
+message OneTimePreKey {
+  int32 key_id = 1;
+  bytes public_key = 2;
+}
+
+message PreKeyBundleRequest {
+  string user_id = 1;
+  string device_id = 2; // Optional, if empty returns a random device's bundle
+}
+
+message PreKeyBundleResponse {
+  string user_id = 1;
+  string device_id = 2;
+  bytes identity_key = 3;
+  SignedPreKey signed_pre_key = 4;
+  OneTimePreKey one_time_pre_key = 5; // Might be null if exhausted
+}
+
+message EmptyRequest {}
+message EmptyResponse { bool success = 1; }
+
+message RTCEvent {
+  string session_id = 1;
+  string sender_id = 2;
+  string type = 3; // offer, answer, ice-candidate
+  string data = 4; // sdp or candidate json
+}
+
+message LocationRequest {
+  double latitude = 1;
+  double longitude = 2;
+  bool ghost_mode = 3;
+}
+
+message NearbyRequest {
+  double radius_km = 1;
+  int32 limit = 2;
+}
+
+message EscrowRequest {
+  string recipient_id = 1;
+  double amount = 2;
+  string description = 3;
+}
+
+message EscrowResponse {
+  string escrow_id = 1;
+  string status = 2;
+}
+
+message EscrowActionRequest {
+  string escrow_id = 1;
+}
+
+message BalanceResponse {
+  double amount = 1;
+  string currency = 2;
+}
+
+message BotRequest {
+  string name = 1;
+  string description = 2;
+}
+
+message BotResponse {
+  string bot_id = 1;
+  string api_key = 2;
+}
+
+message BotListResponse {
+  repeated Bot bots = 1;
+}
+
+message Bot {
+  string id = 1;
+  string name = 2;
+  bool active = 3;
+}
+
+message WebhookRequest {
+  string callback_url = 1;
+  repeated string events = 2;
+}
+
+message SummarizeRequest {
+  string channel_id = 1;
+  int32 last_n_messages = 2;
+}
+
+message SummarizeResponse {
+  string summary = 1;
+}
+
+message SmartReplyRequest {
+  string channel_id = 1;
+}
+
+message SmartReplyResponse {
+  repeated string suggestions = 1;
+}
+
+message EventRequest {
+  string event_name = 1;
+  map<string, string> properties = 2;
+}
+
+message IdentityKeyRequest {
+  bytes public_key = 1;
+  string device_id = 2;
+  bytes signature = 3;
+}
+
+message SignalRequest {
+  string collective_id = 1;
+  string author_id = 2;
+  string content_json = 3;
+}
+
+message SignalResponse {
+  string signal_id = 1;
+  int64 created_at = 2;
+  bool success = 3;
+}
+
+message EditSignalRequest {
+  string signal_id = 1;
+  string content = 2;
+}
+
+message DeleteSignalRequest {
+  string signal_id = 1;
+}
+
+message ResonateRequest {
+  string signal_id = 1;
+  int amplitude = 2;
+}
+
+message ScanRequest {
+  string query = 1;
+}
+
+message NodeListResponse {
+  repeated Node nodes = 1;
+}
+
+message Node {
+  string id = 1;
+  string username = 2;
+  string avatar_url = 3;
+}
+
+message ReportRequest {
+  string target_id = 1;
+  string target_type = 2;
+  string reason = 3;
+}
+
+message SyncRequest {
+  string target_node_id = 1;
+}
+
+message MutualSyncsRequest {
+  string other_node_id = 1;
+}
+
+message Toggle2FARequest {
+  bool enable = 1;
+}
+
+message SessionListResponse {
+  repeated Session sessions = 1;
+}
+
+message Session {
+  string id = 1;
+  string device = 2;
+  string ip = 3;
+  int64 last_used = 4;
+}
+
+message RevokeSessionRequest {
+  string session_id = 1;
+}
+
+message PrivacySettingsRequest {
+  bool ghost_mode = 1;
+  string last_seen_visibility = 2;
+}
+
+message LoginRequest {
+  string username = 1;
+  string password_hash = 2;
+  string passkey_signature = 3;
+}
+
+message RegisterRequest {
+  string username = 1;
+  string email = 2;
+  string password_hash = 3;
+}
+
+message AuthResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+  int64 expires_at = 3;
+}
+
+message SyncOperation {
+  string operation_id = 1;
+  string entity_type = 2;
+  string entity_id = 3;
+  string action = 4;
+  bytes payload = 5;
+  int64 timestamp = 6;
+}
+
+message MessageRequest {
+  string channel_id = 1;
+  string author_id = 2;
+  string blocks_json = 3;
+}
+
+message MessageResponse {
+  string message_id = 1;
+  int64 created_at = 2;
+  bool success = 3;
+}

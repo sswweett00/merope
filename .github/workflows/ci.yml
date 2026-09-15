@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  dart:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+      - name: Install dependencies
+        run: dart pub get
+      - name: Analyze
+        run: dart analyze --fatal-infos
+      - name: Format check
+        run: dart format --set-exit-if-changed .
+      - name: Tests
+        run: dart test
+
+  go:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Install tools
+        run: |
+          go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.59.1
+      - name: Lint
+        run: golangci-lint run ./...
+      - name: Vet
+        run: go vet ./...
+      - name: Build
+        run: go build ./cmd/api/...
+      - name: Tests
+        run: go test ./...

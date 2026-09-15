@@ -1,0 +1,68 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'message_model.freezed.dart';
+part 'message_model.g.dart';
+
+enum MessageBlockType {
+  header,
+  text,
+  markdown,
+  code,
+  image,
+  video,
+  audio,
+  file,
+  poll,
+  checklist,
+  quote,
+  embed,
+  actionButton,
+  location,
+  contact,
+  sticker,
+  gif,
+}
+
+@freezed
+class MessageBlock with _$MessageBlock {
+  const factory MessageBlock({
+    required MessageBlockType type,
+    required String content,
+    Map<String, dynamic>? metadata,
+  }) = _MessageBlock;
+
+  factory MessageBlock.fromJson(Map<String, dynamic> json) =>
+      _$MessageBlockFromJson(json);
+}
+
+@freezed
+class MeropeMessage with _$MeropeMessage {
+  const factory MeropeMessage({
+    required String id,
+    required String channelId,
+    required String authorId,
+    required String authorName,
+    required String authorAvatar,
+    required List<MessageBlock> blocks,
+    required int createdAt,
+    required int updatedAt,
+    @Default(1) int version,
+    @Default([]) List<String> reactions,
+    @Default(false) bool isEncrypted,
+    @Default(false) bool isEdited,
+    @Default(false) bool isPinned,
+    @Default(false) bool isDeleted,
+    @Default(false) bool isDelivered,
+    @Default(false) bool isRead,
+    String? threadId,
+    String? parentMessageId,
+    String? forwardedFromId,
+    String? messageType,
+    String? fileUrl,
+    String? voiceUrl,
+    Map<String, List<String>>? userReactions,
+  }) = _MeropeMessage;
+
+  factory MeropeMessage.fromJson(Map<String, dynamic> json) =>
+      _$MeropeMessageFromJson(json);
+}

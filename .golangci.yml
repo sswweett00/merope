@@ -1,0 +1,37 @@
+version: "2"
+
+run:
+  timeout: 120s
+  tests: true
+
+linters:
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
+    - gofmt
+    - gci
+    - goimports
+    - gocritic
+  disable-all: false
+
+linters-settings:
+  gci:
+    sections:
+      - standard
+      - default
+      - prefix(merope-backend)
+    skip-generated-files: true
+
+issues:
+  exclude-useful: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+output:
+  format: colored-line-number
+  print-issued-lines: true

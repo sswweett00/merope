@@ -1,0 +1,68 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'chat_models.freezed.dart';
+part 'chat_models.g.dart';
+
+@freezed
+class Conversation with _$Conversation {
+  const factory Conversation({
+    required String id,
+    required List<String> participants,
+    required String title,
+    String? lastMessage,
+    required int lastActivity,
+    @Default(0) int unreadCount,
+    String? avatarUrl,
+    @Default(false) bool isGroup,
+    @Default(false) bool isE2EEEnabled,
+    @Default(false) bool isArchived,
+    @Default(false) bool isMuted,
+    int? mutedUntil,
+    @Default([]) List<String> adminIds,
+    String? description,
+    @Default('everyone') String permissionLevel,
+    @Default(0) int memberCount,
+    String? lastMessageAuthor,
+    String? lastMessageType,
+  }) = _Conversation;
+
+  factory Conversation.fromJson(Map<String, dynamic> json) => _$ConversationFromJson(json);
+}
+
+@freezed
+class ChatFolder with _$ChatFolder {
+  const factory ChatFolder({
+    required String id,
+    required String userId,
+    required String name,
+    required List<String> conversationIds,
+    required int createdAt,
+  }) = _ChatFolder;
+
+  factory ChatFolder.fromJson(Map<String, dynamic> json) => _$ChatFolderFromJson(json);
+}
+
+@freezed
+class TypingIndicator with _$TypingIndicator {
+  const factory TypingIndicator({
+    required String conversationId,
+    required String userId,
+    required String userName,
+    required int timestamp,
+  }) = _TypingIndicator;
+
+  factory TypingIndicator.fromJson(Map<String, dynamic> json) => _$TypingIndicatorFromJson(json);
+}
+
+@freezed
+class MessageReaction with _$MessageReaction {
+  const factory MessageReaction({
+    required String messageId,
+    required String userId,
+    required String userName,
+    required String emoji,
+    required int timestamp,
+  }) = _MessageReaction;
+
+  factory MessageReaction.fromJson(Map<String, dynamic> json) => _$MessageReactionFromJson(json);
+}

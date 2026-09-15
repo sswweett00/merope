@@ -1,0 +1,24 @@
+name: merope_ads
+description: A modular and reusable advertising SDK for Flutter applications.
+version: 1.0.0
+homepage: https://github.com/yourusername/merope_ads
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+  flutter: ">=3.16.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  dio: ^5.4.3+1
+
+  merope_ui:
+    path: ../merope_ui
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true

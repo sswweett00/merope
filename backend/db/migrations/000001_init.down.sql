@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS sync_operations;
+DROP TABLE IF EXISTS messages;
+DROP TABLE IF EXISTS users;

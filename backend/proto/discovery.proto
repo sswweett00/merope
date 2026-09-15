@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package merope.discovery;
+
+option go_package = "local/merope/proto/discovery";
+
+// Discovery & Zero-Knowledge secure recommendation stream service
+service DiscoveryService {
+  rpc StreamRecommendations (stream RecommendationRequest) returns (stream RecommendationResponse);
+}
+
+message RecommendationRequest {
+  string user_id = 1;
+  repeated float profile_vector = 2; // On-device Differential Privacy (DP) noisy interest profile
+  int32 limit = 3;
+}
+
+message RecommendationResponse {
+  repeated RecommendedItem items = 1;
+}
+
+message RecommendedItem {
+  string item_id = 1;
+  double score = 2;
+  string content_type = 3; // post, video, live_stream
+  string title = 4;
+  string media_url = 5;
+}
