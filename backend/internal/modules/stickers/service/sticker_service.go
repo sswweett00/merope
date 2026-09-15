@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"merope/backend/internal/modules/stickers/domain"
+	"local/merope/internal/modules/stickers/domain"
 )
 
 type stickerService struct {
