@@ -59,7 +59,7 @@ type Handlers struct {
 	Messaging    *messagingTransport.MessagingHandler
 	Social       *socialTransport.SocialHandler
 	Lumia        *lumiaTransport.LumiaHandler
-	VeritasGuard *socialService.VeritasContentGuard
+	VeritasGuard socialService.VeritasContentGuard
 }
 
 func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, *Handlers, func()) {
@@ -93,7 +93,7 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 		bus = nil
 	} else if err := bus.EnsureStreams(); err != nil {
 		zapLogger.Error("NATS stream initialization failed", zap.Error(err))
-		_ = bus.Conn.Close()
+		bus.Conn.Close()
 		bus = nil
 	} else {
 		zapLogger.Info("NATS connected", zap.String("url", cfg.NATS.URL))
@@ -104,7 +104,7 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 
 	resources := &Resources{PostgresPool: pgPool, Redis: rdb, NATS: bus, Orchestrator: orchestrator, Scylla: scyllaClient}
 
-	identityRepo := identityInfra.NewPostgresIdentityRepository(queries, rdb.Conn, nil)
+	identityRepo := identityInfra.NewPostgresIdentityRepository(queries, rdb, nil)
 	identitySentinel := identityService.NewIdentitySentinel(identityRepo, rdb.Conn)
 	idService := identityService.NewIdentityService(identityRepo, cfg.JWTSecret, identitySentinel)
 	idHandler := identityTransport.NewIdentityHandler(idService, cfg.JWTSecret, rdb.Conn)
@@ -247,8 +247,8 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 			orchestrator.Stop()
 		}
 		if bus != nil {
-			_ = bus.Conn.Drain()
-			_ = bus.Conn.Close()
+			bus.Conn.Drain()
+			bus.Conn.Close()
 		}
 		if rdb != nil {
 			_ = rdb.Close()
@@ -257,7 +257,7 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 			pgPool.Close()
 		}
 		if scyllaClient != nil {
-			_ = scyllaClient.Close()
+			scyllaClient.Close()
 		}
 		_ = zapLogger.Sync()
 	}
