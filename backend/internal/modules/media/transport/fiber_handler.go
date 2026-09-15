@@ -26,7 +26,12 @@ func (h *MediaHandler) UploadImage(c *fiber.Ctx) error {
 	}
 	defer reader.Close()
 
-	res, err := h.service.UploadImage(c.Context(), file.Filename, reader)
+	userID, _ := c.Locals("user_id").(string)
+	if userID == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Authentication required"})
+	}
+
+	res, err := h.service.UploadImage(c.Context(), file.Filename, reader, userID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
