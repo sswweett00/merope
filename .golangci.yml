@@ -12,19 +12,22 @@ linters:
     - ineffassign
     - staticcheck
     - unused
-    - gofmt
-    - gci
-    - goimports
     - gocritic
   disable-all: false
 
-linters-settings:
-  gci:
-    sections:
-      - standard
-      - default
-      - prefix(merope-backend)
-    skip-generated-files: true
+formatters:
+  enable:
+    - gofmt
+    - goimports
+    - gci
+
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(local/merope)
+      skip-generated-files: true
 
 issues:
   exclude-useful: false
