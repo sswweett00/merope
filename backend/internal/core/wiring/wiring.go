@@ -77,13 +77,7 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 
 	var scyllaClient *scylla.Client
 	if len(cfg.Scylla.Hosts) > 0 {
-		scyllaClient, err = scylla.New(scylla.Config{
-			Hosts:       cfg.Scylla.Hosts,
-			Keyspace:    cfg.Scylla.Keyspace,
-			Username:    cfg.Scylla.Username,
-			Password:    cfg.Scylla.Password,
-			Consistency: cfg.Scylla.Consistency,
-		})
+		scyllaClient, err = scylla.New(scylla.Config{Hosts: cfg.Scylla.Hosts, Keyspace: cfg.Scylla.Keyspace, Username: cfg.Scylla.Username, Password: cfg.Scylla.Password, Consistency: cfg.Scylla.Consistency})
 		if err != nil {
 			zapLogger.Warn("ScyllaDB unavailable; using PostgreSQL path", zap.Error(err))
 		} else {
@@ -107,13 +101,7 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	orchestrator := worker.NewOrchestrator(queries, 10, 20)
 	orchestrator.Start(ctx)
 
-	resources := &Resources{
-		PostgresPool: pgPool,
-		Redis:        rdb,
-		NATS:         bus,
-		Orchestrator: orchestrator,
-		Scylla:       scyllaClient,
-	}
+	resources := &Resources{PostgresPool: pgPool, Redis: rdb, NATS: bus, Orchestrator: orchestrator, Scylla: scyllaClient}
 
 	identityRepo := identityInfra.NewPostgresIdentityRepository(queries, rdb.Conn, nil)
 	identitySentinel := identityService.NewIdentitySentinel(identityRepo)
@@ -128,11 +116,7 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	contentRepo := contentInfra.NewPostgresContentRepository(queries)
 	var contService contentDomain.ContentService
 	if scyllaClient != nil {
-		contService = contentService.NewHighPerformanceContentService(
-			contentRepo,
-			contentInfra.NewScyllaContentRepository(scyllaClient),
-			bus,
-		)
+		contService = contentService.NewHighPerformanceContentService(contentRepo, contentInfra.NewScyllaContentRepository(scyllaClient), bus)
 	} else {
 		contService = contentService.NewContentService(contentRepo, bus, veritasGuard, idService)
 	}
@@ -141,14 +125,7 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	msgRepo := messagingInfra.NewPostgresMessagingRepository(queries, pgPool)
 	var msgService messagingDomain.MessagingService
 	if scyllaClient != nil {
-		msgService = messagingService.NewHighPerformanceService(
-			msgRepo,
-			messagingInfra.NewScyllaMessagingRepository(scyllaClient),
-			bus,
-			orchestrator,
-			nil,
-			nil,
-		)
+		msgService = messagingService.NewHighPerformanceService(msgRepo, messagingInfra.NewScyllaMessagingRepository(scyllaClient), bus, orchestrator, nil, nil)
 	} else {
 		msgService = messagingService.NewMessagingService(msgRepo, idService, nil, nil, bus, nil, nil)
 	}
@@ -162,14 +139,7 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	lumSvc := lumiaService.NewLumiaService(lumiaRepo, idService, bus)
 	lumHandler := lumiaTransport.NewLumiaHandler(lumSvc)
 
-	handlers := &Handlers{
-		Identity:     idHandler,
-		Content:      contHandler,
-		Messaging:    msgHandler,
-		Social:       socHandler,
-		Lumia:        lumHandler,
-		VeritasGuard: veritasGuard,
-	}
+	handlers := &Handlers{Identity: idHandler, Content: contHandler, Messaging: msgHandler, Social: socHandler, Lumia: lumHandler, VeritasGuard: veritasGuard}
 
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
@@ -188,6 +158,7 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	})
 
 	app.Use(recover.New())
+	app.Use(security.HTTPHardeningMiddleware())
 	app.Use(logger.New())
 	app.Use(security.SecurityHeadersMiddleware())
 	app.Use(security.AnomalyDetectorMiddleware(anomalyDetector))
@@ -250,11 +221,7 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	lumia.Post("/tip", lumHandler.Tip)
 	lumia.Get("/live", lumHandler.GetLive)
 
-	// Legacy endpoint kept for monitoring compatibility; use /health/live and
-	// /health/ready for orchestration probes.
-	app.Get("/health", func(c *fiber.Ctx) error {
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "ok"})
-	})
+	app.Get("/health", func(c *fiber.Ctx) error { return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "ok"}) })
 
 	cleanup := func() {
 		zapLogger.Info("shutting down API")
