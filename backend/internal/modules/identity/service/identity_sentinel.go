@@ -6,6 +6,7 @@ import (
 	"math"
 	"sync"
 	"time"
+
 	"local/merope/internal/modules/identity/domain"
 )
 
@@ -17,9 +18,9 @@ type IdentitySentinel interface {
 }
 
 type identitySentinel struct {
-	mu              sync.RWMutex
-	deviceRegistry  map[string][]string // userID -> fingerprints
-	repo            domain.IdentityRepository
+	mu             sync.RWMutex
+	deviceRegistry map[string][]string
+	repo           domain.IdentityRepository
 }
 
 func NewIdentitySentinel(repo domain.IdentityRepository) IdentitySentinel {
@@ -32,12 +33,11 @@ func NewIdentitySentinel(repo domain.IdentityRepository) IdentitySentinel {
 func (s *identitySentinel) AssessRisk(ctx context.Context, userID, ip, ua string) (float64, error) {
 	risk := 0.0
 
-	// 1. Device Fingerprint Check
 	s.mu.RLock()
-	devices := s.deviceRegistry[userID]
+	devices := append([]string(nil), s.deviceRegistry[userID]...)
 	s.mu.RUnlock()
 
-	fingerprint := ip + ua
+	fingerprint := ip + "\x00" + ua
 	if len(devices) > 0 {
 		found := false
 		for _, d := range devices {
@@ -52,7 +52,6 @@ func (s *identitySentinel) AssessRisk(ctx context.Context, userID, ip, ua string
 		}
 	}
 
-	// 2. Impossible Travel & Geolocation Anomaly (Simulated)
 	sessions, err := s.repo.GetSessions(ctx, userID)
 	if err == nil && len(sessions) > 0 {
 		var lastSession *domain.Session
@@ -62,36 +61,41 @@ func (s *identitySentinel) AssessRisk(ctx context.Context, userID, ip, ua string
 			}
 		}
 
-		if lastSession != nil && lastSession.IPAddress != ip {
-			// In a real system, we'd use GeoIP to check distance / time
-			// Here we simulate a high risk if IP prefix changes drastically in short time
-			if time.Since(lastSession.LastActiveAt) < 1*time.Hour {
-				risk += 0.5
-				_ = s.RecordAudit(ctx, userID, "IMPOSSIBLE_TRAVEL", fmt.Sprintf("Prev IP: %s, Current IP: %s", lastSession.IPAddress, ip))
-			}
+		if lastSession != nil && lastSession.IPAddress != ip && time.Since(lastSession.LastActiveAt) < time.Hour {
+			risk += 0.5
+			_ = s.RecordAudit(ctx, userID, "IMPOSSIBLE_TRAVEL", fmt.Sprintf("Prev IP: %s, Current IP: %s", lastSession.IPAddress, ip))
 		}
 	}
-
-	// 3. Credential Stuffing / Brute Force (Simulated via recent audit logs)
-	// (Logic would query Redis or DB for recent failed attempts)
 
 	return math.Min(risk, 1.0), nil
 }
 
 func (s *identitySentinel) RecordAudit(ctx context.Context, userID, action, metadata string) error {
-	// Zenith: Log to Merope Audit Logs
-	// This would typically go to a dedicated audit module or ClickHouse
 	return nil
 }
 
 func (s *identitySentinel) RegisterDevice(ctx context.Context, userID, fingerprint string) error {
+	if userID == "" || fingerprint == "" {
+		return fmt.Errorf("user id and fingerprint are required")
+	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	for _, existing := range s.deviceRegistry[userID] {
+		if existing == fingerprint {
+			return nil
+		}
+	}
+	if len(s.deviceRegistry[userID]) >= 10 {
+		s.deviceRegistry[userID] = s.deviceRegistry[userID][1:]
+	}
 	s.deviceRegistry[userID] = append(s.deviceRegistry[userID], fingerprint)
 	return nil
 }
 
 func (s *identitySentinel) VerifyDeviceFingerprint(ctx context.Context, userID, fingerprint string) (bool, error) {
+	if userID == "" || fingerprint == "" {
+		return false, fmt.Errorf("user id and fingerprint are required")
+	}
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	for _, d := range s.deviceRegistry[userID] {
@@ -100,9 +104,4 @@ func (s *identitySentinel) VerifyDeviceFingerprint(ctx context.Context, userID, 
 		}
 	}
 	return false, nil
-}
-
-func (s *identitySentinel) RecordAudit(ctx context.Context, userID, action, metadata string) error {
-	// Integration with database/audit table would go here
-	return nil
 }
