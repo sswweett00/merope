@@ -38,21 +38,24 @@ func (h *IdentityHandler) Register(c *fiber.Ctx) error {
 	sys := domain.SystemPersonal
 	if strings.EqualFold(req.Type, "CORPORATE") {
 		sys = domain.SystemCorporate
+	} else if req.Type != "" && !strings.EqualFold(req.Type, "PERSONAL") {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"code": errors.ErrValidation, "message": "Invalid account type"})
 	}
-	req.Username = security.SanitizeHTML(req.Username)
-	req.DisplayName = security.SanitizeHTML(req.DisplayName)
-	if len(req.Username) < 3 {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"code": errors.ErrValidation, "message": "Username too short"})
+	req.Username = strings.TrimSpace(security.SanitizeHTML(req.Username))
+	req.DisplayName = strings.TrimSpace(security.SanitizeHTML(req.DisplayName))
+	req.Email = strings.ToLower(strings.TrimSpace(security.SanitizeHTML(req.Email)))
+	if len(req.Username) < 3 || len(req.Username) > 64 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"code": errors.ErrValidation, "message": "Invalid username"})
 	}
 	if _, err := mail.ParseAddress(req.Email); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"code": errors.ErrValidation, "message": "Invalid email format"})
 	}
-	if len(req.Password) < 8 {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"code": errors.ErrValidation, "message": "Password must be at least 8 characters"})
+	if len(req.Password) < 8 || len(req.Password) > 128 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"code": errors.ErrValidation, "message": "Invalid password"})
 	}
 	user, token, err := h.service.Register(c.Context(), req.Username, req.Email, req.Password, c.IP(), c.Get("User-Agent"), sys)
 	if err != nil {
-		return c.Status(errors.ToHTTPStatus(err)).JSON(fiber.Map{"code": errors.GetCode(err), "message": err.Error()})
+		return c.Status(fiber.StatusConflict).JSON(fiber.Map{"code": errors.ErrValidation, "message": "Unable to create account"})
 	}
 	if req.DisplayName != "" {
 		user.DisplayName = req.DisplayName
@@ -64,6 +67,7 @@ func (h *IdentityHandler) Register(c *fiber.Ctx) error {
 	if err := security.StoreRefreshTokenV2(c.Context(), h.rdb, user.ID, refreshToken, 30*24*time.Hour); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": errors.ErrInternal, "message": "Unable to establish session"})
 	}
+	c.Set(fiber.HeaderCacheControl, "no-store")
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"user": user, "token": token, "refresh_token": refreshToken})
 }
 
@@ -77,16 +81,13 @@ func (h *IdentityHandler) Login(c *fiber.Ctx) error {
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"code": errors.ErrBadRequest, "message": "Invalid request body"})
 	}
-	req.Email = security.SanitizeHTML(req.Email)
+	req.Email = strings.ToLower(strings.TrimSpace(security.SanitizeHTML(req.Email)))
 	user, token, mfaRequired, err := h.service.Login(c.Context(), req.Email, req.Password, req.Fingerprint, c.IP(), c.Get("User-Agent"))
 	if err != nil {
-		status := errors.ToHTTPStatus(err)
-		if strings.Contains(err.Error(), "locked") {
-			status = fiber.StatusLocked
-		}
-		return c.Status(status).JSON(fiber.Map{"code": errors.GetCode(err), "message": err.Error()})
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"code": errors.ErrAuthFailed, "message": "Invalid credentials"})
 	}
 	if mfaRequired {
+		c.Set(fiber.HeaderCacheControl, "no-store")
 		return c.JSON(fiber.Map{"mfa_required": true, "user_id": user.ID})
 	}
 	refreshToken, err := security.GenerateRefreshToken()
@@ -96,6 +97,7 @@ func (h *IdentityHandler) Login(c *fiber.Ctx) error {
 	if err := security.StoreRefreshTokenV2(c.Context(), h.rdb, user.ID, refreshToken, 30*24*time.Hour); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": errors.ErrInternal, "message": "Unable to establish session"})
 	}
+	c.Set(fiber.HeaderCacheControl, "no-store")
 	return c.JSON(fiber.Map{"user": user, "token": token, "refresh_token": refreshToken})
 }
 
@@ -103,15 +105,15 @@ func (h *IdentityHandler) SetupMFA(c *fiber.Ctx) error {
 	userID, _ := c.Locals("user_id").(string)
 	secret, url, err := h.service.SetupMFA(c.Context(), userID)
 	if err != nil {
-		return c.Status(errors.ToHTTPStatus(err)).JSON(fiber.Map{"code": errors.GetCode(err), "message": err.Error()})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": errors.ErrInternal, "message": "Unable to configure MFA"})
 	}
+	c.Set(fiber.HeaderCacheControl, "no-store")
 	return c.JSON(fiber.Map{"secret": secret, "url": url})
 }
 
 func (h *IdentityHandler) VerifyMFA(c *fiber.Ctx) error {
 	type request struct {
-		UserID string `json:"user_id"`
-		Code   string `json:"code"`
+		Code string `json:"code"`
 	}
 	var req request
 	if err := c.BodyParser(&req); err != nil {
@@ -121,10 +123,9 @@ func (h *IdentityHandler) VerifyMFA(c *fiber.Ctx) error {
 	if userID == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"code": errors.ErrAuthFailed, "message": "Authentication required"})
 	}
-	// Ignore a caller-supplied user ID: MFA state belongs to the authenticated actor.
 	valid, err := h.service.VerifyMFA(c.Context(), userID, req.Code)
 	if err != nil {
-		return c.Status(errors.ToHTTPStatus(err)).JSON(fiber.Map{"code": errors.GetCode(err), "message": err.Error()})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": errors.ErrInternal, "message": "Unable to verify MFA"})
 	}
 	if !valid {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"code": errors.ErrAuthFailed, "message": "Invalid MFA code"})
@@ -136,7 +137,7 @@ func (h *IdentityHandler) Export(c *fiber.Ctx) error {
 	userID, _ := c.Locals("user_id").(string)
 	data, err := h.service.ExportData(c.Context(), userID)
 	if err != nil {
-		return c.Status(errors.ToHTTPStatus(err)).JSON(fiber.Map{"code": errors.GetCode(err), "message": err.Error()})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": errors.ErrInternal, "message": "Unable to export account data"})
 	}
 	return c.JSON(data)
 }
@@ -145,7 +146,7 @@ func (h *IdentityHandler) Logout(c *fiber.Ctx) error {
 	tokenID, _ := c.Locals("token_id").(string)
 	expiration, _ := c.Locals("token_exp").(time.Time)
 	if err := h.service.Logout(c.Context(), tokenID, expiration); err != nil {
-		return c.Status(errors.ToHTTPStatus(err)).JSON(fiber.Map{"code": errors.ErrInternal, "message": "Failed to logout"})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": errors.ErrInternal, "message": "Failed to logout"})
 	}
 	return c.JSON(fiber.Map{"message": "Logged out successfully"})
 }
@@ -154,7 +155,7 @@ func (h *IdentityHandler) Me(c *fiber.Ctx) error {
 	userID, _ := c.Locals("user_id").(string)
 	data, err := h.service.ExportData(c.Context(), userID)
 	if err != nil {
-		return c.Status(errors.ToHTTPStatus(err)).JSON(fiber.Map{"code": errors.GetCode(err), "message": err.Error()})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": errors.ErrInternal, "message": "Unable to load account"})
 	}
 	return c.JSON(data["user"])
 }
@@ -164,7 +165,7 @@ func (h *IdentityHandler) RefreshToken(c *fiber.Ctx) error {
 		RefreshToken string `json:"refresh_token"`
 	}
 	var req request
-	if err := c.BodyParser(&req); err != nil || req.RefreshToken == "" {
+	if err := c.BodyParser(&req); err != nil || strings.TrimSpace(req.RefreshToken) == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"code": errors.ErrBadRequest, "message": "Refresh token is required"})
 	}
 	token, newRefreshToken, err := h.service.RefreshToken(c.Context(), req.RefreshToken)
@@ -176,5 +177,5 @@ func (h *IdentityHandler) RefreshToken(c *fiber.Ctx) error {
 }
 
 func (h *IdentityHandler) PasskeyLogin(c *fiber.Ctx) error {
-	return c.JSON(fiber.Map{"message": "Passkey validation endpoint ready. Integration with WebAuthn library required.", "status": "experimental"})
+	return c.Status(fiber.StatusNotImplemented).JSON(fiber.Map{"code": "NOT_IMPLEMENTED", "message": "Passkey authentication is not enabled"})
 }
