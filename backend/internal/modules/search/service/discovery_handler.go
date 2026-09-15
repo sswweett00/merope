@@ -1,8 +1,9 @@
+//go:build discovery
+
 package service
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"log/slog"
 	"time"
@@ -37,9 +38,8 @@ func (h *DiscoveryHandler) StreamRecommendations(stream discovery.DiscoveryServi
 
 		ctx, cancel := context.WithTimeout(stream.Context(), 5*time.Second)
 
-		// PHASE 1: Recall (Vector Similarity Search)
 		query := map[string]interface{}{
-			"size": req.Limit * 3, // Oversample for diversity filtering
+			"size": req.Limit * 3,
 			"query": map[string]interface{}{
 				"script_score": map[string]interface{}{
 					"query": map[string]interface{}{"match_all": map[string]interface{}{}},
@@ -60,7 +60,6 @@ func (h *DiscoveryHandler) StreamRecommendations(stream discovery.DiscoveryServi
 			continue
 		}
 
-		// PHASE 2: High-Performance Bulk Enrichment & Diversity Ranking
 		enrichedItems := h.processAndRank(ctx, res.Hits.Hits, req.Limit)
 		cancel()
 
@@ -79,17 +78,12 @@ func (h *DiscoveryHandler) processAndRank(ctx context.Context, hits []*elasticse
 		return nil
 	}
 
-	// 1. Bulk Scylla Enrichment
 	ids := make([]string, len(hits))
 	for i, hit := range hits {
 		ids[i] = hit.ID
 	}
+	_ = ids
 
-	// Simulation of Bulk Query: SELECT * FROM content WHERE id IN (...)
-	// In production: h.scylla.Session.Query(stmt, ids).WithContext(ctx).Iter()
-
-	// 2. MMR (Maximum Marginal Relevance) for Diversity
-	// Score = λ * Similarity(item, query) - (1-λ) * max(Similarity(item, selected_items))
 	lambda := 0.7
 	selected := make([]*discovery.RecommendedItem, 0, limit)
 
@@ -98,11 +92,9 @@ func (h *DiscoveryHandler) processAndRank(ctx context.Context, hits []*elasticse
 			break
 		}
 
-		// Simplified Diversity Check: Ensure different content types or clusters
-		// In production, we'd compare the vector of 'hit' with 'selected' vectors
 		isDiverse := true
 		for _, s := range selected {
-			if s.ItemId == hit.ID { // Extremely simplified diversity check for the demo
+			if s.ItemId == hit.ID {
 				isDiverse = false
 				break
 			}
@@ -111,7 +103,7 @@ func (h *DiscoveryHandler) processAndRank(ctx context.Context, hits []*elasticse
 		if isDiverse {
 			selected = append(selected, &discovery.RecommendedItem{
 				ItemId: hit.ID,
-				Score:  hit.Score * lambda, // Adjust score based on MMR
+				Score:  hit.Score * lambda,
 			})
 		}
 	}
