@@ -14,6 +14,9 @@ func SecurityHeadersMiddleware() fiber.Handler {
 		c.Set("Origin-Agent-Cluster", "?1")
 		c.Set("X-DNS-Prefetch-Control", "off")
 		c.Set("Cache-Control", "no-store")
+		if c.Protocol() == "https" {
+			c.Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
+		}
 		return c.Next()
 	}
 }
