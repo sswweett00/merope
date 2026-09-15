@@ -33,22 +33,18 @@ func (s *identityService) Register(ctx context.Context, username, email, passwor
 	if strength.Score < 3 {
 		return nil, "", fmt.Errorf("password is too weak (score: %d/4). Try a longer phrase or add symbols", strength.Score)
 	}
-
 	hashedPassword, err := security.HashPassword(password)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to hash password: %w", err)
 	}
-
 	user := &domain.User{Username: username, Email: email, PasswordHash: hashedPassword, SystemType: sys}
 	if err := s.repo.CreateUser(ctx, user); err != nil {
 		return nil, "", err
 	}
-
 	fingerprint := security.GenerateFingerprint(ip, ua)
 	if s.sentinel != nil {
 		_ = s.sentinel.RegisterDevice(ctx, user.ID, fingerprint)
 	}
-
 	token, err := security.GenerateToken(user.ID, "user", fingerprint, s.jwtSecret)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to generate token: %w", err)
@@ -64,7 +60,6 @@ func (s *identityService) Login(ctx context.Context, identifier, password, devic
 	if user.LockedUntil != nil && user.LockedUntil.After(time.Now()) {
 		return nil, "", false, fmt.Errorf("account is temporarily locked due to multiple failed attempts. Try again later")
 	}
-
 	var valid bool
 	if strings.HasPrefix(user.PasswordHash, "$argon2id$") {
 		valid, err = security.ComparePassword(password, user.PasswordHash)
@@ -82,7 +77,6 @@ func (s *identityService) Login(ctx context.Context, identifier, password, devic
 		}
 		return nil, "", false, fmt.Errorf("invalid credentials")
 	}
-
 	if user.FailedLoginAttempts > 0 {
 		_ = s.repo.ResetFailedLogin(ctx, user.ID)
 	}
@@ -92,11 +86,9 @@ func (s *identityService) Login(ctx context.Context, identifier, password, devic
 			_ = s.repo.UpdateUser(ctx, user)
 		}
 	}
-
 	if user.MFAEnabled {
 		return user, "", true, nil
 	}
-
 	if s.sentinel != nil {
 		risk, _ := s.sentinel.AssessRisk(ctx, user.ID, ip, ua)
 		if risk > 0.8 {
@@ -104,12 +96,10 @@ func (s *identityService) Login(ctx context.Context, identifier, password, devic
 		}
 		_, _ = s.sentinel.VerifyDeviceFingerprint(ctx, user.ID, security.GenerateFingerprint(ip, ua))
 	}
-
 	session := &domain.Session{UserID: user.ID, DeviceID: deviceID, IPAddress: ip, UserAgent: ua}
 	if err := s.repo.CreateSession(ctx, session); err != nil {
 		return nil, "", false, fmt.Errorf("failed to create session")
 	}
-
 	fingerprint := security.GenerateFingerprint(ip, ua)
 	token, err := security.GenerateToken(user.ID, "user", fingerprint, s.jwtSecret)
 	if err != nil {
@@ -181,16 +171,17 @@ func (s *identityService) RefreshToken(ctx context.Context, refreshToken string)
 	}
 	expiration := 30 * 24 * time.Hour
 
-	userID, err := s.repo.ValidateRefreshToken(ctx, refreshToken)
-	if err != nil {
-		return "", "", err
-	}
+	var userID string
 	if rotator, ok := s.repo.(refreshTokenRotator); ok {
 		userID, err = rotator.RotateRefreshToken(ctx, refreshToken, newRefreshToken, expiration)
 		if err != nil {
 			return "", "", err
 		}
 	} else {
+		userID, err = s.repo.ValidateRefreshToken(ctx, refreshToken)
+		if err != nil {
+			return "", "", err
+		}
 		if err := s.repo.StoreRefreshToken(ctx, userID, newRefreshToken, expiration); err != nil {
 			return "", "", fmt.Errorf("failed to store refresh token")
 		}
@@ -200,7 +191,6 @@ func (s *identityService) RefreshToken(ctx context.Context, refreshToken string)
 	if err != nil {
 		return "", "", fmt.Errorf("user not found")
 	}
-
 	fingerprint := security.GenerateFingerprint("", "")
 	token, err := security.GenerateToken(user.ID, "user", fingerprint, s.jwtSecret)
 	if err != nil {
