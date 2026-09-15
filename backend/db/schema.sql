@@ -1,11 +1,9 @@
--- Merope Singularity Schema v11.0
--- Optimized for Massive Scalability, Neural Integrity, and Federated Identity
+-- Merope Singularity Schema v11.1
+-- Optimized for server-authoritative social runtime.
 
--- 0. Extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "postgis";
 
--- 1. Federated Identity & Multi-Tenancy
 CREATE TABLE tenants (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT UNIQUE NOT NULL,
@@ -17,7 +15,7 @@ CREATE TABLE tenants (
 
 CREATE TABLE global_user_registry (
     user_id UUID PRIMARY KEY,
-    system_type TEXT NOT NULL, -- PERSONAL, CORPORATE
+    system_type TEXT NOT NULL,
     tenant_id UUID REFERENCES tenants(id),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -44,14 +42,13 @@ CREATE TABLE users (
     UNIQUE(tenant_id, email)
 );
 
--- 2. Neural Connections (AI-Ready Social Graph)
 CREATE TABLE neural_connections (
     source_id UUID NOT NULL REFERENCES users(id),
     target_id UUID NOT NULL REFERENCES users(id),
-    weight FLOAT4 NOT NULL DEFAULT 0.1, -- Connection strength (0.0 to 1.0)
+    weight FLOAT4 NOT NULL DEFAULT 0.1,
     interaction_count INTEGER DEFAULT 1,
     last_interaction_at TIMESTAMPTZ DEFAULT NOW(),
-    connection_type TEXT NOT NULL, -- follower, mutual, workspace_colleague
+    connection_type TEXT NOT NULL,
     PRIMARY KEY (source_id, target_id)
 );
 
@@ -63,7 +60,6 @@ CREATE TABLE follows (
     PRIMARY KEY (follower_id, following_id)
 );
 
--- 3. Partitioned Content Engine (Posts)
 CREATE TABLE posts (
     id UUID NOT NULL DEFAULT uuid_generate_v4(),
     tenant_id UUID REFERENCES tenants(id),
@@ -75,11 +71,9 @@ CREATE TABLE posts (
     PRIMARY KEY (id, created_at)
 ) PARTITION BY RANGE (created_at);
 
--- Create initial partitions
 CREATE TABLE posts_y2026_q3 PARTITION OF posts FOR VALUES FROM ('2026-07-01') TO ('2026-10-01');
 CREATE TABLE posts_y2026_q4 PARTITION OF posts FOR VALUES FROM ('2026-10-01') TO ('2027-01-01');
 
--- 4. Partitioned Communication Engine (Messaging)
 CREATE TABLE chat_rooms (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID REFERENCES tenants(id),
@@ -104,10 +98,9 @@ CREATE TABLE chat_messages (
 
 CREATE TABLE chat_messages_y2026_q3 PARTITION OF chat_messages FOR VALUES FROM ('2026-07-01') TO ('2026-10-01');
 
--- 5. Sovereign Finance
 CREATE TABLE wallets (
     user_id UUID PRIMARY KEY REFERENCES users(id),
-    balance BIGINT NOT NULL DEFAULT 0, -- Store in minor units (e.g. cents)
+    balance BIGINT NOT NULL DEFAULT 0,
     currency TEXT NOT NULL DEFAULT 'TRY',
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -117,13 +110,12 @@ CREATE TABLE transactions (
     sender_wallet_id UUID REFERENCES wallets(user_id),
     receiver_wallet_id UUID REFERENCES wallets(user_id),
     amount BIGINT NOT NULL,
-    tx_type TEXT NOT NULL, -- transfer, deposit, escrow, refund
+    tx_type TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'completed',
     reference TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 6. Audit & Sentinel
 CREATE TABLE audit_logs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES users(id),
@@ -143,8 +135,68 @@ CREATE TABLE risk_profiles (
     last_assessment_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 7. Indices for Performance
+CREATE TABLE circles (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    owner_id UUID NOT NULL REFERENCES users(id),
+    name TEXT NOT NULL,
+    is_private BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(owner_id, name)
+);
+
+CREATE TABLE circle_members (
+    circle_id UUID NOT NULL REFERENCES circles(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (circle_id, user_id)
+);
+
+CREATE TABLE content_reports (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    reporter_id UUID NOT NULL REFERENCES users(id),
+    target_id UUID NOT NULL,
+    target_type TEXT NOT NULL,
+    reason TEXT NOT NULL,
+    details TEXT,
+    status TEXT NOT NULL DEFAULT 'open',
+    priority SMALLINT NOT NULL DEFAULT 0,
+    assigned_to UUID REFERENCES users(id),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    resolved_at TIMESTAMPTZ
+);
+
+CREATE TABLE auth_refresh_sessions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    device_id TEXT,
+    token_hash BYTEA NOT NULL UNIQUE,
+    parent_token_hash BYTEA,
+    issued_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    expires_at TIMESTAMPTZ NOT NULL,
+    revoked_at TIMESTAMPTZ,
+    replaced_by_hash BYTEA
+);
+
+CREATE TABLE request_deduplication (
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    route TEXT NOT NULL,
+    idempotency_key TEXT NOT NULL,
+    request_hash TEXT NOT NULL,
+    status_code INTEGER,
+    response_body JSONB,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    expires_at TIMESTAMPTZ NOT NULL,
+    PRIMARY KEY (user_id, route, idempotency_key)
+);
+
 CREATE INDEX idx_users_tenant_username ON users(tenant_id, username);
 CREATE INDEX idx_neural_weight ON neural_connections(weight DESC);
 CREATE INDEX idx_chat_messages_room ON chat_messages(room_id, created_at DESC);
 CREATE INDEX idx_audit_user_action ON audit_logs(user_id, action, created_at DESC);
+CREATE INDEX idx_circles_owner ON circles(owner_id, created_at DESC);
+CREATE INDEX idx_circle_members_user ON circle_members(user_id, created_at DESC);
+CREATE INDEX idx_content_reports_queue ON content_reports(status, priority DESC, created_at ASC);
+CREATE INDEX idx_content_reports_target ON content_reports(target_type, target_id, created_at DESC);
+CREATE INDEX idx_auth_refresh_user ON auth_refresh_sessions(user_id, issued_at DESC);
+CREATE INDEX idx_request_dedup_expiry ON request_deduplication(expires_at);
