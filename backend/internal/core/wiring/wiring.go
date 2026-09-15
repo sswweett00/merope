@@ -3,15 +3,12 @@ package wiring
 import (
 	"context"
 	"log"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 
 	"local/merope/internal/core/config"
@@ -19,7 +16,6 @@ import (
 	"local/merope/internal/core/security"
 	"local/merope/internal/core/worker"
 	"local/merope/internal/database"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"local/merope/internal/database/db"
 	"local/merope/internal/platform/nats"
 	"local/merope/internal/platform/redis"
@@ -43,8 +39,8 @@ import (
 	socialService "local/merope/internal/modules/social/service"
 	socialTransport "local/merope/internal/modules/social/transport"
 
-	lumiaService "local/merope/internal/modules/lumia/service"
 	lumiaInfra "local/merope/internal/modules/lumia/infra"
+	lumiaService "local/merope/internal/modules/lumia/service"
 	lumiaTransport "local/merope/internal/modules/lumia/transport"
 )
 
@@ -57,29 +53,28 @@ type Resources struct {
 }
 
 type Handlers struct {
-	Identity    *identityTransport.IdentityHandler
-	Content     *contentTransport.ContentHandler
-	Messaging   *messagingTransport.MessagingHandler
-	Social      *socialTransport.SocialHandler
-	Lumia       *lumiaTransport.LumiaHandler
+	Identity     *identityTransport.IdentityHandler
+	Content      *contentTransport.ContentHandler
+	Messaging    *messagingTransport.MessagingHandler
+	Social       *socialTransport.SocialHandler
+	Lumia        *lumiaTransport.LumiaHandler
 	VeritasGuard *socialService.VeritasContentGuard
 }
 
 func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, *Handlers, func()) {
-	zapLogger, _ := zap.NewProduction()
-	defer func() { _ = zapLogger.Sync() }()
+	zapLogger, err := zap.NewProduction()
+	if err != nil {
+		log.Fatalf("failed to initialize logger: %v", err)
+	}
 
-	// 1. Platform Infrastructure
 	pgPool, err := database.NewPostgresPool(ctx)
 	if err != nil {
-		log.Fatalf("Failed to connect to PG: %v", err)
+		log.Fatalf("failed to connect to PostgreSQL: %v", err)
 	}
 
 	rdb := redis.New(cfg.Redis.Addr, cfg.Redis.Password)
-
 	queries := db.New(pgPool)
 
-	// ScyllaDB Initialization
 	var scyllaClient *scylla.Client
 	if len(cfg.Scylla.Hosts) > 0 {
 		scyllaClient, err = scylla.New(scylla.Config{
@@ -90,23 +85,25 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 			Consistency: cfg.Scylla.Consistency,
 		})
 		if err != nil {
-			zapLogger.Warn("ScyllaDB connection failed, falling back to PostgreSQL-only mode", zap.Error(err))
+			zapLogger.Warn("ScyllaDB unavailable; using PostgreSQL path", zap.Error(err))
 		} else {
 			zapLogger.Info("ScyllaDB connected", zap.Strings("hosts", cfg.Scylla.Hosts))
 		}
 	}
 
-	// NATS JetStream
 	var bus *nats.Client
 	bus, err = nats.New(cfg.NATS.URL)
 	if err != nil {
-		zapLogger.Warn("NATS connection failed, real-time features will be limited", zap.Error(err))
+		zapLogger.Error("NATS connection failed; realtime writes are unavailable", zap.Error(err))
+		bus = nil
+	} else if err := bus.EnsureStreams(); err != nil {
+		zapLogger.Error("NATS stream initialization failed", zap.Error(err))
+		_ = bus.Conn.Close()
+		bus = nil
 	} else {
-		_ = bus.EnsureStreams()
 		zapLogger.Info("NATS connected", zap.String("url", cfg.NATS.URL))
 	}
 
-	// Worker Orchestrator
 	orchestrator := worker.NewOrchestrator(queries, 10, 20)
 	orchestrator.Start(ctx)
 
@@ -118,47 +115,49 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 		Scylla:       scyllaClient,
 	}
 
-	// 2. Identity Module
 	identityRepo := identityInfra.NewPostgresIdentityRepository(queries, rdb.Conn, nil)
 	identitySentinel := identityService.NewIdentitySentinel(identityRepo)
 	idService := identityService.NewIdentityService(identityRepo, cfg.JWTSecret, identitySentinel)
 	idHandler := identityTransport.NewIdentityHandler(idService, cfg.JWTSecret, rdb.Conn)
 
-	// Zenith: Security Fabric Initialization
 	anomalyDetector := security.NewAnomalyDetector()
 	securityFabric := security.NewMeropeSecurityFabric(bus, anomalyDetector)
-
-	// Veritas Integrity Guard
+	_ = securityFabric
 	veritasGuard := socialService.NewVeritasContentGuard(bus)
 
-	// 3. Content Module
 	contentRepo := contentInfra.NewPostgresContentRepository(queries)
 	var contService contentDomain.ContentService
 	if scyllaClient != nil {
-		scyllaContentRepo := contentInfra.NewScyllaContentRepository(scyllaClient)
-		contService = contentService.NewHighPerformanceContentService(contentRepo, scyllaContentRepo, bus)
+		contService = contentService.NewHighPerformanceContentService(
+			contentRepo,
+			contentInfra.NewScyllaContentRepository(scyllaClient),
+			bus,
+		)
 	} else {
 		contService = contentService.NewContentService(contentRepo, bus, veritasGuard, idService)
 	}
 	contHandler := contentTransport.NewContentHandler(contService)
 
-	// 4. Messaging Module
 	msgRepo := messagingInfra.NewPostgresMessagingRepository(queries, pgPool)
 	var msgService messagingDomain.MessagingService
 	if scyllaClient != nil {
-		scyllaMsgRepo := messagingInfra.NewScyllaMessagingRepository(scyllaClient)
-		msgService = messagingService.NewHighPerformanceService(msgRepo, scyllaMsgRepo, bus, orchestrator, nil, nil)
+		msgService = messagingService.NewHighPerformanceService(
+			msgRepo,
+			messagingInfra.NewScyllaMessagingRepository(scyllaClient),
+			bus,
+			orchestrator,
+			nil,
+			nil,
+		)
 	} else {
 		msgService = messagingService.NewMessagingService(msgRepo, idService, nil, nil, bus, nil, nil)
 	}
 	msgHandler := messagingTransport.NewMessagingHandler(msgService)
 
-	// 5. Social Module
 	socialRepo := socialInfra.NewPostgresSocialRepository(queries)
 	socService := socialService.NewSocialService(socialRepo, idService, veritasGuard)
 	socHandler := socialTransport.NewSocialHandler(socService)
 
-	// 6. Lumia Module
 	lumiaRepo := lumiaInfra.NewPostgresLumiaRepository(queries)
 	lumSvc := lumiaService.NewLumiaService(lumiaRepo, idService, bus)
 	lumHandler := lumiaTransport.NewLumiaHandler(lumSvc)
@@ -172,31 +171,35 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 		VeritasGuard: veritasGuard,
 	}
 
-	// 7. Fiber App Setup
 	app := fiber.New(fiber.Config{
+		DisableStartupMessage: true,
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
-			return c.Status(errors.ToHTTPStatus(err)).JSON(fiber.Map{
-				"code":    errors.GetCode(err),
-				"message": err.Error(),
-			})
+			status := errors.ToHTTPStatus(err)
+			if status < 400 {
+				status = fiber.StatusInternalServerError
+			}
+			code := errors.GetCode(err)
+			message := "request failed"
+			if status < 500 {
+				message = err.Error()
+			}
+			return c.Status(status).JSON(fiber.Map{"code": code, "message": message})
 		},
 	})
 
 	app.Use(recover.New())
 	app.Use(logger.New())
 	app.Use(security.SecurityHeadersMiddleware())
-	app.Use(security.AnomalyDetectorMiddleware(security.NewAnomalyDetector()))
+	app.Use(security.AnomalyDetectorMiddleware(anomalyDetector))
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: cfg.CORSAllowedOrigins,
-		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
+		AllowHeaders: "Origin, Content-Type, Accept, Authorization, X-Request-ID",
+		AllowMethods: "GET,HEAD,POST,PUT,PATCH,DELETE,OPTIONS",
+		AllowCredentials: false,
 	}))
-
 	app.Use(security.GlobalLimit(rdb.Conn))
 
-	// API Groups
 	api := app.Group("/api/v10")
-
-	// Auth Routes
 	auth := api.Group("/auth")
 	auth.Use(security.AuthLimit(rdb.Conn))
 	auth.Post("/register", idHandler.Register)
@@ -205,10 +208,8 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	auth.Get("/me", security.AuthMiddleware(cfg.JWTSecret, rdb.Conn), idHandler.Me)
 	auth.Post("/logout", security.AuthMiddleware(cfg.JWTSecret, rdb.Conn), idHandler.Logout)
 
-	// Protected Groups
 	protected := api.Group("/", security.AuthMiddleware(cfg.JWTSecret, rdb.Conn))
 
-	// Messaging
 	messaging := protected.Group("/messaging")
 	messaging.Get("/rooms", msgHandler.GetRooms)
 	messaging.Post("/rooms", msgHandler.CreateDirectChat)
@@ -223,7 +224,6 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	messaging.Get("/e2ee/keys/:user_id", msgHandler.GetE2EEPublicKey)
 	messaging.Post("/e2ee/keys", msgHandler.UploadE2EEPublicKey)
 
-	// Content & Social
 	content := protected.Group("/content")
 	content.Get("/feed", contHandler.Feed)
 	content.Get("/posts/:id", contHandler.GetPost)
@@ -246,23 +246,23 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	social.Post("/follow/:id", socHandler.Follow)
 	social.Post("/unfollow/:id", socHandler.Unfollow)
 
-	// Lumia
 	lumia := protected.Group("/lumia")
 	lumia.Post("/tip", lumHandler.Tip)
 	lumia.Get("/live", lumHandler.GetLive)
 
-	// Health Check
+	// Legacy endpoint kept for monitoring compatibility; use /health/live and
+	// /health/ready for orchestration probes.
 	app.Get("/health", func(c *fiber.Ctx) error {
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "nirvana"})
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "ok"})
 	})
 
 	cleanup := func() {
-		zapLogger.Info("Shutting down API...")
-		_ = app.Shutdown()
+		zapLogger.Info("shutting down API")
 		if orchestrator != nil {
 			orchestrator.Stop()
 		}
 		if bus != nil {
+			_ = bus.Conn.Drain()
 			_ = bus.Conn.Close()
 		}
 		if rdb != nil {
@@ -274,6 +274,7 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 		if scyllaClient != nil {
 			_ = scyllaClient.Close()
 		}
+		_ = zapLogger.Sync()
 	}
 
 	return app, resources, handlers, cleanup

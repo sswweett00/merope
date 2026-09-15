@@ -2,59 +2,72 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/gofiber/fiber/v2"
+
 	"local/merope/internal/core/config"
 	"local/merope/internal/core/wiring"
 )
 
 func main() {
-	// Root context for the entire application lifetime
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
 	cfg := config.Load(ctx)
-
-	// Build the application graph using manual DI
 	app, resources, _, cleanup := wiring.BuildApp(ctx, cfg)
+	defer cleanup()
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
+	app.Get("/health/live", func(c *fiber.Ctx) error {
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "ok"})
+	})
 
-	// Start server in a goroutine
-	go func() {
-		log.Printf("Merope API starting on port %s", port)
-		if err := app.Listen(":" + port); err != nil {
-			log.Printf("Fiber server stopped: %v", err)
+	app.Get("/health/ready", func(c *fiber.Ctx) error {
+		checkCtx, cancel := context.WithTimeout(c.Context(), 2*time.Second)
+		defer cancel()
+
+		checks := fiber.Map{"postgres": "ok", "redis": "ok", "nats": "ok"}
+		if resources.PostgresPool == nil || resources.PostgresPool.Ping(checkCtx) != nil {
+			checks["postgres"] = "unavailable"
 		}
+		if resources.Redis == nil || resources.Redis.Conn.Ping(checkCtx).Err() != nil {
+			checks["redis"] = "unavailable"
+		}
+		if resources.NATS == nil || resources.NATS.Conn == nil || !resources.NATS.Conn.IsConnected() {
+			checks["nats"] = "unavailable"
+		}
+
+		ready := checks["postgres"] == "ok" && checks["redis"] == "ok" && checks["nats"] == "ok"
+		status := fiber.StatusOK
+		readiness := "ready"
+		if !ready {
+			status = fiber.StatusServiceUnavailable
+			readiness = "degraded"
+		}
+		return c.Status(status).JSON(fiber.Map{"status": readiness, "checks": checks})
+	})
+
+	serverErr := make(chan error, 1)
+	go func() {
+		log.Printf("Merope API starting on port %d", cfg.Port)
+		serverErr <- app.Listen(":" + fmt.Sprint(cfg.Port))
 	}()
 
-	// Orchestrate Graceful Shutdown
-	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
-
-	<-stop
-	log.Println("Graceful shutdown signal received...")
-
-	// 1. Give the server a timeout to drain active connections
-	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 15*time.Second)
-	defer shutdownCancel()
-
-	if err := app.ShutdownWithContext(shutdownCtx); err != nil {
-		log.Printf("Forced shutdown due to error: %v", err)
-	} else {
-		log.Println("Fiber server shut down gracefully.")
+	select {
+	case err := <-serverErr:
+		if err != nil {
+			log.Fatalf("API server stopped unexpectedly: %v", err)
+		}
+	case <-ctx.Done():
+		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 15*time.Second)
+		defer shutdownCancel()
+		if err := app.ShutdownWithContext(shutdownCtx); err != nil {
+			log.Printf("forced API shutdown: %v", err)
+		}
 	}
-
-	// 2. Run cleanup for database connections, pools, and workers
-	log.Println("Cleaning up resources (DB, NATS, Workers)...")
-	cleanup()
-
-	log.Println("Merope API shutdown complete. Farewell.")
 }
