@@ -4,8 +4,15 @@ import 'sync_engine.dart';
 enum SyncStatus { idle, syncing, error }
 
 class SyncTelemetry {
-  const SyncTelemetry({this.pendingOperations = 0});
+  const SyncTelemetry({
+    this.pendingOperations = 0,
+    this.averageLatencyMs = 0,
+    this.totalSynced = 0,
+  });
+
   final int pendingOperations;
+  final double averageLatencyMs;
+  final int totalSynced;
 }
 
 final syncEngineProvider = Provider<SyncEngine>((ref) => SyncEngine());
