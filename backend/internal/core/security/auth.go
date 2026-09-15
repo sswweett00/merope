@@ -13,9 +13,13 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-const tokenAudience = "merope-api"
-const tokenIssuer = "merope-auth"
-const securityEventTTL = 30 * 24 * time.Hour
+const (
+	tokenAudience     = "merope-api"
+	tokenIssuer       = "merope-auth"
+	securityEventTTL  = 30 * 24 * time.Hour
+	accessTokenTTL    = 15 * time.Minute
+	refreshTokenBytes = 32
+)
 
 var atomicRateLimitScript = redis.NewScript(`
 local count = redis.call("INCR", KEYS[1])
@@ -42,21 +46,27 @@ func GenerateTokenWithPermissions(userID, role, fingerprint, secret string, perm
 	if strings.TrimSpace(secret) == "" || strings.TrimSpace(userID) == "" {
 		return "", fmt.Errorf("token secret and user id are required")
 	}
-	tokenID, err := GenerateRefreshToken()
+	userID = strings.TrimSpace(userID)
+	role = strings.TrimSpace(role)
+	if role == "" {
+		role = "user"
+	}
+	tokenID, err := GenerateSessionID()
 	if err != nil {
 		return "", fmt.Errorf("generate token id: %w", err)
 	}
-	now := time.Now()
+	now := time.Now().UTC()
 	claims := Claims{
 		UserID:      userID,
 		Role:        role,
 		Fingerprint: fingerprint,
-		Permissions: permissions,
+		Permissions: append([]string(nil), permissions...),
 		RegisteredClaims: jwt.RegisteredClaims{
 			ID:        tokenID,
+			Subject:   userID,
 			Issuer:    tokenIssuer,
 			Audience:  jwt.ClaimStrings{tokenAudience},
-			ExpiresAt: jwt.NewNumericDate(now.Add(15 * time.Minute)),
+			ExpiresAt: jwt.NewNumericDate(now.Add(accessTokenTTL)),
 			IssuedAt:  jwt.NewNumericDate(now),
 			NotBefore: jwt.NewNumericDate(now),
 		},
@@ -67,7 +77,7 @@ func GenerateTokenWithPermissions(userID, role, fingerprint, secret string, perm
 }
 
 func GenerateRefreshToken() (string, error) {
-	b := make([]byte, 32)
+	b := make([]byte, refreshTokenBytes)
 	if _, err := rand.Read(b); err != nil {
 		return "", err
 	}
@@ -75,7 +85,7 @@ func GenerateRefreshToken() (string, error) {
 }
 
 func ValidateToken(tokenStr, secret string) (*Claims, error) {
-	if strings.TrimSpace(secret) == "" || tokenStr == "" {
+	if strings.TrimSpace(secret) == "" || strings.TrimSpace(tokenStr) == "" {
 		return nil, fmt.Errorf("invalid token configuration")
 	}
 	token, err := jwt.ParseWithClaims(tokenStr, &Claims{}, func(token *jwt.Token) (interface{}, error) {
@@ -83,12 +93,12 @@ func ValidateToken(tokenStr, secret string) (*Claims, error) {
 			return nil, fmt.Errorf("unexpected signing method")
 		}
 		return []byte(secret), nil
-	}, jwt.WithIssuer(tokenIssuer), jwt.WithAudience(tokenAudience))
+	}, jwt.WithIssuer(tokenIssuer), jwt.WithAudience(tokenAudience), jwt.WithExpirationRequired())
 	if err != nil {
 		return nil, err
 	}
 	claims, ok := token.Claims.(*Claims)
-	if !ok || !token.Valid || claims.Subject != "" && claims.Subject != claims.UserID {
+	if !ok || !token.Valid || claims.Subject == "" || claims.Subject != claims.UserID || claims.UserID == "" || claims.ID == "" {
 		return nil, fmt.Errorf("invalid token")
 	}
 	return claims, nil
@@ -159,7 +169,7 @@ func HashDeviceID(deviceInfo string) string {
 }
 
 func CheckPermission(claims *Claims, requiredPermission string) bool {
-	if claims == nil {
+	if claims == nil || strings.TrimSpace(requiredPermission) == "" {
 		return false
 	}
 	for _, permission := range claims.Permissions {
