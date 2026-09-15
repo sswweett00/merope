@@ -9,18 +9,26 @@ import (
 	"io"
 )
 
-// GenerateKeyPair generates a new ECDH P256 key pair
+const maxE2EEMessageSize = 4 * 1024 * 1024
+
+// GenerateKeyPair generates a new ECDH P256 key pair.
 func GenerateKeyPair() (*ecdh.PrivateKey, error) {
 	return ecdh.P256().GenerateKey(rand.Reader)
 }
 
-// DeriveSharedSecret derives a shared secret between a private key and a public key
+// DeriveSharedSecret derives a shared secret between a private key and a public key.
 func DeriveSharedSecret(priv *ecdh.PrivateKey, pub *ecdh.PublicKey) ([]byte, error) {
+	if priv == nil || pub == nil {
+		return nil, fmt.Errorf("private and public keys are required")
+	}
 	return priv.ECDH(pub)
 }
 
-// EncryptMessage encrypts a message using AES-GCM
+// EncryptMessage encrypts a bounded message using AES-GCM.
 func EncryptMessage(plaintext []byte, key []byte) ([]byte, error) {
+	if len(plaintext) > maxE2EEMessageSize {
+		return nil, fmt.Errorf("plaintext exceeds maximum size")
+	}
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
@@ -39,8 +47,11 @@ func EncryptMessage(plaintext []byte, key []byte) ([]byte, error) {
 	return gcm.Seal(nonce, nonce, plaintext, nil), nil
 }
 
-// DecryptMessage decrypts a message using AES-GCM
+// DecryptMessage decrypts a bounded message using AES-GCM.
 func DecryptMessage(ciphertext []byte, key []byte) ([]byte, error) {
+	if len(ciphertext) > maxE2EEMessageSize+32 {
+		return nil, fmt.Errorf("ciphertext exceeds maximum size")
+	}
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
