@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   backend-quality:
@@ -24,13 +24,17 @@ jobs:
           cache-dependency-path: backend/go.sum
       - name: Download modules
         run: go mod download
-      - name: Capture generated checksum file
-        uses: actions/upload-artifact@v4
-        with:
-          name: generated-go-sum
-          path: backend/go.sum
-          if-no-files-found: error
-          retention-days: 1
+      - name: Persist generated checksums
+        working-directory: .
+        run: |
+          if git diff --quiet -- backend/go.sum; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/go.sum
+          git commit -m "chore: sync Go module checksums [skip ci]"
+          git push origin HEAD:main
       - name: Verify modules
         run: go mod verify
       - name: Vet
