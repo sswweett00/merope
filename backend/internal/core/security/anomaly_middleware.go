@@ -1,16 +1,14 @@
 package security
 
-import (
-	"context"
-
-	"github.com/gofiber/fiber/v2"
-)
+import "github.com/gofiber/fiber/v2"
 
 func AnomalyDetectorMiddleware(detector AnomalyDetector) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		userID := ""
 		if uid := c.Locals("user_id"); uid != nil {
-			userID = uid.(string)
+			if value, ok := uid.(string); ok {
+				userID = value
+			}
 		}
 
 		payload := c.Body()
@@ -18,7 +16,8 @@ func AnomalyDetectorMiddleware(detector AnomalyDetector) fiber.Handler {
 			suspicious, reason := detector.AnalyzePayload(c.Context(), userID, string(payload))
 			if suspicious {
 				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-					"error": "Suspicious request detected: " + reason,
+					"error": "suspicious request detected",
+					"reason": reason,
 				})
 			}
 		}
