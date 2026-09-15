@@ -22,18 +22,18 @@ jobs:
           go-version: '1.25.x'
           cache: true
           cache-dependency-path: backend/go.sum
-      - name: Download modules
-        run: go mod download
-      - name: Persist generated checksums
+      - name: Tidy Go dependencies
+        run: go mod tidy
+      - name: Persist synchronized Go modules
         working-directory: .
         run: |
-          if git diff --quiet -- backend/go.sum; then
+          if git diff --quiet -- backend/go.mod backend/go.sum; then
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add backend/go.sum
-          git commit -m "chore: sync Go module checksums [skip ci]"
+          git add backend/go.mod backend/go.sum
+          git commit -m "chore: sync Go module metadata [skip ci]"
           git push origin HEAD:main
       - name: Verify modules
         run: go mod verify
