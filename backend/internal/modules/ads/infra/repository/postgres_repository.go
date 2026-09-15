@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"log/slog"
 
+	"github.com/jackc/pgx/v5/pgxpool"
+
 	"local/merope/internal/modules/ads/domain"
 	"local/merope/internal/platform/postgres"
 )
