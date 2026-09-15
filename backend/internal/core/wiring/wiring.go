@@ -105,7 +105,7 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	resources := &Resources{PostgresPool: pgPool, Redis: rdb, NATS: bus, Orchestrator: orchestrator, Scylla: scyllaClient}
 
 	identityRepo := identityInfra.NewPostgresIdentityRepository(queries, rdb.Conn, nil)
-	identitySentinel := identityService.NewIdentitySentinel(identityRepo)
+	identitySentinel := identityService.NewIdentitySentinel(identityRepo, rdb.Conn)
 	idService := identityService.NewIdentityService(identityRepo, cfg.JWTSecret, identitySentinel)
 	idHandler := identityTransport.NewIdentityHandler(idService, cfg.JWTSecret, rdb.Conn)
 
