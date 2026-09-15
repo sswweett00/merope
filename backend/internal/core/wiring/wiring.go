@@ -134,6 +134,7 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 		msgService = messagingService.NewMessagingService(msgRepo, idService, msgRepo, e2eeService, bus, bus, nil)
 	}
 	msgHandler := messagingTransport.NewMessagingHandler(msgService)
+	msgContractHandler := messagingTransport.NewMessagingContractHandler(msgService)
 
 	socialRepo := socialInfra.NewPostgresSocialRepository(queries)
 	socService := socialService.NewSocialService(socialRepo, idService, veritasGuard)
@@ -196,11 +197,11 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	protected := api.Group("/", security.AuthMiddleware(cfg.JWTSecret, rdb.Conn), security.RBACMiddleware(rbacEnforcer))
 
 	messaging := protected.Group("/messaging")
-	messaging.Get("/rooms", msgHandler.GetRooms)
+	messaging.Get("/rooms", msgContractHandler.GetRooms)
 	messaging.Post("/rooms", msgHandler.CreateDirectChat)
 	messaging.Post("/rooms/group", msgHandler.CreateGroupChat)
-	messaging.Get("/rooms/:id/history", msgHandler.GetHistory)
-	messaging.Post("/rooms/:id/messages", msgHandler.SendMessage)
+	messaging.Get("/rooms/:id/history", msgContractHandler.GetHistory)
+	messaging.Post("/rooms/:id/messages", msgContractHandler.SendMessage)
 	messaging.Put("/messages/:msg_id", msgHandler.EditMessage)
 	messaging.Delete("/messages/:msg_id", msgHandler.DeleteMessage)
 	messaging.Post("/messages/:msg_id/react", msgHandler.React)
