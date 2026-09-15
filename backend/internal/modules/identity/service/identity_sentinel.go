@@ -71,6 +71,9 @@ func (s *identitySentinel) AssessRisk(ctx context.Context, userID, ip, ua string
 }
 
 func (s *identitySentinel) RecordAudit(ctx context.Context, userID, action, metadata string) error {
+	if s.repo == nil {
+		return nil
+	}
 	return nil
 }
 
