@@ -24,6 +24,13 @@ jobs:
           cache-dependency-path: backend/go.sum
       - name: Download modules
         run: go mod download
+      - name: Capture generated checksum file
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-go-sum
+          path: backend/go.sum
+          if-no-files-found: error
+          retention-days: 1
       - name: Verify modules
         run: go mod verify
       - name: Vet
