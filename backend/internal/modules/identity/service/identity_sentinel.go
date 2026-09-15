@@ -7,6 +7,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/redis/go-redis/v9"
+
+	"local/merope/internal/core/security"
 	"local/merope/internal/modules/identity/domain"
 )
 
@@ -21,12 +24,14 @@ type identitySentinel struct {
 	mu             sync.RWMutex
 	deviceRegistry map[string][]string
 	repo           domain.IdentityRepository
+	rdb            *redis.Client
 }
 
-func NewIdentitySentinel(repo domain.IdentityRepository) IdentitySentinel {
+func NewIdentitySentinel(repo domain.IdentityRepository, rdb *redis.Client) IdentitySentinel {
 	return &identitySentinel{
 		deviceRegistry: make(map[string][]string),
 		repo:           repo,
+		rdb:            rdb,
 	}
 }
 
@@ -48,7 +53,7 @@ func (s *identitySentinel) AssessRisk(ctx context.Context, userID, ip, ua string
 		}
 		if !found {
 			risk += 0.3
-			_ = s.RecordAudit(ctx, userID, "NEW_DEVICE_LOGIN", fmt.Sprintf("IP: %s, UA: %s", ip, ua))
+			_ = s.RecordAudit(ctx, userID, "NEW_DEVICE_LOGIN", fmt.Sprintf("ip=%s", ip))
 		}
 	}
 
@@ -63,7 +68,7 @@ func (s *identitySentinel) AssessRisk(ctx context.Context, userID, ip, ua string
 
 		if lastSession != nil && lastSession.IPAddress != ip && time.Since(lastSession.LastActiveAt) < time.Hour {
 			risk += 0.5
-			_ = s.RecordAudit(ctx, userID, "IMPOSSIBLE_TRAVEL", fmt.Sprintf("Prev IP: %s, Current IP: %s", lastSession.IPAddress, ip))
+			_ = s.RecordAudit(ctx, userID, "IMPOSSIBLE_TRAVEL", fmt.Sprintf("previous_ip=%s current_ip=%s", lastSession.IPAddress, ip))
 		}
 	}
 
@@ -71,10 +76,10 @@ func (s *identitySentinel) AssessRisk(ctx context.Context, userID, ip, ua string
 }
 
 func (s *identitySentinel) RecordAudit(ctx context.Context, userID, action, metadata string) error {
-	if s.repo == nil {
+	if s.rdb == nil || userID == "" || action == "" {
 		return nil
 	}
-	return nil
+	return security.SecurityEvent(ctx, s.rdb, action, userID, metadata)
 }
 
 func (s *identitySentinel) RegisterDevice(ctx context.Context, userID, fingerprint string) error {
