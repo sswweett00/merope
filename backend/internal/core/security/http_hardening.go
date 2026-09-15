@@ -18,17 +18,27 @@ func newRequestID() string {
 	return hex.EncodeToString(b[:])
 }
 
-// HTTPHardeningMiddleware applies protocol-level defenses that do not depend
-// on business authorization: bounded request bodies, request IDs, cache
-// controls for authentication, and a conservative cross-origin policy.
+func validRequestID(value string) bool {
+	if len(value) != 32 {
+		return false
+	}
+	for _, r := range value {
+		if !((r >= '0' && r <= '9') || (r >= 'a' && r <= 'f') || (r >= 'A' && r <= 'F')) {
+			return false
+		}
+	}
+	return true
+}
+
 func HTTPHardeningMiddleware() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		if c.Method() == fiber.MethodTrace || c.Method() == fiber.MethodConnect {
 			return c.SendStatus(fiber.StatusMethodNotAllowed)
 		}
 
-		if requestID := strings.TrimSpace(c.Get(requestIDHeader)); requestID != "" && len(requestID) <= 128 {
-			c.Set(requestIDHeader, requestID)
+		requestID := strings.TrimSpace(c.Get(requestIDHeader))
+		if validRequestID(requestID) {
+			c.Set(requestIDHeader, strings.ToLower(requestID))
 		} else if generated := newRequestID(); generated != "" {
 			c.Set(requestIDHeader, generated)
 		}
@@ -47,7 +57,7 @@ func HTTPHardeningMiddleware() fiber.Handler {
 		c.Set("Cross-Origin-Opener-Policy", "same-origin")
 		c.Set("Cross-Origin-Resource-Policy", "same-origin")
 		c.Set("Origin-Agent-Cluster", "?1")
-		c.Set("Referrer-Policy", "strict-origin-when-cross-origin")
+		c.Set("Referrer-Policy", "no-referrer")
 		c.Set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), usb=(), payment=()")
 		return c.Next()
 	}
