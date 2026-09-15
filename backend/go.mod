@@ -9,6 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.30
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.44.0
 	github.com/casbin/casbin/v2 v2.135.0
+	github.com/elastic/go-elasticsearch/v8 v8.19.7
 	github.com/gocql/gocql v1.7.0
 	github.com/gofiber/contrib/websocket v1.3.4
 	github.com/gofiber/fiber/v2 v2.52.6
@@ -18,6 +19,7 @@ require (
 	github.com/microcosm-cc/bluemonday v1.0.27
 	github.com/nats-io/nats.go v1.34.0
 	github.com/nbutton23/zxcvbn-go v0.0.0-20210217022336-fa2cb2858354
+	github.com/pion/webrtc/v4 v4.2.18
 	github.com/pquerna/otp v1.5.0
 	github.com/prometheus/client_golang v1.19.0
 	github.com/redis/go-redis/v9 v9.21.0
@@ -28,6 +30,7 @@ require (
 	go.uber.org/zap v1.28.0
 	golang.org/x/crypto v0.47.0
 	golang.org/x/sync v0.19.0
+	google.golang.org/grpc v1.78.0
 )
 
 require (
@@ -59,7 +62,7 @@ require (
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/golang/snappy v0.0.3 // indirect
-	github.com/gorilla/css v1.0.1 // indirect
+	github.com/gorilla/css v0.2.1 // indirect
 	github.com/hailocab/go-hostpool v0.0.0-20160125115350-e80d13ce29ed // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
@@ -71,7 +74,7 @@ require (
 	github.com/nats-io/nkeys v0.4.15 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/paulmach/orb v0.13.0 // indirect
-	github.com/philhofer/fwd v1.1.3-0.20240916144458-20a13a1f6b7c // indirect
+	github.com/philhofer/fwd v1.1.0 // indirect
 	github.com/pierrec/lz4/v4 v4.1.27 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
