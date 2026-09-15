@@ -20,6 +20,9 @@ func AuthMiddleware(secret string, rdb *redis.Client) fiber.Handler {
 		if IsTokenBlacklisted(c.Context(), rdb, claims.ID) {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 		}
+		if claims.Fingerprint != "" && GenerateFingerprint(c.IP(), c.Get("User-Agent")) != claims.Fingerprint {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+		}
 
 		c.Locals("user_id", claims.UserID)
 		c.Locals("role", claims.Role)
@@ -35,12 +38,12 @@ func AuthMiddleware(secret string, rdb *redis.Client) fiber.Handler {
 
 func RBACMiddleware(enforcer *Enforcer) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		role, _ := c.Locals("role").(string)
-		allowed, err := enforcer.CheckPermission(role, c.Path(), c.Method())
-		if err != nil {
+		if enforcer == nil {
 			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "Forbidden"})
 		}
-		if !allowed {
+		role, _ := c.Locals("role").(string)
+		allowed, err := enforcer.CheckPermission(role, c.Path(), c.Method())
+		if err != nil || !allowed {
 			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "Forbidden"})
 		}
 		return c.Next()
