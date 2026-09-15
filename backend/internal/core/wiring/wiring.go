@@ -108,6 +108,7 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	identitySentinel := identityService.NewIdentitySentinel(identityRepo, rdb.Conn)
 	idService := identityService.NewIdentityService(identityRepo, cfg.JWTSecret, identitySentinel)
 	idHandler := identityTransport.NewIdentityHandler(idService, cfg.JWTSecret, rdb.Conn)
+	preAuthHandler := identityTransport.NewPreAuthMFAHandler(idService, cfg.JWTSecret, rdb.Conn)
 
 	anomalyDetector := security.NewAnomalyDetector()
 	securityFabric := security.NewMeropeSecurityFabric(bus, anomalyDetector)
@@ -188,9 +189,9 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	auth := api.Group("/auth")
 	auth.Use(security.AuthLimit(rdb.Conn))
 	auth.Post("/register", idHandler.Register)
-	auth.Post("/login", idHandler.Login)
+	auth.Post("/login", preAuthHandler.Login)
 	auth.Post("/refresh", idHandler.RefreshToken)
-	auth.Post("/mfa/verify", idHandler.VerifyMFA)
+	auth.Post("/mfa/verify", preAuthHandler.Verify)
 	auth.Get("/me", security.AuthMiddleware(cfg.JWTSecret, rdb.Conn), security.RBACMiddleware(rbacEnforcer), idHandler.Me)
 	auth.Post("/logout", security.AuthMiddleware(cfg.JWTSecret, rdb.Conn), security.RBACMiddleware(rbacEnforcer), idHandler.Logout)
 
