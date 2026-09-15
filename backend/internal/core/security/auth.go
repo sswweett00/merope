@@ -13,6 +13,18 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+const tokenAudience = "merope-api"
+const tokenIssuer = "merope-auth"
+const securityEventTTL = 30 * 24 * time.Hour
+
+var atomicRateLimitScript = redis.NewScript(`
+local count = redis.call("INCR", KEYS[1])
+if count == 1 then
+  redis.call("EXPIRE", KEYS[1], ARGV[1])
+end
+return count
+`)
+
 type Claims struct {
 	UserID      string   `json:"user_id"`
 	Role        string   `json:"role"`
@@ -27,10 +39,14 @@ func GenerateToken(userID, role, fingerprint, secret string) (string, error) {
 }
 
 func GenerateTokenWithPermissions(userID, role, fingerprint, secret string, permissions []string) (string, error) {
+	if strings.TrimSpace(secret) == "" || strings.TrimSpace(userID) == "" {
+		return "", fmt.Errorf("token secret and user id are required")
+	}
 	tokenID, err := GenerateRefreshToken()
 	if err != nil {
 		return "", fmt.Errorf("generate token id: %w", err)
 	}
+	now := time.Now()
 	claims := Claims{
 		UserID:      userID,
 		Role:        role,
@@ -38,9 +54,11 @@ func GenerateTokenWithPermissions(userID, role, fingerprint, secret string, perm
 		Permissions: permissions,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ID:        tokenID,
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(15 * time.Minute)),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			NotBefore: jwt.NewNumericDate(time.Now()),
+			Issuer:    tokenIssuer,
+			Audience:  jwt.ClaimStrings{tokenAudience},
+			ExpiresAt: jwt.NewNumericDate(now.Add(15 * time.Minute)),
+			IssuedAt:  jwt.NewNumericDate(now),
+			NotBefore: jwt.NewNumericDate(now),
 		},
 	}
 
@@ -57,17 +75,20 @@ func GenerateRefreshToken() (string, error) {
 }
 
 func ValidateToken(tokenStr, secret string) (*Claims, error) {
+	if strings.TrimSpace(secret) == "" || tokenStr == "" {
+		return nil, fmt.Errorf("invalid token configuration")
+	}
 	token, err := jwt.ParseWithClaims(tokenStr, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		if token.Method != jwt.SigningMethodHS256 {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			return nil, fmt.Errorf("unexpected signing method")
 		}
 		return []byte(secret), nil
-	})
+	}, jwt.WithIssuer(tokenIssuer), jwt.WithAudience(tokenAudience))
 	if err != nil {
 		return nil, err
 	}
 	claims, ok := token.Claims.(*Claims)
-	if !ok || !token.Valid {
+	if !ok || !token.Valid || claims.Subject != "" && claims.Subject != claims.UserID {
 		return nil, fmt.Errorf("invalid token")
 	}
 	return claims, nil
@@ -81,6 +102,9 @@ func GenerateFingerprint(ip, ua string) string {
 func BlacklistToken(ctx context.Context, rdb *redis.Client, tokenID string, expiration time.Duration) error {
 	if rdb == nil || tokenID == "" {
 		return fmt.Errorf("redis and token id are required")
+	}
+	if expiration <= 0 {
+		return nil
 	}
 	return rdb.Set(ctx, "bl:"+tokenID, "1", expiration).Err()
 }
@@ -119,21 +143,14 @@ func GenerateSessionID() (string, error) {
 }
 
 func StoreRefreshToken(ctx context.Context, rdb *redis.Client, userID, refreshToken string, expiration time.Duration) error {
-	if rdb == nil || userID == "" || refreshToken == "" {
-		return fmt.Errorf("redis, user id and refresh token are required")
+	if rdb == nil || userID == "" || refreshToken == "" || expiration <= 0 {
+		return fmt.Errorf("invalid refresh token storage request")
 	}
-	return rdb.Set(ctx, "refresh:"+refreshToken, userID, expiration).Err()
+	return StoreRefreshTokenV2(ctx, rdb, userID, refreshToken, expiration)
 }
 
 func ValidateRefreshToken(ctx context.Context, rdb *redis.Client, refreshToken string) (string, error) {
-	if rdb == nil || refreshToken == "" {
-		return "", fmt.Errorf("invalid or expired refresh token")
-	}
-	userID, err := rdb.Get(ctx, "refresh:"+refreshToken).Result()
-	if err != nil {
-		return "", fmt.Errorf("invalid or expired refresh token")
-	}
-	return userID, nil
+	return ValidateRefreshTokenV2(ctx, rdb, refreshToken)
 }
 
 func HashDeviceID(deviceInfo string) string {
@@ -172,15 +189,15 @@ func HasAllPermissions(claims *Claims, requiredPermissions []string) bool {
 }
 
 func AddDeviceFingerprint(ctx context.Context, rdb *redis.Client, userID, deviceID, fingerprint string) error {
-	if rdb == nil {
-		return fmt.Errorf("redis is required")
+	if rdb == nil || userID == "" || deviceID == "" || fingerprint == "" {
+		return fmt.Errorf("invalid device fingerprint request")
 	}
 	return rdb.Set(ctx, fmt.Sprintf("device:%s:%s", userID, deviceID), fingerprint, 30*24*time.Hour).Err()
 }
 
 func ValidateDeviceFingerprint(ctx context.Context, rdb *redis.Client, userID, deviceID, fingerprint string) (bool, error) {
-	if rdb == nil {
-		return false, fmt.Errorf("redis is required")
+	if rdb == nil || userID == "" || deviceID == "" || fingerprint == "" {
+		return false, fmt.Errorf("invalid device fingerprint request")
 	}
 	stored, err := rdb.Get(ctx, fmt.Sprintf("device:%s:%s", userID, deviceID)).Result()
 	if err != nil {
@@ -190,31 +207,34 @@ func ValidateDeviceFingerprint(ctx context.Context, rdb *redis.Client, userID, d
 }
 
 func RateLimitCheck(ctx context.Context, rdb *redis.Client, userID string, limit int, window time.Duration) (bool, error) {
-	if rdb == nil {
-		return false, fmt.Errorf("redis is required")
+	if rdb == nil || userID == "" || limit <= 0 || window <= 0 {
+		return false, fmt.Errorf("invalid rate limit request")
 	}
 	key := fmt.Sprintf("ratelimit:%s", userID)
-	count, err := rdb.Incr(ctx, key).Result()
+	result, err := atomicRateLimitScript.Run(ctx, rdb, []string{key}, int64(window/time.Second)).Result()
 	if err != nil {
 		return false, err
 	}
-	if count == 1 {
-		if err := rdb.Expire(ctx, key, window).Err(); err != nil {
-			return false, err
-		}
+	count, ok := result.(int64)
+	if !ok {
+		return false, fmt.Errorf("invalid rate limit response")
 	}
 	return count <= int64(limit), nil
 }
 
 func SecurityEvent(ctx context.Context, rdb *redis.Client, eventType, userID, details string) error {
-	if rdb == nil {
+	if rdb == nil || strings.TrimSpace(eventType) == "" {
 		return fmt.Errorf("redis is required")
 	}
 	key := fmt.Sprintf("security:%s:%d:%s", eventType, time.Now().UnixNano(), userID)
-	return rdb.HSet(ctx, key, map[string]interface{}{
+	pipe := rdb.Pipeline()
+	pipe.HSet(ctx, key, map[string]interface{}{
 		"user_id":   userID,
 		"event":     eventType,
 		"details":   details,
 		"timestamp": time.Now().UTC().Unix(),
-	}).Err()
+	})
+	pipe.Expire(ctx, key, securityEventTTL)
+	_, err := pipe.Exec(ctx)
+	return err
 }
