@@ -273,10 +273,16 @@ func (r *PostgresIdentityRepository) mapUser(dbUser *db.User) *domain.User {
 }
 
 func (r *PostgresIdentityRepository) hydrateRuntimeState(ctx context.Context, u *domain.User) {
-	uid, err := pgtype.UUID{}.Scan(u.ID)
-	_ = uid
-	if err != nil {
+	var uid pgtype.UUID
+	if err := uid.Scan(u.ID); err != nil {
 		return
+	}
+	if online, lastSeen, err := r.queries.GetUserPresence(ctx, uid); err == nil {
+		u.IsOnline = online
+		u.LastSeenAt = lastSeen
+	}
+	if locked, err := r.queries.GetProfileLockState(ctx, uid); err == nil {
+		u.ProfileLock = locked
 	}
 }
 
