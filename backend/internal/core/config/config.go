@@ -56,8 +56,20 @@ func (c *Config) Validate() error {
 	if len(strings.TrimSpace(c.JWTSecret)) < 32 {
 		return fmt.Errorf("JWT_SECRET must be at least 32 characters")
 	}
-	if c.Env == "production" && strings.TrimSpace(c.CORSAllowedOrigins) == "" {
-		return fmt.Errorf("CORS_ALLOWED_ORIGINS is required in production")
+	if c.Env == "production" {
+		origins := strings.TrimSpace(c.CORSAllowedOrigins)
+		if origins == "" {
+			return fmt.Errorf("CORS_ALLOWED_ORIGINS is required in production")
+		}
+		for _, origin := range strings.Split(origins, ",") {
+			origin = strings.TrimSpace(origin)
+			if origin == "*" || strings.Contains(origin, "*") {
+				return fmt.Errorf("wildcard CORS origins are forbidden in production")
+			}
+			if !strings.HasPrefix(origin, "https://") {
+				return fmt.Errorf("production CORS origins must use HTTPS: %q", origin)
+			}
+		}
 	}
 	return nil
 }
