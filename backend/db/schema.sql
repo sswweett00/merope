@@ -1,4 +1,4 @@
--- Merope Singularity Schema v11.1
+-- Merope Singularity Schema v11.2
 -- Optimized for server-authoritative social runtime.
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -190,6 +190,26 @@ CREATE TABLE request_deduplication (
     PRIMARY KEY (user_id, route, idempotency_key)
 );
 
+CREATE TABLE user_presence (
+    user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    is_online BOOLEAN NOT NULL DEFAULT FALSE,
+    last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE profile_locks (
+    user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    is_locked BOOLEAN NOT NULL DEFAULT FALSE,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE keyword_filters (
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    keyword TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (user_id, keyword)
+);
+
 CREATE INDEX idx_users_tenant_username ON users(tenant_id, username);
 CREATE INDEX idx_neural_weight ON neural_connections(weight DESC);
 CREATE INDEX idx_chat_messages_room ON chat_messages(room_id, created_at DESC);
@@ -200,3 +220,5 @@ CREATE INDEX idx_content_reports_queue ON content_reports(status, priority DESC,
 CREATE INDEX idx_content_reports_target ON content_reports(target_type, target_id, created_at DESC);
 CREATE INDEX idx_auth_refresh_user ON auth_refresh_sessions(user_id, issued_at DESC);
 CREATE INDEX idx_request_dedup_expiry ON request_deduplication(expires_at);
+CREATE INDEX idx_user_presence_online ON user_presence(is_online, updated_at DESC);
+CREATE INDEX idx_keyword_filters_user ON keyword_filters(user_id, created_at DESC);
