@@ -36,7 +36,7 @@ class SignalModel {
     required this.authorId,
     required this.authorUsername,
     this.authorAvatarUrl = '',
-       required this.contentText,
+    required this.contentText,
     this.mediaUrls = const [],
     this.hashtags = const [],
     this.likeCount = 0,
@@ -51,44 +51,89 @@ class SignalModel {
   });
 
   factory SignalModel.fromJson(Map<String, dynamic> json) {
+    final author = json['author'] is Map
+        ? Map<String, dynamic>.from(json['author'] as Map)
+        : const <String, dynamic>{};
+    final rawMedia = json['media'] as List<dynamic>?;
+    final mediaUrls = <String>[];
+    for (final item in rawMedia ?? const <dynamic>[]) {
+      if (item is Map) {
+        final url = item['url']?.toString();
+        if (url != null && url.isNotEmpty) mediaUrls.add(url);
+      } else if (item != null) {
+        mediaUrls.add(item.toString());
+      }
+    }
+
+    final rawResonances = json['resonances'] as List<dynamic>?;
+    var resonanceCount = (json['resonance_count'] as num?)?.toInt() ?? 0;
+    var isLiked = json['is_liked'] as bool? ?? false;
+    if (rawResonances != null) {
+      resonanceCount = rawResonances.length;
+      isLiked = rawResonances.any((item) =>
+          item is Map && item['is_resonated'] == true);
+    }
+
+    final createdAt = json['created_at'];
+    final createdAtValue = createdAt is num
+        ? createdAt.toInt()
+        : int.tryParse(createdAt?.toString() ?? '') ?? 0;
+
     return SignalModel(
-      id: json['id'] as String? ?? '',
-      authorId: json['author_id'] as String? ?? '',
-      authorUsername: json['author_username'] as String? ?? '',
-      authorAvatarUrl: json['author_avatar_url'] as String? ?? '',
-      contentText: json['content_text'] as String? ?? '',
-      mediaUrls: (json['media_urls'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
-      hashtags: (json['hashtags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
-      likeCount: json['like_count'] as int? ?? 0,
-      commentCount: json['comment_count'] as int? ?? 0,
-      repostCount: json['repost_count'] as int? ?? 0,
-      resonanceCount: json['resonance_count'] as int? ?? 0,
-      isLiked: json['is_liked'] as bool? ?? false,
+      id: json['id']?.toString() ?? '',
+      authorId: (json['author_id'] ?? author['id'])?.toString() ?? '',
+      authorUsername:
+          (json['author_username'] ?? author['username'])?.toString() ?? '',
+      authorAvatarUrl:
+          (json['author_avatar_url'] ?? author['avatar_url'])?.toString() ?? '',
+      contentText:
+          (json['content_text'] ?? json['content'])?.toString() ?? '',
+      mediaUrls: (json['media_urls'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          mediaUrls,
+      hashtags: (json['hashtags'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
+      likeCount:
+          (json['like_count'] as num?)?.toInt() ??
+              ((json['resonances'] as List<dynamic>?)?.length ?? 0),
+      commentCount:
+          (json['comment_count'] as num?)?.toInt() ??
+              (json['node_count'] as num?)?.toInt() ??
+              0,
+      repostCount:
+          (json['repost_count'] as num?)?.toInt() ??
+              (json['amplification_count'] as num?)?.toInt() ??
+              0,
+      resonanceCount: resonanceCount,
+      isLiked: isLiked,
       isReposted: json['is_reposted'] as bool? ?? false,
       isPinned: json['is_pinned'] as bool? ?? false,
       isOwned: json['is_owned'] as bool? ?? false,
-      createdAt: json['created_at'] as int? ?? 0,
+      createdAt: createdAtValue,
     );
   }
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'author_id': authorId,
-    'author_username': authorUsername,
-    'author_avatar_url': authorAvatarUrl,
-          'content_text': contentText,
-    'media_urls': mediaUrls,
-    'hashtags': hashtags,
-    'like_count': likeCount,
-    'comment_count': commentCount,
-    'repost_count': repostCount,
-    'resonance_count': resonanceCount,
-    'is_liked': isLiked,
-    'is_reposted': isReposted,
-    'is_pinned': isPinned,
-    'is_owned': isOwned,
-    'created_at': createdAt,
-  };
+        'id': id,
+        'author_id': authorId,
+        'author_username': authorUsername,
+        'author_avatar_url': authorAvatarUrl,
+        'content_text': contentText,
+        'media_urls': mediaUrls,
+        'hashtags': hashtags,
+        'like_count': likeCount,
+        'comment_count': commentCount,
+        'repost_count': repostCount,
+        'resonance_count': resonanceCount,
+        'is_liked': isLiked,
+        'is_reposted': isReposted,
+        'is_pinned': isPinned,
+        'is_owned': isOwned,
+        'created_at': createdAt,
+      };
 }
 
 class UserModel {
@@ -103,14 +148,11 @@ class UserModel {
   final bool isFollowing;
   final bool isFollowedBy;
   final bool isVerified;
-
-  // Gamification (v10.2)
   final int xp;
   final int level;
   final int streak;
   final String? frequency;
   final String? reputationTier;
-
   final int createdAt;
 
   const UserModel({
@@ -134,24 +176,28 @@ class UserModel {
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
-    id: json['id'] as String? ?? '',
-    username: json['username'] as String? ?? '',
-    displayName: json['display_name'] as String? ?? json['username'] as String? ?? '',
-    avatarUrl: json['avatar_url'] as String?,
-    bio: json['bio'] as String?,
-    followerCount: json['follower_count'] as int?,
-    followingCount: json['following_count'] as int?,
-    postCount: json['post_count'] as int?,
-    isFollowing: json['is_following'] as bool? ?? false,
-    isFollowedBy: json['is_followed_by'] as bool? ?? false,
-    isVerified: json['is_verified'] as bool? ?? false,
-    xp: json['xp'] as int? ?? 0,
-    level: json['level'] as int? ?? 1,
-    streak: json['streak'] as int? ?? 0,
-    frequency: json['frequency'] as String?,
-    reputationTier: json['reputation_tier'] as String? ?? 'Novice',
-    createdAt: json['created_at'] as int? ?? 0,
-  );
+        id: json['id']?.toString() ?? '',
+        username: json['username']?.toString() ?? '',
+        displayName: json['display_name']?.toString() ??
+            json['username']?.toString() ??
+            '',
+        avatarUrl: json['avatar_url']?.toString(),
+        bio: json['bio']?.toString(),
+        followerCount: (json['follower_count'] as num?)?.toInt(),
+        followingCount: (json['following_count'] as num?)?.toInt(),
+        postCount: (json['post_count'] as num?)?.toInt(),
+        isFollowing: json['is_following'] as bool? ?? false,
+        isFollowedBy: json['is_followed_by'] as bool? ?? false,
+        isVerified: json['is_verified'] as bool? ?? false,
+        xp: (json['xp'] as num?)?.toInt() ?? 0,
+        level: (json['level'] as num?)?.toInt() ?? 1,
+        streak: (json['streak'] as num?)?.toInt() ?? 0,
+        frequency: json['frequency']?.toString(),
+        reputationTier: json['reputation_tier']?.toString() ?? 'Novice',
+        createdAt: (json['created_at'] as num?)?.toInt() ??
+            int.tryParse(json['created_at']?.toString() ?? '') ??
+            0,
+      );
 }
 
 class SocialApiService {
@@ -175,14 +221,17 @@ class SocialApiService {
           'feed_type': type.name,
         },
       );
-
-      final data = response.data['items'] as List<dynamic>;
-      final signals = data.map((e) => SignalModel.fromJson(e as Map<String, dynamic>)).toList();
+      final data = response.data['items'] as List<dynamic>? ?? const [];
+      final signals = data
+          .whereType<Map>()
+          .map((e) => SignalModel.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
       return ApiResult.success(signals, statusCode: response.statusCode);
     } on DioException catch (e) {
-      return ApiResult.error(MeropeAPIException.fromDioError(e), statusCode: e.response?.statusCode);
+      return ApiResult.error(MeropeAPIException.fromDioError(e),
+          statusCode: e.response?.statusCode);
     } catch (e) {
-      return ApiResult.error(e.toString(), statusCode: null);
+      return ApiResult.error(e.toString());
     }
   }
 
@@ -196,78 +245,89 @@ class SocialApiService {
       final response = await _dio.post(
         '/api/v10/content/posts',
         data: {
-          'content_text': contentText,
-          'media_urls': mediaUrls,
-          'hashtags': hashtags,
+          'text': contentText,
+          'media': mediaUrls,
+          if (hashtags.isNotEmpty) 'hashtags': hashtags,
           'privacy': privacy.name,
         },
       );
-
-      if (response.statusCode == 201) {
-        final signal = SignalModel.fromJson(response.data as Map<String, dynamic>);
-        return ApiResult.success(signal, statusCode: response.statusCode);
+      if (response.statusCode == 201 && response.data is Map) {
+        return ApiResult.success(
+          SignalModel.fromJson(Map<String, dynamic>.from(response.data as Map)),
+          statusCode: response.statusCode,
+        );
       }
-      return ApiResult.error('Failed to create post', statusCode: response.statusCode);
+      return ApiResult.error('Failed to create post',
+          statusCode: response.statusCode);
     } on DioException catch (e) {
-      return ApiResult.error(MeropeAPIException.fromDioError(e), statusCode: e.response?.statusCode);
+      return ApiResult.error(MeropeAPIException.fromDioError(e),
+          statusCode: e.response?.statusCode);
     } catch (e) {
-      return ApiResult.error(e.toString(), statusCode: null);
+      return ApiResult.error(e.toString());
     }
   }
 
   Future<ApiResult<void>> likePost(String postId) async {
     try {
-      final response = await _dio.post('/api/v10/content/posts/$postId/resonance', data: {'amplitude': 1});
+      final response = await _dio.post('/api/v10/content/posts/$postId/like');
       if (response.statusCode == 200 || response.statusCode == 204) {
         return const ApiResult.success(null, statusCode: 200);
       }
-      return ApiResult.error('Failed to like post', statusCode: response.statusCode);
+      return ApiResult.error('Failed to like post',
+          statusCode: response.statusCode);
     } on DioException catch (e) {
-      return ApiResult.error(MeropeAPIException.fromDioError(e), statusCode: e.response?.statusCode);
+      return ApiResult.error(MeropeAPIException.fromDioError(e),
+          statusCode: e.response?.statusCode);
     } catch (e) {
-      return ApiResult.error(e.toString(), statusCode: null);
+      return ApiResult.error(e.toString());
     }
   }
 
   Future<ApiResult<void>> unlikePost(String postId) async {
     try {
-      final response = await _dio.delete('/api/v10/content/posts/$postId/resonance');
+      final response = await _dio.delete('/api/v10/content/posts/$postId/like');
       if (response.statusCode == 200 || response.statusCode == 204) {
         return const ApiResult.success(null, statusCode: 200);
       }
-      return ApiResult.error('Failed to unlike post', statusCode: response.statusCode);
+      return ApiResult.error('Failed to unlike post',
+          statusCode: response.statusCode);
     } on DioException catch (e) {
-      return ApiResult.error(MeropeAPIException.fromDioError(e), statusCode: e.response?.statusCode);
+      return ApiResult.error(MeropeAPIException.fromDioError(e),
+          statusCode: e.response?.statusCode);
     } catch (e) {
-      return ApiResult.error(e.toString(), statusCode: null);
+      return ApiResult.error(e.toString());
     }
   }
 
-  Future<ApiResult<UserModel>> followUser(String userId) async {
+  Future<ApiResult<void>> followUser(String userId) async {
     try {
       final response = await _dio.post('/api/v10/social/follow/$userId');
-      if (response.statusCode == 200) {
-        return ApiResult.success(UserModel.fromJson(response.data as Map<String, dynamic>), statusCode: response.statusCode);
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        return const ApiResult.success(null, statusCode: 200);
       }
-      return ApiResult.error('Failed to follow user', statusCode: response.statusCode);
+      return ApiResult.error('Failed to follow user',
+          statusCode: response.statusCode);
     } on DioException catch (e) {
-      return ApiResult.error(MeropeAPIException.fromDioError(e), statusCode: e.response?.statusCode);
+      return ApiResult.error(MeropeAPIException.fromDioError(e),
+          statusCode: e.response?.statusCode);
     } catch (e) {
-      return ApiResult.error(e.toString(), statusCode: null);
+      return ApiResult.error(e.toString());
     }
   }
 
   Future<ApiResult<void>> unfollowUser(String userId) async {
     try {
-      final response = await _dio.delete('/api/v10/social/follow/$userId');
+      final response = await _dio.post('/api/v10/social/unfollow/$userId');
       if (response.statusCode == 200 || response.statusCode == 204) {
         return const ApiResult.success(null, statusCode: 200);
       }
-      return ApiResult.error('Failed to unfollow user', statusCode: response.statusCode);
+      return ApiResult.error('Failed to unfollow user',
+          statusCode: response.statusCode);
     } on DioException catch (e) {
-      return ApiResult.error(MeropeAPIException.fromDioError(e), statusCode: e.response?.statusCode);
+      return ApiResult.error(MeropeAPIException.fromDioError(e),
+          statusCode: e.response?.statusCode);
     } catch (e) {
-      return ApiResult.error(e.toString(), statusCode: null);
+      return ApiResult.error(e.toString());
     }
   }
 
@@ -279,7 +339,7 @@ class SocialApiService {
   }) async {
     try {
       final response = await _dio.get(
-        '/search',
+        '/api/v10/social/search/users',
         queryParameters: {
           'q': query,
           'limit': limit,
@@ -287,14 +347,19 @@ class SocialApiService {
           if (lon != null) 'lon': lon,
         },
       );
-
-      final data = response.data as List<dynamic>;
-      final users = data.map((e) => UserModel.fromJson(e as Map<String, dynamic>)).toList();
+      final data = response.data is Map
+          ? response.data['users'] as List<dynamic>? ?? const []
+          : response.data as List<dynamic>? ?? const [];
+      final users = data
+          .whereType<Map>()
+          .map((e) => UserModel.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
       return ApiResult.success(users, statusCode: response.statusCode);
     } on DioException catch (e) {
-      return ApiResult.error(MeropeAPIException.fromDioError(e), statusCode: e.response?.statusCode);
+      return ApiResult.error(MeropeAPIException.fromDioError(e),
+          statusCode: e.response?.statusCode);
     } catch (e) {
-      return ApiResult.error(e.toString(), statusCode: null);
+      return ApiResult.error(e.toString());
     }
   }
 
@@ -304,25 +369,9 @@ class SocialApiService {
     int radius = 5000,
     int limit = 20,
   }) async {
-    try {
-      final response = await _dio.get(
-        '/search/nearby',
-        queryParameters: {
-          'lat': lat,
-          'lon': lon,
-          'radius': radius,
-          'limit': limit,
-        },
-      );
-
-      final data = response.data as List<dynamic>;
-      final users = data.map((e) => UserModel.fromJson(e as Map<String, dynamic>)).toList();
-      return ApiResult.success(users, statusCode: response.statusCode);
-    } on DioException catch (e) {
-      return ApiResult.error(MeropeAPIException.fromDioError(e), statusCode: e.response?.statusCode);
-    } catch (e) {
-      return ApiResult.error(e.toString(), statusCode: null);
-    }
+    return ApiResult.error(
+      'Nearby user search is not supported by the current backend API',
+    );
   }
 
   Future<ApiResult<void>> tipSignal(String signalId, int amount) async {
@@ -334,29 +383,43 @@ class SocialApiService {
       if (response.statusCode == 200) {
         return const ApiResult.success(null, statusCode: 200);
       }
-      return ApiResult.error('Failed to send energy wave', statusCode: response.statusCode);
+      return ApiResult.error('Failed to send energy wave',
+          statusCode: response.statusCode);
     } on DioException catch (e) {
-      return ApiResult.error(MeropeAPIException.fromDioError(e), statusCode: e.response?.statusCode);
+      return ApiResult.error(MeropeAPIException.fromDioError(e),
+          statusCode: e.response?.statusCode);
     } catch (e) {
-      return ApiResult.error(e.toString(), statusCode: null);
+      return ApiResult.error(e.toString());
     }
   }
 
   Future<ApiResult<UserModel>> getProfile(String userId) async {
     try {
       final response = await _dio.get('/api/v10/social/profile/$userId');
-      return ApiResult.success(UserModel.fromJson(response.data as Map<String, dynamic>));
+      return ApiResult.success(
+        UserModel.fromJson(Map<String, dynamic>.from(response.data as Map)),
+        statusCode: response.statusCode,
+      );
+    } on DioException catch (e) {
+      return ApiResult.error(MeropeAPIException.fromDioError(e),
+          statusCode: e.response?.statusCode);
     } catch (e) {
-      return ApiResult.error(e);
+      return ApiResult.error(e.toString());
     }
   }
 
   Future<ApiResult<UserModel>> getCurrentUser() async {
     try {
       final response = await _dio.get('/api/v10/auth/me');
-      return ApiResult.success(UserModel.fromJson(response.data as Map<String, dynamic>));
+      return ApiResult.success(
+        UserModel.fromJson(Map<String, dynamic>.from(response.data as Map)),
+        statusCode: response.statusCode,
+      );
+    } on DioException catch (e) {
+      return ApiResult.error(MeropeAPIException.fromDioError(e),
+          statusCode: e.response?.statusCode);
     } catch (e) {
-      return ApiResult.error(e);
+      return ApiResult.error(e.toString());
     }
   }
 }
