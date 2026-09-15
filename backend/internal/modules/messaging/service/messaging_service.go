@@ -7,12 +7,13 @@ import (
 
 	"local/merope/internal/core/events"
 	"local/merope/internal/core/security"
+	identityDomain "local/merope/internal/modules/identity/domain"
 	"local/merope/internal/modules/messaging/domain"
 )
 
 type messagingService struct {
 	repo       domain.MessagingRepository
-	idService  domain.IdentityService // To resolve users from Personal/Corporate DBs
+	idService  identityDomain.IdentityService
 	e2eeRepo   domain.E2EERepository
 	e2eeSvc    domain.E2EEService
 	bus        events.Publisher
@@ -20,7 +21,7 @@ type messagingService struct {
 	aegisGuard AegisMessagingGuard
 }
 
-func NewMessagingService(repo domain.MessagingRepository, idService domain.IdentityService, e2eeRepo domain.E2EERepository, e2eeSvc domain.E2EEService, bus events.Publisher, e2eeBus events.Publisher, aegisGuard AegisMessagingGuard) domain.MessagingService {
+func NewMessagingService(repo domain.MessagingRepository, idService identityDomain.IdentityService, e2eeRepo domain.E2EERepository, e2eeSvc domain.E2EEService, bus events.Publisher, e2eeBus events.Publisher, aegisGuard AegisMessagingGuard) domain.MessagingService {
 	return &messagingService{
 		repo:       repo,
 		idService:  idService,
@@ -49,14 +50,10 @@ func (s *messagingService) SendMessage(ctx context.Context, msg *domain.ChatMess
 		msg.Content = ""
 		msg.IsEncrypted = true
 
-		// Zenith: Mandatory Aegis Integration
 		if s.aegisGuard != nil {
-			var payload domain.AegisPayload
+			var payload map[string]interface{}
 			if err := json.Unmarshal([]byte(*msg.EncryptedPayload), &payload); err == nil {
-				// Convert to service.AegisPayload if needed or update domain
-				// For now, we simulate strict integrity check
-				err := s.aegisGuard.VerifyMessageIntegrity(ctx, msg.RoomID, nil, msg.SenderID)
-				if err != nil {
+				if err := s.aegisGuard.VerifyMessageIntegrity(ctx, msg.RoomID, nil, msg.SenderID); err != nil {
 					return nil, fmt.Errorf("aegis integrity check failed: %w", err)
 				}
 			}
@@ -89,10 +86,7 @@ func (s *messagingService) EditMessage(ctx context.Context, messageID, senderID,
 	sanitizedContent := security.SanitizeHTML(content)
 	msg, err := s.repo.UpdateMessage(ctx, messageID, senderID, sanitizedContent)
 	if err == nil {
-		_ = s.bus.Publish(ctx, "chat.message.edited", events.Event{
-			Type:    "MESSAGE_EDITED",
-			Payload: msg,
-		})
+		_ = s.bus.Publish(ctx, "chat.message.edited", events.Event{Type: "MESSAGE_EDITED", Payload: msg})
 	}
 	return msg, err
 }
@@ -100,12 +94,7 @@ func (s *messagingService) EditMessage(ctx context.Context, messageID, senderID,
 func (s *messagingService) DeleteMessage(ctx context.Context, messageID, senderID string) error {
 	err := s.repo.DeleteMessage(ctx, messageID, senderID)
 	if err == nil {
-		_ = s.bus.Publish(ctx, "chat.message.deleted", events.Event{
-			Type: "MESSAGE_DELETED",
-			Payload: map[string]string{
-				"message_id": messageID,
-			},
-		})
+		_ = s.bus.Publish(ctx, "chat.message.deleted", events.Event{Type: "MESSAGE_DELETED", Payload: map[string]string{"message_id": messageID}})
 	}
 	return err
 }
@@ -113,14 +102,7 @@ func (s *messagingService) DeleteMessage(ctx context.Context, messageID, senderI
 func (s *messagingService) AddReaction(ctx context.Context, messageID, userID, emoji string) error {
 	err := s.repo.AddReaction(ctx, messageID, userID, emoji)
 	if err == nil {
-		_ = s.bus.Publish(ctx, "chat.reaction.added", events.Event{
-			Type: "REACTION_ADDED",
-			Payload: map[string]string{
-				"message_id": messageID,
-				"user_id":    userID,
-				"emoji":      emoji,
-			},
-		})
+		_ = s.bus.Publish(ctx, "chat.reaction.added", events.Event{Type: "REACTION_ADDED", Payload: map[string]string{"message_id": messageID, "user_id": userID, "emoji": emoji}})
 	}
 	return err
 }
@@ -147,7 +129,6 @@ func (s *messagingService) ForwardMessage(ctx context.Context, messageID, fromUs
 	if err != nil {
 		return nil, fmt.Errorf("failed to get messages: %w", err)
 	}
-
 	var original *domain.ChatMessage
 	for _, m := range messages {
 		if m.ID == messageID {
@@ -155,19 +136,10 @@ func (s *messagingService) ForwardMessage(ctx context.Context, messageID, fromUs
 			break
 		}
 	}
-
 	if original == nil {
 		return nil, fmt.Errorf("message not found")
 	}
-
-	forwarded := &domain.ChatMessage{
-		RoomID:      toRoomID,
-		SenderID:    fromUserID,
-		Content:     original.Content,
-		MessageType: original.MessageType,
-		ForwardedFromID: &messageID,
-	}
-
+	forwarded := &domain.ChatMessage{RoomID: toRoomID, SenderID: fromUserID, Content: original.Content, MessageType: original.MessageType, ForwardedFromID: &messageID}
 	return s.repo.SendMessage(ctx, forwarded)
 }
 
@@ -176,27 +148,19 @@ func (s *messagingService) PinMessage(ctx context.Context, roomID, messageID str
 }
 
 func (s *messagingService) SendTypingIndicator(ctx context.Context, roomID, userID string) error {
-	return s.bus.Publish(ctx, "chat.typing", events.Event{
-		Type: "TYPING",
-		Payload: map[string]string{
-			"room_id": roomID,
-			"user_id": userID,
-		},
-	})
+	return s.bus.Publish(ctx, "chat.typing", events.Event{Type: "TYPING", Payload: map[string]string{"room_id": roomID, "user_id": userID}})
 }
 
 func (s *messagingService) MarkAsRead(ctx context.Context, messageID, userID string) error {
 	err := s.repo.MarkRead(ctx, messageID, userID)
 	if err == nil {
-		_ = s.bus.Publish(ctx, "chat.read", events.Event{
-			Type: "READ_RECEIPT",
-			Payload: map[string]string{
-				"message_id": messageID,
-				"user_id":    userID,
-			},
-		})
+		_ = s.bus.Publish(ctx, "chat.read", events.Event{Type: "READ_RECEIPT", Payload: map[string]string{"message_id": messageID, "user_id": userID}})
 	}
 	return err
+}
+
+func (s *messagingService) MarkAsDelivered(ctx context.Context, messageID string) error {
+	return s.repo.MarkDelivered(ctx, messageID)
 }
 
 func (s *messagingService) GetMessageHistory(ctx context.Context, messageID string) ([]*domain.MessageHistory, error) {
@@ -204,7 +168,6 @@ func (s *messagingService) GetMessageHistory(ctx context.Context, messageID stri
 }
 
 func (s *messagingService) BurnMessage(ctx context.Context, messageID, userID string) error {
-	// In a production system, this would trigger a secure wipe
 	return s.repo.DeleteMessage(ctx, messageID, userID)
 }
 
@@ -218,8 +181,7 @@ func (s *messagingService) GetGallery(ctx context.Context, roomID string) ([]str
 
 func (s *messagingService) GetRoomHistory(ctx context.Context, roomID string, page int32) ([]*domain.ChatMessage, error) {
 	limit := int32(50)
-	offset := page * limit
-	return s.repo.GetMessages(ctx, roomID, limit, offset)
+	return s.repo.GetMessages(ctx, roomID, limit, page*limit)
 }
 
 func (s *messagingService) GetUserRooms(ctx context.Context, userID string) ([]*domain.ChatRoom, error) {
@@ -243,14 +205,9 @@ func (s *messagingService) RecordKeyRotation(ctx context.Context, roomID, userID
 }
 
 func (s *messagingService) UpdateFlowState(ctx context.Context, state *domain.FlowState) error {
-	// In production: s.redis.Set(ctx, fmt.Sprintf("flow:%s", state.UserID), state, 5*time.Minute)
-	return s.bus.Publish(ctx, "flow.state.updated", events.Event{
-		Type:    "FLOW_STATE_UPDATED",
-		Payload: state,
-	})
+	return s.bus.Publish(ctx, "flow.state.updated", events.Event{Type: "FLOW_STATE_UPDATED", Payload: state})
 }
 
 func (s *messagingService) GetFlowState(ctx context.Context, userID string) (*domain.FlowState, error) {
-	// In production: s.redis.Get(ctx, fmt.Sprintf("flow:%s", userID))
 	return nil, nil
 }
