@@ -15,6 +15,8 @@ type Community struct {
 	BannerURL   string            `json:"bannerUrl"`
 	IsPrivate   bool              `json:"isPrivate"`
 	IsVerified  bool              `json:"isVerified"`
+	IsJoined    bool              `json:"isJoined"`
+	UserRole    string            `json:"userRole"`
 	MemberCount int32             `json:"memberCount"`
 	PostCount   int32             `json:"postCount"`
 	CreatedAt   time.Time         `json:"createdAt"`
@@ -55,6 +57,8 @@ type CommunityMember struct {
 	ID            string            `json:"id"`
 	CommunityID   string            `json:"communityId"`
 	UserID        string            `json:"userId"`
+	Username      string            `json:"username"`
+	AvatarURL     *string           `json:"avatarUrl,omitempty"`
 	Role          string            `json:"role"`
 	JoinedAt      time.Time         `json:"joinedAt"`
 	IsActive      bool              `json:"isActive"`
@@ -134,6 +138,8 @@ type Thread struct {
 	ID             string    `json:"id"`
 	CollectiveID   string    `json:"collectiveId"`
 	AuthorID       string    `json:"authorId"`
+	AuthorName     string    `json:"authorName"`
+	AuthorAvatar   *string   `json:"authorAvatar,omitempty"`
 	Title          string    `json:"title"`
 	Content        string    `json:"content"`
 	Resonance      int       `json:"resonance"`
@@ -149,15 +155,17 @@ type Thread struct {
 }
 
 type ThreadReply struct {
-	ID        string    `json:"id"`
-	ThreadID  string    `json:"threadId"`
-	AuthorID  string    `json:"authorId"`
-	Content   string    `json:"content"`
-	Resonance int       `json:"resonance"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
-	IsEdited  bool      `json:"isEdited"`
-	ParentID  *string   `json:"parentId,omitempty"`
+	ID          string    `json:"id"`
+	ThreadID    string    `json:"threadId"`
+	AuthorID    string    `json:"authorId"`
+	AuthorName  string    `json:"authorName"`
+	AuthorAvatar *string   `json:"authorAvatar,omitempty"`
+	Content     string    `json:"content"`
+	Resonance   int       `json:"resonance"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
+	IsEdited    bool      `json:"isEdited"`
+	ParentID    *string   `json:"parentId,omitempty"`
 }
 
 type CommunityRepository interface {
