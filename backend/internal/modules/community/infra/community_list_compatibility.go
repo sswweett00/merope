@@ -101,8 +101,6 @@ LIMIT $3 OFFSET $4`, uid, category, limit, offset)
 		var community domain.Community
 		var id, ownerID pgtype.UUID
 		var createdAt, updatedAt pgtype.Timestamptz
-		var isJoined bool
-		var userRole string
 		if err := rows.Scan(
 			&id,
 			&ownerID,
@@ -119,13 +117,11 @@ LIMIT $3 OFFSET $4`, uid, category, limit, offset)
 			&community.Category,
 			&community.Tags,
 			&community.Rules,
-			&isJoined,
-			&userRole,
+			&community.IsJoined,
+			&community.UserRole,
 		); err != nil {
 			return nil, err
 		}
-		_ = isJoined
-		_ = userRole
 
 		community.ID = util.UUIDToString(id)
 		community.OwnerID = util.UUIDToString(ownerID)
