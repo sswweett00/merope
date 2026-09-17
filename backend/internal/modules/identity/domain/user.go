@@ -80,7 +80,7 @@ type IdentityRepository interface {
 }
 
 type IdentityService interface {
-	Register(ctx context.Context, username, displayName, email, password, ip, ua string, sys SystemType) (*User, string, error)
+	Register(ctx context.Context, username, email, password, ip, ua string, sys SystemType) (*User, string, error)
 	Login(ctx context.Context, identifier, password, deviceID, ip, ua string) (*User, string, bool, error)
 	SetupMFA(ctx context.Context, userID string) (string, string, error)
 	VerifyMFA(ctx context.Context, userID, code string) (bool, error)

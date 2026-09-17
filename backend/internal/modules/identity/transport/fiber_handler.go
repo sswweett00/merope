@@ -54,10 +54,13 @@ func (h *IdentityHandler) Register(c *fiber.Ctx) error {
 	if len(req.Password) < 8 || len(req.Password) > 128 {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"code": errors.ErrValidation, "message": "Invalid password"})
 	}
-	user, token, err := h.service.Register(c.Context(), req.Username, req.DisplayName, req.Email, req.Password, c.IP(), c.Get("User-Agent"), sys)
+	user, token, err := h.service.Register(c.Context(), req.Username, req.Email, req.Password, c.IP(), c.Get("User-Agent"), sys)
 	if err != nil {
 		return c.Status(fiber.StatusConflict).JSON(fiber.Map{"code": errors.ErrValidation, "message": "Unable to create account"})
 	}
+	// Keep the client-visible response consistent with the existing profile model.
+	// Persistence of display_name remains a separate SQL/SQLC contract concern.
+	user.DisplayName = req.DisplayName
 	refreshToken, err := security.GenerateRefreshToken()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": errors.ErrInternal, "message": "Unable to establish session"})
@@ -82,9 +85,6 @@ func (h *IdentityHandler) Login(c *fiber.Ctx) error {
 	}
 	req.Email = strings.ToLower(strings.TrimSpace(security.SanitizeHTML(req.Email)))
 
-	// Defense in depth: the global auth limiter is IP-scoped; this additional
-	// limiter follows the credential identifier to reduce distributed
-	// credential-stuffing against one account without storing the raw email in Redis.
 	loginKey := "login:" + security.HashDeviceID(req.Email)
 	allowed, err := security.RateLimitCheck(c.Context(), h.rdb, loginKey, 10, 15*time.Minute)
 	if err != nil {
@@ -96,8 +96,6 @@ func (h *IdentityHandler) Login(c *fiber.Ctx) error {
 
 	deviceID := strings.TrimSpace(req.DeviceID)
 	if deviceID == "" {
-		// Keep accepting the legacy client field while the app migrates to
-		// the explicit device_id contract.
 		deviceID = strings.TrimSpace(req.Fingerprint)
 	}
 	user, token, mfaRequired, err := h.service.Login(c.Context(), req.Email, req.Password, deviceID, c.IP(), c.Get("User-Agent"))
