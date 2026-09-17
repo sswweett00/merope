@@ -19,15 +19,17 @@ func NewNotificationsService(repo domain.RuntimeNotificationRepository, bus even
 func (s *notificationsService) Notify(ctx context.Context, receiverID, senderID, nType, entityType, entityID string) error {
 	n := &domain.Notification{
 		ReceiverID: receiverID,
-		SenderID: &senderID,
-		Type: nType,
+		SenderID:   &senderID,
+		Type:       nType,
 		EntityType: entityType,
-		EntityID: entityID,
+		EntityID:   entityID,
 	}
 	if err := s.repo.Create(ctx, n); err != nil {
 		return err
 	}
-	_ = s.bus.Publish(ctx, "notifications.new", events.Event{Type: "NEW_NOTIFICATION", Payload: n})
+	if s.bus != nil {
+		_ = s.bus.Publish(ctx, "notifications.new", events.Event{Type: "NEW_NOTIFICATION", Payload: n})
+	}
 	return nil
 }
 
