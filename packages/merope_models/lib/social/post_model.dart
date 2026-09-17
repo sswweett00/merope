@@ -16,7 +16,8 @@ class MeropeAuthor with _$MeropeAuthor {
     @JsonKey(name: 'influence_score') @Default(0.0) double influenceScore,
   }) = _MeropeAuthor;
 
-  factory MeropeAuthor.fromJson(Map<String, dynamic> json) => _$MeropeAuthorFromJson(json);
+  factory MeropeAuthor.fromJson(Map<String, dynamic> json) =>
+      _$MeropeAuthorFromJson(json);
 }
 
 @freezed
@@ -27,7 +28,8 @@ class SignalResonance with _$SignalResonance {
     @JsonKey(name: 'is_resonated') @Default(false) bool isResonated,
   }) = _SignalResonance;
 
-  factory SignalResonance.fromJson(Map<String, dynamic> json) => _$SignalResonanceFromJson(json);
+  factory SignalResonance.fromJson(Map<String, dynamic> json) =>
+      _$SignalResonanceFromJson(json);
 }
 
 enum MediaType { image, video, audio, link, sticker, gif }
@@ -41,7 +43,8 @@ class SignalMedia with _$SignalMedia {
     String? metadata,
   }) = _SignalMedia;
 
-  factory SignalMedia.fromJson(Map<String, dynamic> json) => _$SignalMediaFromJson(json);
+  factory SignalMedia.fromJson(Map<String, dynamic> json) =>
+      _$SignalMediaFromJson(json);
 }
 
 @freezed
@@ -54,7 +57,8 @@ class PostLayer with _$PostLayer {
     Map<String, dynamic>? metadata,
   }) = _PostLayer;
 
-  factory PostLayer.fromJson(Map<String, dynamic> json) => _$PostLayerFromJson(json);
+  factory PostLayer.fromJson(Map<String, dynamic> json) =>
+      _$PostLayerFromJson(json);
 }
 
 enum AppCardType { poll, todo, code, countdown, unknown }
@@ -67,7 +71,8 @@ class MeropeAppCard with _$MeropeAppCard {
     required Map<String, dynamic> data,
   }) = _MeropeAppCard;
 
-  factory MeropeAppCard.fromJson(Map<String, dynamic> json) => _$MeropeAppCardFromJson(json);
+  factory MeropeAppCard.fromJson(Map<String, dynamic> json) =>
+      _$MeropeAppCardFromJson(json);
 }
 
 @freezed
@@ -85,7 +90,9 @@ class MeropeSignal with _$MeropeSignal {
     @JsonKey(name: 'created_at') required int createdAt,
     @JsonKey(name: 'is_pinned') @Default(false) bool isPinned,
     String? effect,
-    @JsonKey(name: 'resonance_frequency') @Default(0.0) double resonanceFrequency,
+    @JsonKey(name: 'resonance_frequency')
+    @Default(0.0)
+    double resonanceFrequency,
     @JsonKey(name: 'repost_of') MeropeSignal? repostOf,
     String? quote,
 
@@ -95,5 +102,6 @@ class MeropeSignal with _$MeropeSignal {
     @JsonKey(name: 'neural_summary') String? neuralSummary,
   }) = _MeropeSignal;
 
-  factory MeropeSignal.fromJson(Map<String, dynamic> json) => _$MeropeSignalFromJson(json);
+  factory MeropeSignal.fromJson(Map<String, dynamic> json) =>
+      _$MeropeSignalFromJson(json);
 }

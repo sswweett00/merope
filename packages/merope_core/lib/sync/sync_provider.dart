@@ -22,7 +22,8 @@ final syncStatusProvider = FutureProvider<SyncStatus>((ref) async {
   return engine.isRunning ? SyncStatus.syncing : SyncStatus.idle;
 });
 
-final syncTelemetryControllerProvider = FutureProvider<SyncTelemetry>((ref) async {
+final syncTelemetryControllerProvider =
+    FutureProvider<SyncTelemetry>((ref) async {
   // Durable pending work is intentionally not kept client-side. The server is
   // authoritative, so this compatibility telemetry reports no local queue.
   return const SyncTelemetry();

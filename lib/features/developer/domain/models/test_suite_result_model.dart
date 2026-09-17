@@ -15,7 +15,8 @@ class TestResult with _$TestResult {
     @JsonKey(name: 'response') Map<String, dynamic>? response,
   }) = _TestResult;
 
-  factory TestResult.fromJson(Map<String, dynamic> json) => _$TestResultFromJson(json);
+  factory TestResult.fromJson(Map<String, dynamic> json) =>
+      _$TestResultFromJson(json);
 }
 
 @freezed
@@ -33,7 +34,8 @@ class TestSuiteResult with _$TestSuiteResult {
     @JsonKey(name: 'executed_at') required DateTime executedAt,
   }) = _TestSuiteResult;
 
-  factory TestSuiteResult.fromJson(Map<String, dynamic> json) => _$TestSuiteResultFromJson(json);
+  factory TestSuiteResult.fromJson(Map<String, dynamic> json) =>
+      _$TestSuiteResultFromJson(json);
 
   double get passRate {
     if (totalTests == 0) return 0.0;

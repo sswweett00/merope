@@ -25,7 +25,8 @@ class MeropeButton extends ConsumerStatefulWidget {
   ConsumerState<MeropeButton> createState() => _MeropeButtonState();
 }
 
-class _MeropeButtonState extends ConsumerState<MeropeButton> with SingleTickerProviderStateMixin {
+class _MeropeButtonState extends ConsumerState<MeropeButton>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
 
@@ -37,7 +38,8 @@ class _MeropeButtonState extends ConsumerState<MeropeButton> with SingleTickerPr
       duration: MeropeTokens.durationFast,
     );
     _scaleAnimation = Tween<double>(begin: 1.0, end: 0.96).animate(
-      CurvedAnimation(parent: _controller, curve: MeropeTokens.curveMeropeStandard),
+      CurvedAnimation(
+          parent: _controller, curve: MeropeTokens.curveMeropeStandard),
     );
   }
 
@@ -88,11 +90,14 @@ class _MeropeButtonState extends ConsumerState<MeropeButton> with SingleTickerPr
           scale: _scaleAnimation,
           child: Container(
             height: 48,
-            padding: const EdgeInsets.symmetric(horizontal: MeropeTokens.space24),
+            padding:
+                const EdgeInsets.symmetric(horizontal: MeropeTokens.space24),
             decoration: BoxDecoration(
               color: bgColor,
               borderRadius: BorderRadius.circular(MeropeTokens.radiusMd),
-              boxShadow: widget.style == MeropeButtonStyle.primary ? [MeropeTokens.shadowSm] : null,
+              boxShadow: widget.style == MeropeButtonStyle.primary
+                  ? [MeropeTokens.shadowSm]
+                  : null,
             ),
             child: Center(
               child: widget.isLoading

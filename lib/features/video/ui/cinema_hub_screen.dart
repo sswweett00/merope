@@ -35,15 +35,21 @@ class CinemaHubScreen extends ConsumerWidget {
             icon: Icon(Icons.high_quality_outlined, color: tokens.primary),
             onPressed: () => _showQualitySwitcher(context, tokens),
           ),
-          IconButton(icon: Icon(Icons.cast, color: tokens.textSecondary), onPressed: () {}),
-          IconButton(icon: Icon(Icons.search, color: tokens.textSecondary), onPressed: () {}),
+          IconButton(
+              icon: Icon(Icons.cast, color: tokens.textSecondary),
+              onPressed: () {}),
+          IconButton(
+              icon: Icon(Icons.search, color: tokens.textSecondary),
+              onPressed: () {}),
         ],
       ),
       body: cinemaAsync.when(
         data: (videos) {
-          if (videos.isEmpty) return const Center(child: Text('No videos found'));
+          if (videos.isEmpty)
+            return const Center(child: Text('No videos found'));
 
-          final featured = videos.firstWhereOrNull((v) => v.isFeatured) ?? videos.first;
+          final featured =
+              videos.firstWhereOrNull((v) => v.isFeatured) ?? videos.first;
           final others = videos.where((v) => !v.isFeatured).toList();
 
           return ListView(
@@ -72,10 +78,22 @@ class CinemaHubScreen extends ConsumerWidget {
       builder: (context) => Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ListTile(title: const Text('Auto (Adaptive)'), leading: Icon(Icons.bolt, color: tokens.primary), onTap: () => Navigator.pop(context)),
-          ListTile(title: const Text('4K (Spatial)'), leading: const Icon(Icons.hd), onTap: () => Navigator.pop(context)),
-          ListTile(title: const Text('1080p'), leading: const Icon(Icons.high_quality), onTap: () => Navigator.pop(context)),
-          ListTile(title: const Text('720p (Data Saver)'), leading: const Icon(Icons.sd), onTap: () => Navigator.pop(context)),
+          ListTile(
+              title: const Text('Auto (Adaptive)'),
+              leading: Icon(Icons.bolt, color: tokens.primary),
+              onTap: () => Navigator.pop(context)),
+          ListTile(
+              title: const Text('4K (Spatial)'),
+              leading: const Icon(Icons.hd),
+              onTap: () => Navigator.pop(context)),
+          ListTile(
+              title: const Text('1080p'),
+              leading: const Icon(Icons.high_quality),
+              onTap: () => Navigator.pop(context)),
+          ListTile(
+              title: const Text('720p (Data Saver)'),
+              leading: const Icon(Icons.sd),
+              onTap: () => Navigator.pop(context)),
         ],
       ),
     );
@@ -95,42 +113,57 @@ class CinemaHubScreen extends ConsumerWidget {
                 fit: BoxFit.cover,
               ),
             ),
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(MeropeTokens.radiusMd),
-                gradient: LinearGradient(
-                  colors: [Colors.black.withValues(alpha: 0.8), Colors.transparent],
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(MeropeTokens.radiusMd),
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.black.withValues(alpha: 0.8),
+                      Colors.transparent
+                    ],
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                  ),
                 ),
               ),
             ),
-          ),
-          Positioned(
-            bottom: 16,
-            left: 16,
-            right: 16,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(color: tokens.primary, borderRadius: BorderRadius.circular(4)),
-                  child: const Text('FEATURED', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  video.title,
-                  style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                _ChapterProgressBar(tokens: tokens),
-                const SizedBox(height: 8),
-                Text('${video.author} • ${video.views} Views', style: const TextStyle(color: Colors.white70, fontSize: 12)),
-              ],
+            Positioned(
+              bottom: 16,
+              left: 16,
+              right: 16,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                        color: tokens.primary,
+                        borderRadius: BorderRadius.circular(4)),
+                    child: const Text('FEATURED',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold)),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    video.title,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  _ChapterProgressBar(tokens: tokens),
+                  const SizedBox(height: 8),
+                  Text('${video.author} • ${video.views} Views',
+                      style:
+                          const TextStyle(color: Colors.white70, fontSize: 12)),
+                ],
+              ),
             ),
-          ),
           ],
         ),
       ),
@@ -143,14 +176,20 @@ class CinemaHubScreen extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: TextStyle(color: tokens.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
-          Text('See All', style: TextStyle(color: tokens.primary, fontSize: 14)),
+          Text(title,
+              style: TextStyle(
+                  color: tokens.textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold)),
+          Text('See All',
+              style: TextStyle(color: tokens.primary, fontSize: 14)),
         ],
       ),
     );
   }
 
-  Widget _buildHorizontalVideoList(MeropeColorTokens tokens, List<CinemaVideo> videos) {
+  Widget _buildHorizontalVideoList(
+      MeropeColorTokens tokens, List<CinemaVideo> videos) {
     return SizedBox(
       height: 180,
       child: ListView.builder(
@@ -175,11 +214,16 @@ class CinemaHubScreen extends ConsumerWidget {
                 const SizedBox(height: 8),
                 Text(
                   video.title,
-                  style: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.bold, fontSize: 14),
+                  style: TextStyle(
+                      color: tokens.textPrimary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-                Text('${video.author} • ${video.views} Views', style: TextStyle(color: tokens.textSecondary, fontSize: 11)),
+                Text('${video.author} • ${video.views} Views',
+                    style:
+                        TextStyle(color: tokens.textSecondary, fontSize: 11)),
               ],
             ),
           );
@@ -188,7 +232,8 @@ class CinemaHubScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildVerticalVideoList(MeropeColorTokens tokens, List<CinemaVideo> videos) {
+  Widget _buildVerticalVideoList(
+      MeropeColorTokens tokens, List<CinemaVideo> videos) {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -215,11 +260,17 @@ class CinemaHubScreen extends ConsumerWidget {
                   children: [
                     Text(
                       video.title,
-                      style: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.bold, fontSize: 15),
+                      style: TextStyle(
+                          color: tokens.textPrimary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15),
                       maxLines: 2,
                     ),
                     const SizedBox(height: 4),
-                    Text('${video.author} • ${video.views} Views • ${video.timestamp}', style: TextStyle(color: tokens.textSecondary, fontSize: 12)),
+                    Text(
+                        '${video.author} • ${video.views} Views • ${video.timestamp}',
+                        style: TextStyle(
+                            color: tokens.textSecondary, fontSize: 12)),
                   ],
                 ),
               ),
@@ -240,24 +291,32 @@ class _ChapterProgressBar extends StatelessWidget {
     return Column(
       children: [
         Row(
-          children: List.generate(3, (i) => Expanded(
-            child: Container(
-              height: 4,
-              margin: const EdgeInsets.symmetric(horizontal: 1),
-              decoration: BoxDecoration(
-                color: i == 0 ? tokens.primary : Colors.white24,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          )),
+          children: List.generate(
+              3,
+              (i) => Expanded(
+                    child: Container(
+                      height: 4,
+                      margin: const EdgeInsets.symmetric(horizontal: 1),
+                      decoration: BoxDecoration(
+                        color: i == 0 ? tokens.primary : Colors.white24,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  )),
         ),
         const SizedBox(height: 4),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('04:12', style: TextStyle(color: Colors.white70, fontSize: 9)),
-            Text('CH 1: NEURAL ORIGINS', style: TextStyle(color: tokens.primary, fontSize: 9, fontWeight: FontWeight.bold)),
-            const Text('12:00', style: TextStyle(color: Colors.white70, fontSize: 9)),
+            const Text('04:12',
+                style: TextStyle(color: Colors.white70, fontSize: 9)),
+            Text('CH 1: NEURAL ORIGINS',
+                style: TextStyle(
+                    color: tokens.primary,
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold)),
+            const Text('12:00',
+                style: TextStyle(color: Colors.white70, fontSize: 9)),
           ],
         ),
       ],

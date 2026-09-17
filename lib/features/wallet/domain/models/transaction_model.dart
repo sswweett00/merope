@@ -13,7 +13,11 @@ class MeropeTransaction with _$MeropeTransaction {
     required String id,
     required double amount,
     @JsonKey(name: 'transaction_type') required TransactionType type,
-    @JsonKey(name: 'created_at', fromJson: _dateTimeFromJson, toJson: _dateTimeToJson) required DateTime createdAt,
+    @JsonKey(
+        name: 'created_at',
+        fromJson: _dateTimeFromJson,
+        toJson: _dateTimeToJson)
+    required DateTime createdAt,
     required String description,
     @JsonKey(name: 'transaction_status') required TransactionStatus status,
     required String currency,

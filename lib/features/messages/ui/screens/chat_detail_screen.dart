@@ -39,7 +39,8 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _confettiController = ConfettiController(duration: const Duration(seconds: 3));
+    _confettiController =
+        ConfettiController(duration: const Duration(seconds: 3));
   }
 
   @override
@@ -54,12 +55,15 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     if (_controller.text.trim().isNotEmpty) {
       final text = _controller.text.trim();
       String? effect;
-      if (text.toLowerCase().contains('tebrik') || text.toLowerCase().contains('congrat')) {
+      if (text.toLowerCase().contains('tebrik') ||
+          text.toLowerCase().contains('congrat')) {
         effect = 'confetti';
         _confettiController.play();
       }
 
-      ref.read(chatMessagesProvider(widget.conversationId).notifier).sendMessage(text, effect: effect);
+      ref
+          .read(chatMessagesProvider(widget.conversationId).notifier)
+          .sendMessage(text, effect: effect);
       _controller.clear();
       HapticFeedback.lightImpact();
       _scrollToBottom();
@@ -82,7 +86,8 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   Widget build(BuildContext context) {
     final themeState = ref.watch(themeProvider);
     final tokens = themeState.currentTokens;
-    final messagesAsync = ref.watch(chatMessagesProvider(widget.conversationId));
+    final messagesAsync =
+        ref.watch(chatMessagesProvider(widget.conversationId));
 
     return Scaffold(
       backgroundColor: tokens.background,
@@ -90,23 +95,30 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
         children: [
           Column(
             children: [
-              _ChatAppBar(title: widget.title, tokens: tokens, conversationId: widget.conversationId),
+              _ChatAppBar(
+                  title: widget.title,
+                  tokens: tokens,
+                  conversationId: widget.conversationId),
               Expanded(
                 child: messagesAsync.when(
                   data: (messages) {
                     final grouped = _groupMessages(messages);
                     return CustomScrollView(
                       controller: _scrollController,
-                      physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+                      physics: const AlwaysScrollableScrollPhysics(
+                          parent: BouncingScrollPhysics()),
                       slivers: grouped.entries.map((entry) {
                         return SliverMainAxisGroup(
                           slivers: [
                             SliverPersistentHeader(
                               pinned: true,
-                              delegate: _DateHeaderDelegate(date: entry.key, tokens: tokens),
+                              delegate: _DateHeaderDelegate(
+                                  date: entry.key, tokens: tokens),
                             ),
                             SliverPadding(
-                              padding: const EdgeInsets.symmetric(horizontal: MeropeTokens.space20, vertical: MeropeTokens.space8),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: MeropeTokens.space20,
+                                  vertical: MeropeTokens.space8),
                               sliver: SliverList(
                                 delegate: SliverChildBuilderDelegate(
                                   (context, index) {
@@ -127,7 +139,8 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                       }).toList(),
                     );
                   },
-                  loading: () => const Center(child: CircularProgressIndicator()),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
                   error: (err, _) => Center(child: Text('Error: $err')),
                 ),
               ),
@@ -136,11 +149,17 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                 onSend: _sendMessage,
                 tokens: tokens,
                 onGifSelected: (gif) {
-                  ref.read(chatMessagesProvider(widget.conversationId).notifier).sendGif(gif);
+                  ref
+                      .read(
+                          chatMessagesProvider(widget.conversationId).notifier)
+                      .sendGif(gif);
                   _scrollToBottom();
                 },
                 onStickerSelected: (sticker) {
-                  ref.read(chatMessagesProvider(widget.conversationId).notifier).sendSticker(sticker);
+                  ref
+                      .read(
+                          chatMessagesProvider(widget.conversationId).notifier)
+                      .sendSticker(sticker);
                   _scrollToBottom();
                 },
               ),
@@ -152,7 +171,13 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
               confettiController: _confettiController,
               blastDirectionality: BlastDirectionality.explosive,
               shouldLoop: false,
-              colors: const [Colors.green, Colors.blue, Colors.pink, Colors.orange, Colors.purple],
+              colors: const [
+                Colors.green,
+                Colors.blue,
+                Colors.pink,
+                Colors.orange,
+                Colors.purple
+              ],
             ),
           ),
         ],
@@ -160,7 +185,8 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     );
   }
 
-  Map<String, List<MeropeMessage>> _groupMessages(List<MeropeMessage> messages) {
+  Map<String, List<MeropeMessage>> _groupMessages(
+      List<MeropeMessage> messages) {
     final Map<String, List<MeropeMessage>> groups = {};
     for (var msg in messages) {
       final date = DateTime.fromMillisecondsSinceEpoch(msg.createdAt);
@@ -176,12 +202,16 @@ class _ChatAppBar extends StatelessWidget {
   final String conversationId;
   final MeropeColorTokens tokens;
 
-  const _ChatAppBar({required this.title, required this.tokens, required this.conversationId});
+  const _ChatAppBar(
+      {required this.title,
+      required this.tokens,
+      required this.conversationId});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top, bottom: 8),
+      padding:
+          EdgeInsets.only(top: MediaQuery.of(context).padding.top, bottom: 8),
       decoration: BoxDecoration(
         color: tokens.surface.withValues(alpha: 0.8),
         border: Border(bottom: BorderSide(color: tokens.border, width: 0.5)),
@@ -189,7 +219,8 @@ class _ChatAppBar extends StatelessWidget {
       child: Row(
         children: [
           IconButton(
-            icon: Icon(Icons.arrow_back_ios_new_rounded, color: tokens.textPrimary, size: 20),
+            icon: Icon(Icons.arrow_back_ios_new_rounded,
+                color: tokens.textPrimary, size: 20),
             onPressed: () => Navigator.pop(context),
           ),
           const CircleAvatar(radius: 18, child: Icon(Icons.person)),
@@ -198,15 +229,27 @@ class _ChatAppBar extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.bold)),
+                Text(title,
+                    style: TextStyle(
+                        color: tokens.textPrimary,
+                        fontWeight: FontWeight.bold)),
                 Row(
                   children: [
-                    Text("Çevrimiçi", style: TextStyle(color: tokens.onlineStatus, fontSize: 11)),
+                    Text("Çevrimiçi",
+                        style: TextStyle(
+                            color: tokens.onlineStatus, fontSize: 11)),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                      decoration: BoxDecoration(color: Colors.green.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
-                      child: const Text('TRUST: 98%', style: TextStyle(color: Colors.green, fontSize: 8, fontWeight: FontWeight.bold)),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 4, vertical: 1),
+                      decoration: BoxDecoration(
+                          color: Colors.green.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(4)),
+                      child: const Text('TRUST: 98%',
+                          style: TextStyle(
+                              color: Colors.green,
+                              fontSize: 8,
+                              fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),
@@ -217,7 +260,9 @@ class _ChatAppBar extends StatelessWidget {
             icon: Icon(Icons.videocam_outlined, color: tokens.textSecondary),
             onPressed: () => context.push('/call/$conversationId/$title'),
           ),
-          IconButton(icon: Icon(Icons.more_vert, color: tokens.textSecondary), onPressed: () {}),
+          IconButton(
+              icon: Icon(Icons.more_vert, color: tokens.textSecondary),
+              onPressed: () {}),
         ],
       ),
     );
@@ -231,7 +276,8 @@ class _DateHeaderDelegate extends SliverPersistentHeaderDelegate {
   _DateHeaderDelegate({required this.date, required this.tokens});
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Center(
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 8),
@@ -242,7 +288,10 @@ class _DateHeaderDelegate extends SliverPersistentHeaderDelegate {
         ),
         child: Text(
           date,
-          style: TextStyle(fontSize: 10, color: tokens.textSecondary, fontWeight: FontWeight.bold),
+          style: TextStyle(
+              fontSize: 10,
+              color: tokens.textSecondary,
+              fontWeight: FontWeight.bold),
         ),
       ),
     );
@@ -253,7 +302,8 @@ class _DateHeaderDelegate extends SliverPersistentHeaderDelegate {
   @override
   double get minExtent => 40;
   @override
-  bool shouldRebuild(covariant _DateHeaderDelegate oldDelegate) => oldDelegate.date != date;
+  bool shouldRebuild(covariant _DateHeaderDelegate oldDelegate) =>
+      oldDelegate.date != date;
 }
 
 class _MessageBubble extends ConsumerWidget {
@@ -274,25 +324,30 @@ class _MessageBubble extends ConsumerWidget {
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: GestureDetector(
-        onLongPressStart: (details) => _showMessageActions(context, details.globalPosition, ref),
+        onLongPressStart: (details) =>
+            _showMessageActions(context, details.globalPosition, ref),
         child: Column(
-          crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          crossAxisAlignment:
+              isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
             AnimatedContainer(
               duration: MeropeTokens.durationNormal,
               curve: MeropeTokens.curveMeropeStandard,
               margin: const EdgeInsets.only(bottom: 4),
-              constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+              constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 0.75),
               padding: const EdgeInsets.all(MeropeTokens.space12),
               decoration: BoxDecoration(
-                color: (msg.blocks.isNotEmpty && msg.blocks.first.type == MessageBlockType.sticker)
+                color: (msg.blocks.isNotEmpty &&
+                        msg.blocks.first.type == MessageBlockType.sticker)
                     ? Colors.transparent
                     : (isMe ? tokens.primary : tokens.surface),
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(MeropeTokens.radiusLg),
                   topRight: const Radius.circular(MeropeTokens.radiusLg),
                   bottomLeft: Radius.circular(isMe ? MeropeTokens.radiusLg : 0),
-                  bottomRight: Radius.circular(isMe ? 0 : MeropeTokens.radiusLg),
+                  bottomRight:
+                      Radius.circular(isMe ? 0 : MeropeTokens.radiusLg),
                 ),
                 boxShadow: const [MeropeTokens.shadowSm],
               ),
@@ -312,10 +367,14 @@ class _MessageBubble extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          DateFormat('HH:mm').format(DateTime.fromMillisecondsSinceEpoch(msg.createdAt)),
+                          DateFormat('HH:mm').format(
+                              DateTime.fromMillisecondsSinceEpoch(
+                                  msg.createdAt)),
                           style: TextStyle(
                             fontSize: 9,
-                            color: (isMe ? tokens.onPrimary : tokens.textSecondary).withValues(alpha: 0.5),
+                            color:
+                                (isMe ? tokens.onPrimary : tokens.textSecondary)
+                                    .withValues(alpha: 0.5),
                           ),
                         ),
                         if (isMe) ...[
@@ -337,16 +396,21 @@ class _MessageBubble extends ConsumerWidget {
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Wrap(
                   spacing: 4,
-                  children: msg.reactions.map<Widget>((r) => Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: tokens.surfaceVariant,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: tokens.primary.withValues(alpha: 0.2)),
-                    ),
-                    child: Text(r, style: const TextStyle(fontSize: 11)),
-                  ),
-                ).toList(),
+                  children: msg.reactions
+                      .map<Widget>(
+                        (r) => Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: tokens.surfaceVariant,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                                color: tokens.primary.withValues(alpha: 0.2)),
+                          ),
+                          child: Text(r, style: const TextStyle(fontSize: 11)),
+                        ),
+                      )
+                      .toList(),
                 ),
               ),
           ],
@@ -367,28 +431,45 @@ class _MessageBubble extends ConsumerWidget {
             onReactionSelected: (emoji) {
               Navigator.pop(context);
               ReactionOverlayManager.showBurst(context, position, emoji);
-              r.read(chatMessagesProvider(conversationId).notifier).toggleReaction(msg.id, emoji);
+              r
+                  .read(chatMessagesProvider(conversationId).notifier)
+                  .toggleReaction(msg.id, emoji);
             },
           ),
           const SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
               color: tokens.surface,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(MeropeTokens.radiusLg)),
+              borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(MeropeTokens.radiusLg)),
             ),
             child: Column(
               children: [
-                ListTile(leading: const Icon(Icons.reply_rounded), title: const Text('Yanıtla'), onTap: () => Navigator.pop(context)),
+                ListTile(
+                    leading: const Icon(Icons.reply_rounded),
+                    title: const Text('Yanıtla'),
+                    onTap: () => Navigator.pop(context)),
                 if (isMe) ...[
-                  ListTile(leading: const Icon(Icons.edit_rounded), title: const Text('Düzenle'), onTap: () => Navigator.pop(context)),
                   ListTile(
-                    leading: const Icon(Icons.delete_rounded, color: Colors.red),
-                    title: const Text('Sil', style: TextStyle(color: Colors.red)),
+                      leading: const Icon(Icons.edit_rounded),
+                      title: const Text('Düzenle'),
+                      onTap: () => Navigator.pop(context)),
+                  ListTile(
+                    leading:
+                        const Icon(Icons.delete_rounded, color: Colors.red),
+                    title:
+                        const Text('Sil', style: TextStyle(color: Colors.red)),
                     onTap: () => Navigator.pop(context),
                   ),
                 ],
-                ListTile(leading: const Icon(Icons.copy_rounded), title: const Text('Kopyala'), onTap: () => Navigator.pop(context)),
-                ListTile(leading: const Icon(Icons.push_pin_rounded), title: const Text('Sabitle'), onTap: () => Navigator.pop(context)),
+                ListTile(
+                    leading: const Icon(Icons.copy_rounded),
+                    title: const Text('Kopyala'),
+                    onTap: () => Navigator.pop(context)),
+                ListTile(
+                    leading: const Icon(Icons.push_pin_rounded),
+                    title: const Text('Sabitle'),
+                    onTap: () => Navigator.pop(context)),
               ],
             ),
           ),
@@ -454,7 +535,8 @@ class _InputBarState extends State<_InputBar> {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
             color: widget.tokens.surface,
-            border: Border(top: BorderSide(color: widget.tokens.border, width: 0.5)),
+            border: Border(
+                top: BorderSide(color: widget.tokens.border, width: 0.5)),
           ),
           child: SafeArea(
             child: Row(
@@ -470,13 +552,16 @@ class _InputBarState extends State<_InputBar> {
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     decoration: BoxDecoration(
                       color: widget.tokens.background,
-                      borderRadius: BorderRadius.circular(MeropeTokens.radiusXl),
+                      borderRadius:
+                          BorderRadius.circular(MeropeTokens.radiusXl),
                       border: Border.all(color: widget.tokens.border),
                     ),
                     child: Row(
                       children: [
                         _InputActionButton(
-                          icon: _showEmoji ? Icons.keyboard_rounded : Icons.emoji_emotions_outlined,
+                          icon: _showEmoji
+                              ? Icons.keyboard_rounded
+                              : Icons.emoji_emotions_outlined,
                           tokens: widget.tokens,
                           onTap: () {
                             setState(() => _showEmoji = !_showEmoji);
@@ -489,13 +574,15 @@ class _InputBarState extends State<_InputBar> {
                             maxLines: 4,
                             minLines: 1,
                             onTap: () {
-                              if (_showEmoji) setState(() => _showEmoji = false);
+                              if (_showEmoji)
+                                setState(() => _showEmoji = false);
                             },
                             decoration: const InputDecoration(
                               hintText: 'Mesaj yazın...',
                               border: InputBorder.none,
                               isDense: true,
-                              contentPadding: EdgeInsets.symmetric(vertical: 10),
+                              contentPadding:
+                                  EdgeInsets.symmetric(vertical: 10),
                             ),
                             onSubmitted: (_) => widget.onSend(),
                           ),
@@ -512,7 +599,10 @@ class _InputBarState extends State<_InputBar> {
                     return AnimatedSwitcher(
                       duration: MeropeTokens.durationFast,
                       child: isEmpty
-                          ? _InputActionButton(icon: Icons.mic_rounded, tokens: widget.tokens, onTap: () {})
+                          ? _InputActionButton(
+                              icon: Icons.mic_rounded,
+                              tokens: widget.tokens,
+                              onTap: () {})
                           : _InputActionButton(
                               icon: Icons.send_rounded,
                               tokens: widget.tokens,
@@ -542,7 +632,9 @@ class _InputBarState extends State<_InputBar> {
                 enableSkinTones: true,
                 recentTabBehavior: RecentTabBehavior.RECENT,
                 recentsLimit: 28,
-                noRecents: const Text('Henüz bir şey yok', style: TextStyle(fontSize: 20, color: Colors.black26), textAlign: TextAlign.center),
+                noRecents: const Text('Henüz bir şey yok',
+                    style: TextStyle(fontSize: 20, color: Colors.black26),
+                    textAlign: TextAlign.center),
                 loadingIndicator: const SizedBox.shrink(),
                 tabIndicatorAnimDuration: kTabScrollDuration,
                 categoryIcons: const CategoryIcons(),

@@ -15,17 +15,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final List<OnboardingData> _pages = [
     OnboardingData(
       title: 'Merope Network',
-      description: 'Yüksek performanslı, çevrimdışı öncelikli iletişim platformuna hoş geldiniz.',
+      description:
+          'Yüksek performanslı, çevrimdışı öncelikli iletişim platformuna hoş geldiniz.',
       icon: Icons.flash_on,
     ),
     OnboardingData(
       title: 'Güvenli Mesajlaşma',
-      description: 'Uçtan uca şifreli mesajlar ve sinyaller ile verileriniz her zaman güvende.',
+      description:
+          'Uçtan uca şifreli mesajlar ve sinyaller ile verileriniz her zaman güvende.',
       icon: Icons.security,
     ),
     OnboardingData(
       title: 'Hızlı Senkronizasyon',
-      description: 'NATS ve SQLite altyapısı ile tüm cihazlarınızda anlık senkronizasyon.',
+      description:
+          'NATS ve SQLite altyapısı ile tüm cihazlarınızda anlık senkronizasyon.',
       icon: Icons.sync,
     ),
   ];
@@ -39,7 +42,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             controller: _pageController,
             onPageChanged: (index) => setState(() => _currentPage = index),
             itemCount: _pages.length,
-            itemBuilder: (context, index) => _OnboardingPage(data: _pages[index]),
+            itemBuilder: (context, index) =>
+                _OnboardingPage(data: _pages[index]),
           ),
           Positioned(
             top: 60,
@@ -66,9 +70,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       height: 8,
                       decoration: BoxDecoration(
                         gradient: _currentPage == index
-                          ? LinearGradient(colors: [Theme.of(context).primaryColor, Theme.of(context).secondaryHeaderColor])
-                          : null,
-                        color: _currentPage == index ? null : Colors.grey.withValues(alpha: 0.3),
+                            ? LinearGradient(colors: [
+                                Theme.of(context).primaryColor,
+                                Theme.of(context).secondaryHeaderColor
+                              ])
+                            : null,
+                        color: _currentPage == index
+                            ? null
+                            : Colors.grey.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -84,7 +93,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           onPressed: () => context.go('/auth/personal'),
                           style: OutlinedButton.styleFrom(
                             minimumSize: const Size(double.infinity, 56),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16)),
                           ),
                           child: const Text('Personal'),
                         ),
@@ -97,7 +107,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             minimumSize: const Size(double.infinity, 56),
                             backgroundColor: Theme.of(context).primaryColor,
                             foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16)),
                             elevation: 0,
                           ),
                           child: const Text('Corporate'),
@@ -120,7 +131,8 @@ class OnboardingData {
   final String description;
   final IconData icon;
 
-  OnboardingData({required this.title, required this.description, required this.icon});
+  OnboardingData(
+      {required this.title, required this.description, required this.icon});
 }
 
 class _OnboardingPage extends StatelessWidget {

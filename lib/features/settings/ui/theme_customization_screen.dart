@@ -18,7 +18,8 @@ class ThemeCustomizationScreen extends ConsumerWidget {
       backgroundColor: tokens.background,
       appBar: AppBar(
         backgroundColor: tokens.surface,
-        title: Text('Tema & Stüdyo', style: TextStyle(color: tokens.textPrimary)),
+        title:
+            Text('Tema & Stüdyo', style: TextStyle(color: tokens.textPrimary)),
         iconTheme: IconThemeData(color: tokens.textPrimary),
       ),
       body: ListView(
@@ -32,19 +33,27 @@ class ThemeCustomizationScreen extends ConsumerWidget {
               border: Border.all(color: tokens.border),
             ),
             child: SwitchListTile(
-              title: Text('Otomatik Zamanlayıcı', style: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.bold)),
-              subtitle: Text('Gündüz Arctic, Gece Obsidian moduna geçer', style: TextStyle(color: tokens.textSecondary, fontSize: 12)),
+              title: Text('Otomatik Zamanlayıcı',
+                  style: TextStyle(
+                      color: tokens.textPrimary, fontWeight: FontWeight.bold)),
+              subtitle: Text('Gündüz Arctic, Gece Obsidian moduna geçer',
+                  style: TextStyle(color: tokens.textSecondary, fontSize: 12)),
               value: isAutoSchedule,
               activeThumbColor: tokens.primary,
               onChanged: (val) {
-                ref.read(themeSchedulerProvider.notifier).toggleAutoSchedule(val, ref);
+                ref
+                    .read(themeSchedulerProvider.notifier)
+                    .toggleAutoSchedule(val, ref);
               },
             ),
           ),
           const SizedBox(height: MeropeTokens.space24),
           Text(
             'Hazır Temalar (${ThemePreset.values.length} Varyant)',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: tokens.textPrimary),
+            style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: tokens.textPrimary),
           ),
           const SizedBox(height: MeropeTokens.space12),
           GridView.builder(
@@ -63,14 +72,18 @@ class ThemeCustomizationScreen extends ConsumerWidget {
               final presetTokens = preset.tokens;
 
               return GestureDetector(
-                onTap: () => ref.read(themeCustomizerProvider.notifier).setPreset(preset),
+                onTap: () => ref
+                    .read(themeCustomizerProvider.notifier)
+                    .setPreset(preset),
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: presetTokens.surface,
                     borderRadius: BorderRadius.circular(MeropeTokens.radiusMd),
                     border: Border.all(
-                      color: isSelected ? presetTokens.primary : presetTokens.border,
+                      color: isSelected
+                          ? presetTokens.primary
+                          : presetTokens.border,
                       width: isSelected ? 2 : 1,
                     ),
                   ),
@@ -105,7 +118,10 @@ class ThemeCustomizationScreen extends ConsumerWidget {
           const SizedBox(height: MeropeTokens.space32),
           Text(
             'Gelişmiş Özelleştirme',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: tokens.textPrimary),
+            style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: tokens.textPrimary),
           ),
           const SizedBox(height: MeropeTokens.space16),
           _buildSliderSetting(
@@ -113,7 +129,9 @@ class ThemeCustomizationScreen extends ConsumerWidget {
             value: config.radiusMultiplier,
             min: 0.5,
             max: 2.0,
-            onChanged: (val) => ref.read(themeCustomizerProvider.notifier).setRadiusMultiplier(val),
+            onChanged: (val) => ref
+                .read(themeCustomizerProvider.notifier)
+                .setRadiusMultiplier(val),
             tokens: tokens,
           ),
           const SizedBox(height: MeropeTokens.space16),
@@ -122,7 +140,8 @@ class ThemeCustomizationScreen extends ConsumerWidget {
             value: config.fontScale,
             min: 0.85,
             max: 1.25,
-            onChanged: (val) => ref.read(themeCustomizerProvider.notifier).setFontScale(val),
+            onChanged: (val) =>
+                ref.read(themeCustomizerProvider.notifier).setFontScale(val),
             tokens: tokens,
           ),
         ],
@@ -151,8 +170,11 @@ class ThemeCustomizationScreen extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(title, style: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.bold)),
-              Text(value.toStringAsFixed(2), style: TextStyle(color: tokens.textSecondary)),
+              Text(title,
+                  style: TextStyle(
+                      color: tokens.textPrimary, fontWeight: FontWeight.bold)),
+              Text(value.toStringAsFixed(2),
+                  style: TextStyle(color: tokens.textSecondary)),
             ],
           ),
           Slider(

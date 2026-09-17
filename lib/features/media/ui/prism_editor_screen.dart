@@ -68,17 +68,23 @@ class _PrismEditorScreenState extends ConsumerState<PrismEditorScreen> {
                       height: 340,
                       decoration: BoxDecoration(
                         color: tokens.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(MeropeTokens.radiusMd),
+                        borderRadius:
+                            BorderRadius.circular(MeropeTokens.radiusMd),
                       ),
                       child: Stack(
                         children: [
                           Center(
-                            child: Icon(Icons.blur_on, size: 100, color: tokens.textSecondary.withValues(alpha: 0.2)),
+                            child: Icon(Icons.blur_on,
+                                size: 100,
+                                color: tokens.textSecondary
+                                    .withValues(alpha: 0.2)),
                           ),
                           Container(
                             decoration: BoxDecoration(
-                              color: prismColor.withValues(alpha: 0.2 + (_exposure * 0.1)),
-                              borderRadius: BorderRadius.circular(MeropeTokens.radiusMd),
+                              color: prismColor.withValues(
+                                  alpha: 0.2 + (_exposure * 0.1)),
+                              borderRadius:
+                                  BorderRadius.circular(MeropeTokens.radiusMd),
                             ),
                           ),
                         ],
@@ -104,7 +110,8 @@ class _PrismEditorScreenState extends ConsumerState<PrismEditorScreen> {
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: isSelected ? tokens.primary : tokens.surface,
-                      borderRadius: BorderRadius.circular(MeropeTokens.radiusSm),
+                      borderRadius:
+                          BorderRadius.circular(MeropeTokens.radiusSm),
                       border: Border.all(color: tokens.border),
                     ),
                     child: Center(
@@ -126,8 +133,10 @@ class _PrismEditorScreenState extends ConsumerState<PrismEditorScreen> {
           const SizedBox(height: 16),
           Column(
             children: [
-              _buildSlider('Luminance', _exposure, -1.0, 1.0, (v) => setState(() => _exposure = v), tokens),
-              _buildSlider('Interference', _interference, 0.0, 1.0, (v) => setState(() => _interference = v), tokens),
+              _buildSlider('Luminance', _exposure, -1.0, 1.0,
+                  (v) => setState(() => _exposure = v), tokens),
+              _buildSlider('Interference', _interference, 0.0, 1.0,
+                  (v) => setState(() => _interference = v), tokens),
             ],
           ),
         ],
@@ -135,10 +144,14 @@ class _PrismEditorScreenState extends ConsumerState<PrismEditorScreen> {
     );
   }
 
-  Widget _buildSlider(String l, double v, double min, double max, ValueChanged<double> o, MeropeColorTokens t) {
+  Widget _buildSlider(String l, double v, double min, double max,
+      ValueChanged<double> o, MeropeColorTokens t) {
     return Row(
       children: [
-        SizedBox(width: 100, child: Text(l, style: TextStyle(color: t.textSecondary, fontSize: 12))),
+        SizedBox(
+            width: 100,
+            child: Text(l,
+                style: TextStyle(color: t.textSecondary, fontSize: 12))),
         Expanded(
           child: Slider(
             value: v,

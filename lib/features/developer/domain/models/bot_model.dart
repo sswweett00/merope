@@ -14,14 +14,19 @@ class BotCapability with _$BotCapability {
     @JsonKey(name: 'is_enabled') @Default(true) bool isEnabled,
   }) = _BotCapability;
 
-  factory BotCapability.fromJson(Map<String, dynamic> json) => _$BotCapabilityFromJson(json);
+  factory BotCapability.fromJson(Map<String, dynamic> json) =>
+      _$BotCapabilityFromJson(json);
 }
 
 @freezed
 class BotSettings with _$BotSettings {
   const factory BotSettings({
-    @JsonKey(name: 'allow_direct_messages') @Default(true) bool allowDirectMessages,
-    @JsonKey(name: 'allow_group_messages') @Default(true) bool allowGroupMessages,
+    @JsonKey(name: 'allow_direct_messages')
+    @Default(true)
+    bool allowDirectMessages,
+    @JsonKey(name: 'allow_group_messages')
+    @Default(true)
+    bool allowGroupMessages,
     @JsonKey(name: 'enable_commands') @Default(true) bool enableCommands,
     @JsonKey(name: 'enable_webhooks') @Default(false) bool enableWebhooks,
     @JsonKey(name: 'privacy_mode') @Default('private') String privacyMode,
@@ -29,7 +34,8 @@ class BotSettings with _$BotSettings {
     @JsonKey(name: 'max_command_queue') @Default(100) int maxCommandQueue,
   }) = _BotSettings;
 
-  factory BotSettings.fromJson(Map<String, dynamic> json) => _$BotSettingsFromJson(json);
+  factory BotSettings.fromJson(Map<String, dynamic> json) =>
+      _$BotSettingsFromJson(json);
 }
 
 @freezed
@@ -45,7 +51,8 @@ class BotStats with _$BotStats {
     @JsonKey(name: 'last_active_at') DateTime? lastActiveAt,
   }) = _BotStats;
 
-  factory BotStats.fromJson(Map<String, dynamic> json) => _$BotStatsFromJson(json);
+  factory BotStats.fromJson(Map<String, dynamic> json) =>
+      _$BotStatsFromJson(json);
 }
 
 @freezed

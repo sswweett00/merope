@@ -34,7 +34,9 @@ class _VideoPlayerModalState extends ConsumerState<VideoPlayerModal> {
   }
 
   void _togglePlay() {
-    final resource = ref.read(videoPoolProvider.notifier).getResourceForVideo(widget.videoId);
+    final resource = ref
+        .read(videoPoolProvider.notifier)
+        .getResourceForVideo(widget.videoId);
     if (resource != null) {
       if (_isPlaying) {
         resource.player.pause();
@@ -75,12 +77,16 @@ class _VideoPlayerModalState extends ConsumerState<VideoPlayerModal> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                      icon: const Icon(Icons.close,
+                          color: Colors.white, size: 28),
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                     Text(
                       widget.title,
-                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold),
                     ),
                     DropdownButton<String>(
                       dropdownColor: Colors.black87,
@@ -88,7 +94,10 @@ class _VideoPlayerModalState extends ConsumerState<VideoPlayerModal> {
                       underline: const SizedBox.shrink(),
                       icon: const Icon(Icons.high_quality, color: Colors.white),
                       items: ['4K UltraHD', '1080p 60fps', '720p', '480p']
-                          .map((q) => DropdownMenuItem(value: q, child: Text(q, style: const TextStyle(color: Colors.white))))
+                          .map((q) => DropdownMenuItem(
+                              value: q,
+                              child: Text(q,
+                                  style: const TextStyle(color: Colors.white))))
                           .toList(),
                       onChanged: (val) {
                         if (val != null) setState(() => _selectedQuality = val);
@@ -118,7 +127,9 @@ class _VideoPlayerModalState extends ConsumerState<VideoPlayerModal> {
                       inactiveColor: Colors.white24,
                       onChanged: (v) {
                         setState(() => _progress = v);
-                        final resource = ref.read(videoPoolProvider.notifier).getResourceForVideo(widget.videoId);
+                        final resource = ref
+                            .read(videoPoolProvider.notifier)
+                            .getResourceForVideo(widget.videoId);
                         if (resource != null) {
                           final duration = resource.player.state.duration;
                           resource.player.seek(duration * v);
@@ -131,18 +142,33 @@ class _VideoPlayerModalState extends ConsumerState<VideoPlayerModal> {
                         Row(
                           children: [
                             IconButton(
-                              icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow, color: Colors.white, size: 32),
+                              icon: Icon(
+                                  _isPlaying ? Icons.pause : Icons.play_arrow,
+                                  color: Colors.white,
+                                  size: 32),
                               onPressed: _togglePlay,
                             ),
                             const SizedBox(width: 8),
-                            const Text('Live Stream', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
+                            const Text('Live Stream',
+                                style: TextStyle(
+                                    color: Colors.white70,
+                                    fontWeight: FontWeight.bold)),
                           ],
                         ),
                         Row(
                           children: [
-                            IconButton(icon: const Icon(Icons.subtitles, color: Colors.white), onPressed: () {}),
-                            IconButton(icon: const Icon(Icons.volume_up, color: Colors.white), onPressed: () {}),
-                            IconButton(icon: const Icon(Icons.fullscreen, color: Colors.white), onPressed: () {}),
+                            IconButton(
+                                icon: const Icon(Icons.subtitles,
+                                    color: Colors.white),
+                                onPressed: () {}),
+                            IconButton(
+                                icon: const Icon(Icons.volume_up,
+                                    color: Colors.white),
+                                onPressed: () {}),
+                            IconButton(
+                                icon: const Icon(Icons.fullscreen,
+                                    color: Colors.white),
+                                onPressed: () {}),
                           ],
                         ),
                       ],

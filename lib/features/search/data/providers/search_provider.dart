@@ -14,7 +14,11 @@ class SuggestedNode {
   final String avatarUrl;
   final double influence;
 
-  SuggestedNode({required this.id, required this.name, this.avatarUrl = '', this.influence = 0.0});
+  SuggestedNode(
+      {required this.id,
+      required this.name,
+      this.avatarUrl = '',
+      this.influence = 0.0});
 }
 
 class TrendingSignal {
@@ -24,7 +28,8 @@ class TrendingSignal {
   TrendingSignal({required this.tag, required this.count});
 }
 
-final searchDiscoverProvider = FutureProvider<Map<String, List<dynamic>>>((ref) async {
+final searchDiscoverProvider =
+    FutureProvider<Map<String, List<dynamic>>>((ref) async {
   // Mock data for discover tab
   return {
     'trending': [

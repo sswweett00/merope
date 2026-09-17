@@ -30,17 +30,22 @@ class MeropeCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: color ?? surfaceColor,
-        borderRadius: BorderRadius.circular(borderRadius ?? MeropeTokens.radiusMd),
+        borderRadius:
+            BorderRadius.circular(borderRadius ?? MeropeTokens.radiusMd),
         boxShadow: const [MeropeTokens.shadowSm],
         border: hasAtmosphere
-          ? Border.all(color: primaryColor.withValues(alpha: atmosphereIntensity * 0.3), width: 1.5)
-          : null,
+            ? Border.all(
+                color:
+                    primaryColor.withValues(alpha: atmosphereIntensity * 0.3),
+                width: 1.5)
+            : null,
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(borderRadius ?? MeropeTokens.radiusMd),
+          borderRadius:
+              BorderRadius.circular(borderRadius ?? MeropeTokens.radiusMd),
           child: Padding(
             padding: padding ?? const EdgeInsets.all(MeropeTokens.space16),
             child: child,

@@ -32,7 +32,8 @@ class SearchScreen extends ConsumerWidget {
           discoverAsync.when(
             data: (data) {
               final prefs = ref.watch(viewPreferencesProvider)['search'] ??
-                  const ViewPreferences(mode: ViewMode.list, activeFilter: 'All');
+                  const ViewPreferences(
+                      mode: ViewMode.list, activeFilter: 'All');
 
               return SliverPadding(
                 padding: const EdgeInsets.all(MeropeTokens.space24),
@@ -40,30 +41,41 @@ class SearchScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _SectionHeader(title: 'Find People Nearby', tokens: tokens),
+                      _SectionHeader(
+                          title: 'Find People Nearby', tokens: tokens),
                       const SizedBox(height: MeropeTokens.space24),
                       const NearbyRadar(),
                       const SizedBox(height: MeropeTokens.space32),
                       _SectionHeader(title: 'Trending Now', tokens: tokens),
                       const SizedBox(height: MeropeTokens.space12),
-                      _TrendingList(tags: List<TrendingSignal>.from(data['trending'] as List), tokens: tokens),
+                      _TrendingList(
+                          tags: List<TrendingSignal>.from(
+                              data['trending'] as List),
+                          tokens: tokens),
                       const SizedBox(height: MeropeTokens.space32),
-                      _SectionHeader(title: 'Suggested for You', tokens: tokens),
+                      _SectionHeader(
+                          title: 'Suggested for You', tokens: tokens),
                       const SizedBox(height: MeropeTokens.space12),
                       DynamicLayoutEngine<SuggestedNode>(
-                        items: List<SuggestedNode>.from(data['suggested'] as List),
+                        items:
+                            List<SuggestedNode>.from(data['suggested'] as List),
                         mode: prefs.mode,
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        itemBuilder: (context, index, node) => _NodeTile(node: node, tokens: tokens, isCompact: prefs.mode == ViewMode.compact),
+                        itemBuilder: (context, index, node) => _NodeTile(
+                            node: node,
+                            tokens: tokens,
+                            isCompact: prefs.mode == ViewMode.compact),
                       ),
                     ],
                   ),
                 ),
               );
             },
-            loading: () => const SliverFillRemaining(child: Center(child: CircularProgressIndicator())),
-            error: (err, _) => SliverFillRemaining(child: Center(child: Text('Discover Error: $err'))),
+            loading: () => const SliverFillRemaining(
+                child: Center(child: CircularProgressIndicator())),
+            error: (err, _) => SliverFillRemaining(
+                child: Center(child: Text('Discover Error: $err'))),
           ),
         ],
       ),
@@ -96,7 +108,8 @@ class _SearchHeader extends StatelessWidget {
               child: TextField(
                 decoration: InputDecoration(
                   hintText: 'Search the Merope Network...',
-                  hintStyle: TextStyle(color: tokens.textSecondary.withValues(alpha: 0.5)),
+                  hintStyle: TextStyle(
+                      color: tokens.textSecondary.withValues(alpha: 0.5)),
                   border: InputBorder.none,
                 ),
               ),
@@ -137,7 +150,8 @@ class _TrendingList extends StatelessWidget {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: tags.map((tag) => _TagChip(tag: tag.tag, tokens: tokens)).toList(),
+      children:
+          tags.map((tag) => _TagChip(tag: tag.tag, tokens: tokens)).toList(),
     );
   }
 }
@@ -158,7 +172,8 @@ class _TagChip extends StatelessWidget {
       ),
       child: Text(
         tag,
-        style: TextStyle(color: tokens.primary, fontWeight: FontWeight.bold, fontSize: 13),
+        style: TextStyle(
+            color: tokens.primary, fontWeight: FontWeight.bold, fontSize: 13),
       ),
     );
   }
@@ -168,7 +183,8 @@ class _NodeTile extends StatelessWidget {
   final SuggestedNode node;
   final MeropeColorTokens tokens;
   final bool isCompact;
-  const _NodeTile({required this.node, required this.tokens, this.isCompact = false});
+  const _NodeTile(
+      {required this.node, required this.tokens, this.isCompact = false});
 
   @override
   Widget build(BuildContext context) {
@@ -178,10 +194,19 @@ class _NodeTile extends StatelessWidget {
         leading: CircleAvatar(
           radius: 16,
           backgroundColor: tokens.primary.withValues(alpha: 0.1),
-          child: Text(node.name[0], style: TextStyle(color: tokens.primary, fontSize: 10)),
+          child: Text(node.name[0],
+              style: TextStyle(color: tokens.primary, fontSize: 10)),
         ),
-        title: Text(node.name, style: TextStyle(fontWeight: FontWeight.bold, color: tokens.textPrimary, fontSize: 13)),
-        trailing: Text('Follow', style: TextStyle(color: tokens.primary, fontWeight: FontWeight.bold, fontSize: 12)),
+        title: Text(node.name,
+            style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: tokens.textPrimary,
+                fontSize: 13)),
+        trailing: Text('Follow',
+            style: TextStyle(
+                color: tokens.primary,
+                fontWeight: FontWeight.bold,
+                fontSize: 12)),
         onTap: () {},
       );
     }
@@ -194,8 +219,11 @@ class _NodeTile extends StatelessWidget {
             backgroundColor: tokens.primary.withValues(alpha: 0.1),
             child: Text(node.name[0], style: TextStyle(color: tokens.primary)),
           ),
-          title: Text(node.name, style: TextStyle(fontWeight: FontWeight.bold, color: tokens.textPrimary)),
-          subtitle: Text('Neural Influence: ${node.influence}', style: TextStyle(color: tokens.textSecondary, fontSize: 12)),
+          title: Text(node.name,
+              style: TextStyle(
+                  fontWeight: FontWeight.bold, color: tokens.textPrimary)),
+          subtitle: Text('Neural Influence: ${node.influence}',
+              style: TextStyle(color: tokens.textSecondary, fontSize: 12)),
           trailing: ElevatedButton(
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -205,7 +233,8 @@ class _NodeTile extends StatelessWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: tokens.primary,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(MeropeTokens.radiusFull)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(MeropeTokens.radiusFull)),
               padding: const EdgeInsets.symmetric(horizontal: 20),
             ),
             child: const Text('Follow'),

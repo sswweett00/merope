@@ -37,7 +37,8 @@ class IsolateManager {
     if (_persistentIsolate != null) return;
 
     final receivePort = ReceivePort();
-    _persistentIsolate = await Isolate.spawn(_persistentEntry, receivePort.sendPort);
+    _persistentIsolate =
+        await Isolate.spawn(_persistentEntry, receivePort.sendPort);
 
     receivePort.listen((message) {
       if (message is SendPort) {

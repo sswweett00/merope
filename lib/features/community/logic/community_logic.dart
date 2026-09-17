@@ -18,10 +18,11 @@ class CommunityController extends AsyncNotifier<List<Community>> {
     final repo = ref.watch(communityRepositoryProvider);
     final all = await repo.getCommunities();
     if (_query == null || _query!.isEmpty) return all;
-    return all.where((c) =>
-      c.name.toLowerCase().contains(_query!.toLowerCase()) ||
-      c.description.toLowerCase().contains(_query!.toLowerCase())
-    ).toList();
+    return all
+        .where((c) =>
+            c.name.toLowerCase().contains(_query!.toLowerCase()) ||
+            c.description.toLowerCase().contains(_query!.toLowerCase()))
+        .toList();
   }
 
   void search(String query) {
@@ -48,7 +49,9 @@ class CommunityController extends AsyncNotifier<List<Community>> {
   }
 }
 
-final communityControllerProvider = AsyncNotifierProvider<CommunityController, List<Community>>(CommunityController.new);
+final communityControllerProvider =
+    AsyncNotifierProvider<CommunityController, List<Community>>(
+        CommunityController.new);
 
 // Community Detail Controller
 class CommunityDetailController extends AsyncNotifier<Community?> {
@@ -81,7 +84,9 @@ class CommunityDetailController extends AsyncNotifier<Community?> {
   }
 }
 
-final communityDetailControllerProvider = AsyncNotifierProvider<CommunityDetailController, Community?>(CommunityDetailController.new);
+final communityDetailControllerProvider =
+    AsyncNotifierProvider<CommunityDetailController, Community?>(
+        CommunityDetailController.new);
 
 // Event Controller
 class EventController extends AsyncNotifier<List<CommunityEvent>> {
@@ -120,7 +125,9 @@ class EventController extends AsyncNotifier<List<CommunityEvent>> {
   }
 }
 
-final eventControllerProvider = AsyncNotifierProvider<EventController, List<CommunityEvent>>(EventController.new);
+final eventControllerProvider =
+    AsyncNotifierProvider<EventController, List<CommunityEvent>>(
+        EventController.new);
 
 // Collective Controller
 class CollectiveController extends AsyncNotifier<List<Collective>> {
@@ -143,7 +150,9 @@ class CollectiveController extends AsyncNotifier<List<Collective>> {
   }
 }
 
-final collectiveControllerProvider = AsyncNotifierProvider<CollectiveController, List<Collective>>(CollectiveController.new);
+final collectiveControllerProvider =
+    AsyncNotifierProvider<CollectiveController, List<Collective>>(
+        CollectiveController.new);
 
 // Thread Controller
 class ThreadController extends AsyncNotifier<List<CollectiveThread>> {
@@ -192,7 +201,9 @@ class ThreadController extends AsyncNotifier<List<CollectiveThread>> {
   }
 }
 
-final threadControllerProvider = AsyncNotifierProvider<ThreadController, List<CollectiveThread>>(ThreadController.new);
+final threadControllerProvider =
+    AsyncNotifierProvider<ThreadController, List<CollectiveThread>>(
+        ThreadController.new);
 
 // Member Controller
 class MemberController extends AsyncNotifier<List<CommunityMember>> {
@@ -229,7 +240,9 @@ class MemberController extends AsyncNotifier<List<CommunityMember>> {
   }
 }
 
-final memberControllerProvider = AsyncNotifierProvider<MemberController, List<CommunityMember>>(MemberController.new);
+final memberControllerProvider =
+    AsyncNotifierProvider<MemberController, List<CommunityMember>>(
+        MemberController.new);
 
 // Subscription Controller
 class SubscriptionController extends AsyncNotifier<List<Subscription>> {
@@ -258,7 +271,9 @@ class SubscriptionController extends AsyncNotifier<List<Subscription>> {
   }
 }
 
-final subscriptionControllerProvider = AsyncNotifierProvider<SubscriptionController, List<Subscription>>(SubscriptionController.new);
+final subscriptionControllerProvider =
+    AsyncNotifierProvider<SubscriptionController, List<Subscription>>(
+        SubscriptionController.new);
 
 // Analytics Controller
 class AnalyticsController extends AsyncNotifier<CommunityAnalytics?> {
@@ -277,4 +292,6 @@ class AnalyticsController extends AsyncNotifier<CommunityAnalytics?> {
   }
 }
 
-final analyticsControllerProvider = AsyncNotifierProvider<AnalyticsController, CommunityAnalytics?>(AnalyticsController.new);
+final analyticsControllerProvider =
+    AsyncNotifierProvider<AnalyticsController, CommunityAnalytics?>(
+        AnalyticsController.new);

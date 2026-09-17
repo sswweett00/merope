@@ -21,7 +21,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 
   void _submitComment() {
     if (_commentController.text.trim().isNotEmpty) {
-      ref.read(signalCommentsProvider(widget.postId).notifier).addComment(_commentController.text.trim());
+      ref
+          .read(signalCommentsProvider(widget.postId).notifier)
+          .addComment(_commentController.text.trim());
       _commentController.clear();
       FocusScope.of(context).unfocus();
     }
@@ -55,7 +57,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
             ),
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                 child: Text(
                   'Comments',
                   style: TextStyle(
@@ -71,8 +74,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   ? const SliverFillRemaining(
                       hasScrollBody: false,
                       child: Center(
-                        child: Text('Henüz yorum yapılmamış. İlk düğümü siz ekleyin!',
-                            style: TextStyle(color: Colors.grey),
+                        child: Text(
+                          'Henüz yorum yapılmamış. İlk düğümü siz ekleyin!',
+                          style: TextStyle(color: Colors.grey),
                         ),
                       ),
                     )
@@ -86,8 +90,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         childCount: comments.length,
                       ),
                     ),
-              loading: () => const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator())),
-              error: (err, _) => SliverToBoxAdapter(child: Center(child: Text('Error: $err'))),
+              loading: () => const SliverToBoxAdapter(
+                  child: Center(child: CircularProgressIndicator())),
+              error: (err, _) =>
+                  SliverToBoxAdapter(child: Center(child: Text('Error: $err'))),
             ),
           ],
         ),
@@ -136,9 +142,10 @@ class _CommentNode extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   CircleAvatar(
-                   radius: 18,
-                   backgroundColor: tokens.primary.withValues(alpha: 0.1),
-                   child: Text(author.isNotEmpty ? author[0] : '?', style: TextStyle(color: tokens.primary, fontSize: 12)),
+                    radius: 18,
+                    backgroundColor: tokens.primary.withValues(alpha: 0.1),
+                    child: Text(author.isNotEmpty ? author[0] : '?',
+                        style: TextStyle(color: tokens.primary, fontSize: 12)),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -147,22 +154,37 @@ class _CommentNode extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            Text(author, style: TextStyle(fontWeight: FontWeight.bold, color: tokens.textPrimary, fontSize: 14)),
+                            Text(author,
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: tokens.textPrimary,
+                                    fontSize: 14)),
                             const SizedBox(width: 8),
-                            Text('2h ago', style: TextStyle(color: tokens.textSecondary, fontSize: 10)),
+                            Text('2h ago',
+                                style: TextStyle(
+                                    color: tokens.textSecondary, fontSize: 10)),
                           ],
                         ),
                         const SizedBox(height: 4),
                         Text(
                           content,
-                          style: TextStyle(color: tokens.textSecondary, fontSize: 13, height: 1.4),
+                          style: TextStyle(
+                              color: tokens.textSecondary,
+                              fontSize: 13,
+                              height: 1.4),
                         ),
                         const SizedBox(height: 8),
                         Row(
                           children: [
-                            _SmallAction(icon: Icons.favorite_border, label: '12', tokens: tokens),
+                            _SmallAction(
+                                icon: Icons.favorite_border,
+                                label: '12',
+                                tokens: tokens),
                             const SizedBox(width: 16),
-                            _SmallAction(icon: Icons.bubble_chart_outlined, label: 'Reply', tokens: tokens),
+                            _SmallAction(
+                                icon: Icons.bubble_chart_outlined,
+                                label: 'Reply',
+                                tokens: tokens),
                           ],
                         ),
                       ],
@@ -179,7 +201,8 @@ class _CommentNode extends StatelessWidget {
 }
 
 class _SmallAction extends StatelessWidget {
-  const _SmallAction({required this.icon, required this.label, required this.tokens});
+  const _SmallAction(
+      {required this.icon, required this.label, required this.tokens});
   final IconData icon;
   final String label;
   final MeropeColorTokens tokens;
@@ -192,7 +215,8 @@ class _SmallAction extends StatelessWidget {
         children: [
           Icon(icon, size: 14, color: tokens.textSecondary),
           const SizedBox(width: 4),
-          Text(label, style: TextStyle(color: tokens.textSecondary, fontSize: 11)),
+          Text(label,
+              style: TextStyle(color: tokens.textSecondary, fontSize: 11)),
         ],
       ),
     );
@@ -230,13 +254,17 @@ class _CommentInputBarState extends State<_CommentInputBar> {
           ),
           decoration: BoxDecoration(
             color: widget.tokens.surface,
-            border: Border(top: BorderSide(color: widget.tokens.border.withValues(alpha: 0.2))),
+            border: Border(
+                top: BorderSide(
+                    color: widget.tokens.border.withValues(alpha: 0.2))),
           ),
           child: Row(
             children: [
               IconButton(
                 icon: Icon(
-                  _showEmoji ? Icons.keyboard_rounded : Icons.emoji_emotions_outlined,
+                  _showEmoji
+                      ? Icons.keyboard_rounded
+                      : Icons.emoji_emotions_outlined,
                   color: widget.tokens.primary,
                 ),
                 onPressed: () {
@@ -254,7 +282,8 @@ class _CommentInputBarState extends State<_CommentInputBar> {
                     hintText: 'Add a comment...',
                     filled: true,
                     fillColor: widget.tokens.background,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(24),
                       borderSide: BorderSide.none,
@@ -287,7 +316,9 @@ class _CommentInputBarState extends State<_CommentInputBar> {
                 enableSkinTones: true,
                 recentTabBehavior: RecentTabBehavior.RECENT,
                 recentsLimit: 28,
-                noRecents: const Text('Henüz bir şey yok', style: TextStyle(fontSize: 20, color: Colors.black26), textAlign: TextAlign.center),
+                noRecents: const Text('Henüz bir şey yok',
+                    style: TextStyle(fontSize: 20, color: Colors.black26),
+                    textAlign: TextAlign.center),
                 loadingIndicator: const SizedBox.shrink(),
                 tabIndicatorAnimDuration: kTabScrollDuration,
                 categoryIcons: const CategoryIcons(),

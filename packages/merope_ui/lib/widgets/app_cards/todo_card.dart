@@ -128,7 +128,9 @@ class _TodoCardState extends State<TodoCard> {
           title: Text(
             widget.tasks[index],
             style: TextStyle(
-              color: isDone ? widget.tokens.textSecondary : widget.tokens.textPrimary,
+              color: isDone
+                  ? widget.tokens.textSecondary
+                  : widget.tokens.textPrimary,
               decoration: isDone ? TextDecoration.lineThrough : null,
               fontSize: 14,
             ),

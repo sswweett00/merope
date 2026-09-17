@@ -82,7 +82,9 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
           return CommunityCard(
             community: communities[index],
             onTap: () => _navigateToCommunityDetail(communities[index].id),
-            onJoin: () => ref.read(communityControllerProvider.notifier).join(communities[index].id),
+            onJoin: () => ref
+                .read(communityControllerProvider.notifier)
+                .join(communities[index].id),
           );
         },
       ),
@@ -107,7 +109,9 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
             return CommunityCard(
               community: myCommunities[index],
               onTap: () => _navigateToCommunityDetail(myCommunities[index].id),
-              onLeave: () => ref.read(communityControllerProvider.notifier).leave(myCommunities[index].id),
+              onLeave: () => ref
+                  .read(communityControllerProvider.notifier)
+                  .leave(myCommunities[index].id),
             );
           },
         );
@@ -131,7 +135,9 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
           itemBuilder: (context, index) {
             return EventCard(
               event: events[index],
-              onRsvp: (status) => ref.read(eventControllerProvider.notifier).rsvp(events[index].id, status),
+              onRsvp: (status) => ref
+                  .read(eventControllerProvider.notifier)
+                  .rsvp(events[index].id, status),
             );
           },
         );
@@ -162,7 +168,9 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
             return CollectiveCard(
               collective: collectives[index],
               onTap: () => _navigateToCollective(collectives[index].id),
-              onJoin: () => ref.read(collectiveControllerProvider.notifier).joinCollective(collectives[index].id),
+              onJoin: () => ref
+                  .read(collectiveControllerProvider.notifier)
+                  .joinCollective(collectives[index].id),
             );
           },
         );
@@ -199,7 +207,8 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
       child: ListTile(
         leading: CircleAvatar(child: Text(subscription.tier[0].toUpperCase())),
         title: Text('Subscription to ${subscription.creatorId}'),
-        subtitle: Text('${subscription.tier} - ${subscription.currency} ${subscription.amount.toStringAsFixed(2)}'),
+        subtitle: Text(
+            '${subscription.tier} - ${subscription.currency} ${subscription.amount.toStringAsFixed(2)}'),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -207,7 +216,9 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
             const SizedBox(width: 8),
             IconButton(
               icon: const Icon(Icons.cancel),
-              onPressed: () => ref.read(subscriptionControllerProvider.notifier).cancelSubscription(subscription.id),
+              onPressed: () => ref
+                  .read(subscriptionControllerProvider.notifier)
+                  .cancelSubscription(subscription.id),
             ),
           ],
         ),
@@ -222,7 +233,8 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
         title: const Text('Search Communities'),
         content: TextField(
           autofocus: true,
-          decoration: const InputDecoration(hintText: 'Enter community name...'),
+          decoration:
+              const InputDecoration(hintText: 'Enter community name...'),
           onSubmitted: (value) {
             ref.read(communityControllerProvider.notifier).search(value);
             Navigator.pop(context);
@@ -276,7 +288,9 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
                   isJoined: true,
                   userRole: CommunityRole.owner,
                 );
-                ref.read(communityControllerProvider.notifier).createCommunity(newCommunity);
+                ref
+                    .read(communityControllerProvider.notifier)
+                    .createCommunity(newCommunity);
                 Navigator.pop(context);
               }
             },
@@ -310,10 +324,14 @@ class CommunityDetailScreen extends ConsumerWidget {
 
     // Set the community ID when the widget builds
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(communityDetailControllerProvider.notifier).setCommunityId(communityId);
+      ref
+          .read(communityDetailControllerProvider.notifier)
+          .setCommunityId(communityId);
       ref.read(eventControllerProvider.notifier).setCommunityId(communityId);
       ref.read(memberControllerProvider.notifier).setCommunityId(communityId);
-      ref.read(analyticsControllerProvider.notifier).setCommunityId(communityId);
+      ref
+          .read(analyticsControllerProvider.notifier)
+          .setCommunityId(communityId);
     });
 
     return Scaffold(
@@ -362,7 +380,8 @@ class CommunityDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildCommunityHeader(AsyncValue<Community?> communityAsync, AsyncValue<CommunityAnalytics?> analyticsAsync) {
+  Widget _buildCommunityHeader(AsyncValue<Community?> communityAsync,
+      AsyncValue<CommunityAnalytics?> analyticsAsync) {
     return Container(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -381,7 +400,8 @@ class CommunityDetailScreen extends ConsumerWidget {
             data: (analytics) => analytics != null
                 ? Row(
                     children: [
-                      _buildStatCard('Members', analytics.memberCount.toString()),
+                      _buildStatCard(
+                          'Members', analytics.memberCount.toString()),
                       const SizedBox(width: 12),
                       _buildStatCard('Posts', analytics.postCount.toString()),
                       const SizedBox(width: 12),
@@ -404,7 +424,9 @@ class CommunityDetailScreen extends ConsumerWidget {
           padding: const EdgeInsets.all(12),
           child: Column(
             children: [
-              Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              Text(value,
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold)),
               Text(label, style: const TextStyle(fontSize: 12)),
             ],
           ),
@@ -473,12 +495,17 @@ class CommunityDetailScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Community Analytics', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const Text('Community Analytics',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               const SizedBox(height: 16),
-              _buildAnalyticsCard('Engagement Rate', '${analytics.engagementRate.toStringAsFixed(2)}%'),
-              _buildAnalyticsCard('Avg Session Time', '${analytics.avgSessionTime.toStringAsFixed(1)} min'),
-              _buildAnalyticsCard('New Members', analytics.newMembers.toString()),
-              _buildAnalyticsCard('Active Members', analytics.activeMembers.toString()),
+              _buildAnalyticsCard('Engagement Rate',
+                  '${analytics.engagementRate.toStringAsFixed(2)}%'),
+              _buildAnalyticsCard('Avg Session Time',
+                  '${analytics.avgSessionTime.toStringAsFixed(1)} min'),
+              _buildAnalyticsCard(
+                  'New Members', analytics.newMembers.toString()),
+              _buildAnalyticsCard(
+                  'Active Members', analytics.activeMembers.toString()),
             ],
           ),
         );
@@ -493,7 +520,8 @@ class CommunityDetailScreen extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         title: Text(label),
-        trailing: Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+        trailing:
+            Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
       ),
     );
   }
@@ -503,15 +531,30 @@ class CommunityDetailScreen extends ConsumerWidget {
       padding: const EdgeInsets.all(16),
       children: [
         _ProposalSection(title: 'Active Votes', proposals: [
-          _ProposalData(title: 'Increase Minimum Reputation', status: 'ACTIVE', yes: 45, no: 5, weight: 1.5),
+          _ProposalData(
+              title: 'Increase Minimum Reputation',
+              status: 'ACTIVE',
+              yes: 45,
+              no: 5,
+              weight: 1.5),
         ]),
         const SizedBox(height: 24),
         _ProposalSection(title: 'Discussion (Drafts)', proposals: [
-          _ProposalData(title: 'Enable Biometric Vaults', status: 'DRAFT', yes: 0, no: 0, weight: 0.0),
+          _ProposalData(
+              title: 'Enable Biometric Vaults',
+              status: 'DRAFT',
+              yes: 0,
+              no: 0,
+              weight: 0.0),
         ]),
         const SizedBox(height: 24),
         _ProposalSection(title: 'Passed (Finalized)', proposals: [
-          _ProposalData(title: 'Implement Neural Sync V5', status: 'PASSED', yes: 120, no: 2, weight: 2.0),
+          _ProposalData(
+              title: 'Implement Neural Sync V5',
+              status: 'PASSED',
+              yes: 120,
+              no: 2,
+              weight: 2.0),
         ]),
       ],
     );
@@ -563,7 +606,12 @@ class _ProposalSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Colors.grey, letterSpacing: 1)),
+        Text(title,
+            style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+                color: Colors.grey,
+                letterSpacing: 1)),
         const SizedBox(height: 12),
         ...proposals.map((p) => _ProposalCard(data: p)),
       ],
@@ -577,7 +625,12 @@ class _ProposalData {
   final int yes;
   final int no;
   final double weight;
-  _ProposalData({required this.title, required this.status, required this.yes, required this.no, required this.weight});
+  _ProposalData(
+      {required this.title,
+      required this.status,
+      required this.yes,
+      required this.no,
+      required this.weight});
 }
 
 class _ProposalCard extends StatelessWidget {
@@ -601,11 +654,22 @@ class _ProposalCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(child: Text(data.title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold))),
+                Expanded(
+                    child: Text(data.title,
+                        style: const TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.bold))),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(color: _getStatusColor(data.status).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
-                  child: Text(data.status, style: TextStyle(color: _getStatusColor(data.status), fontSize: 9, fontWeight: FontWeight.w900)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                      color:
+                          _getStatusColor(data.status).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(4)),
+                  child: Text(data.status,
+                      style: TextStyle(
+                          color: _getStatusColor(data.status),
+                          fontSize: 9,
+                          fontWeight: FontWeight.w900)),
                 ),
               ],
             ),
@@ -617,32 +681,53 @@ class _ProposalCard extends StatelessWidget {
                   value: percent,
                   minHeight: 6,
                   backgroundColor: Colors.red.withValues(alpha: 0.2),
-                  valueColor: AlwaysStoppedAnimation(_getStatusColor(data.status)),
+                  valueColor:
+                      AlwaysStoppedAnimation(_getStatusColor(data.status)),
                 ),
               ),
               const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('${data.yes} YES', style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 10)),
-                  Text('${data.no} NO', style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 10)),
+                  Text('${data.yes} YES',
+                      style: const TextStyle(
+                          color: Colors.green,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 10)),
+                  Text('${data.no} NO',
+                      style: const TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 10)),
                 ],
               ),
             ] else
-              const Text('In pre-vote discussion period...', style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: Colors.grey)),
-
+              const Text('In pre-vote discussion period...',
+                  style: TextStyle(
+                      fontSize: 12,
+                      fontStyle: FontStyle.italic,
+                      color: Colors.grey)),
             const Divider(height: 24),
             Row(
               children: [
                 const Icon(Icons.token_outlined, size: 14, color: Colors.amber),
                 const SizedBox(width: 8),
-                Text('YOUR STAKED WEIGHT: ${data.weight}x', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.amber)),
+                Text('YOUR STAKED WEIGHT: ${data.weight}x',
+                    style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.amber)),
                 const Spacer(),
                 if (data.status == 'ACTIVE')
                   ElevatedButton(
                     onPressed: () {},
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 16)),
-                    child: const Text('VOTE', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.indigo,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 16)),
+                    child: const Text('VOTE',
+                        style: TextStyle(
+                            fontSize: 11, fontWeight: FontWeight.bold)),
                   ),
               ],
             ),
@@ -690,10 +775,17 @@ class CollectiveDetailScreen extends ConsumerWidget {
             itemBuilder: (context, index) {
               return ThreadCard(
                 thread: threads[index],
-                onResonate: (isPositive) => ref.read(threadControllerProvider.notifier).resonate(threads[index].id, isPositive),
-                onReply: () => _showReplyDialog(context, ref, threads[index].id),
-                onPin: () => ref.read(threadControllerProvider.notifier).pinThread(threads[index].id, !threads[index].isPinned),
-                onLock: () => ref.read(threadControllerProvider.notifier).lockThread(threads[index].id, !threads[index].isLocked),
+                onResonate: (isPositive) => ref
+                    .read(threadControllerProvider.notifier)
+                    .resonate(threads[index].id, isPositive),
+                onReply: () =>
+                    _showReplyDialog(context, ref, threads[index].id),
+                onPin: () => ref
+                    .read(threadControllerProvider.notifier)
+                    .pinThread(threads[index].id, !threads[index].isPinned),
+                onLock: () => ref
+                    .read(threadControllerProvider.notifier)
+                    .lockThread(threads[index].id, !threads[index].isLocked),
               );
             },
           );
@@ -753,7 +845,9 @@ class CollectiveDetailScreen extends ConsumerWidget {
                   tags: [],
                   category: 'general',
                 );
-                ref.read(threadControllerProvider.notifier).createThread(thread);
+                ref
+                    .read(threadControllerProvider.notifier)
+                    .createThread(thread);
                 Navigator.pop(context);
               }
             },
@@ -794,7 +888,9 @@ class CollectiveDetailScreen extends ConsumerWidget {
                   updatedAt: DateTime.now(),
                   isEdited: false,
                 );
-                ref.read(threadControllerProvider.notifier).replyToThread(reply);
+                ref
+                    .read(threadControllerProvider.notifier)
+                    .replyToThread(reply);
                 Navigator.pop(context);
               }
             },

@@ -17,7 +17,8 @@ class ForgeSandboxScreen extends ConsumerWidget {
       backgroundColor: tokens.background,
       appBar: AppBar(
         backgroundColor: tokens.surface,
-        title: Text('Forge Design Sandbox', style: TextStyle(color: tokens.textPrimary)),
+        title: Text('Forge Design Sandbox',
+            style: TextStyle(color: tokens.textPrimary)),
         iconTheme: IconThemeData(color: tokens.textPrimary),
       ),
       body: ListView(
@@ -25,7 +26,10 @@ class ForgeSandboxScreen extends ConsumerWidget {
         children: [
           Text(
             'Acoustic & Haptic Profile',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: tokens.textPrimary),
+            style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: tokens.textPrimary),
           ),
           const SizedBox(height: MeropeTokens.space12),
           MeropeCard(
@@ -40,7 +44,8 @@ class ForgeSandboxScreen extends ConsumerWidget {
               child: Column(
                 children: SoundscapeProfile.values.map((profile) {
                   return RadioListTile<SoundscapeProfile>(
-                    title: Text(profile.label, style: TextStyle(color: tokens.textPrimary)),
+                    title: Text(profile.label,
+                        style: TextStyle(color: tokens.textPrimary)),
                     value: profile,
                     activeColor: tokens.primary,
                   );
@@ -51,22 +56,29 @@ class ForgeSandboxScreen extends ConsumerWidget {
           const SizedBox(height: MeropeTokens.space24),
           Text(
             'Interactive Component Stress Test',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: tokens.textPrimary),
+            style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: tokens.textPrimary),
           ),
           const SizedBox(height: MeropeTokens.space12),
           ElevatedButton(
             onPressed: () {
               soundscape.playFeedback();
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: const Text('Forge Feedback Triggered'), backgroundColor: tokens.primary),
+                SnackBar(
+                    content: const Text('Forge Feedback Triggered'),
+                    backgroundColor: tokens.primary),
               );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: tokens.primary,
               minimumSize: const Size(double.infinity, 50),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(MeropeTokens.radiusMd)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(MeropeTokens.radiusMd)),
             ),
-            child: Text('Test Haptic & Acoustic Response', style: TextStyle(color: tokens.onPrimary)),
+            child: Text('Test Haptic & Acoustic Response',
+                style: TextStyle(color: tokens.onPrimary)),
           ),
         ],
       ),

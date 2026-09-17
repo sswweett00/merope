@@ -21,7 +21,8 @@ class ProfileScreen extends ConsumerStatefulWidget {
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTickerProviderStateMixin {
+class _ProfileScreenState extends ConsumerState<ProfileScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -53,7 +54,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
       body: userAsync.when(
         data: (user) => CustomScrollView(
           slivers: [
-            SliverToBoxAdapter(child: _ProfileHeader(tokens: tokens, user: user)),
+            SliverToBoxAdapter(
+                child: _ProfileHeader(tokens: tokens, user: user)),
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16),
@@ -72,12 +74,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                             height: 60,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              border: Border.all(color: tokens.border, width: 2),
+                              border:
+                                  Border.all(color: tokens.border, width: 2),
                             ),
-                            child: Icon(Icons.star, color: tokens.primary.withValues(alpha: 0.5)),
+                            child: Icon(Icons.star,
+                                color: tokens.primary.withValues(alpha: 0.5)),
                           ),
                           const SizedBox(height: 4),
-                          Text('Highlight ${index + 1}', style: TextStyle(fontSize: 10, color: tokens.textSecondary)),
+                          Text('Highlight ${index + 1}',
+                              style: TextStyle(
+                                  fontSize: 10, color: tokens.textSecondary)),
                         ],
                       ),
                     ),
@@ -89,7 +95,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                 decoration: BoxDecoration(
-                  border: Border(bottom: BorderSide(color: tokens.border, width: 0.5)),
+                  border: Border(
+                      bottom: BorderSide(color: tokens.border, width: 0.5)),
                 ),
                 child: TabBar(
                   controller: _tabController,
@@ -97,8 +104,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                   labelColor: tokens.primary,
                   unselectedLabelColor: tokens.textSecondary,
                   tabs: const [
-                    Tab(text: 'Posts', icon: Icon(Icons.feed_outlined, size: 20)),
-                    Tab(text: 'Activity', icon: Icon(Icons.auto_graph_outlined, size: 20)),
+                    Tab(
+                        text: 'Posts',
+                        icon: Icon(Icons.feed_outlined, size: 20)),
+                    Tab(
+                        text: 'Activity',
+                        icon: Icon(Icons.auto_graph_outlined, size: 20)),
                   ],
                 ),
               ),
@@ -121,7 +132,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
   }
 
   Widget _buildNexusTab(AsyncValue timelineAsync) {
-    final filteredPostsAsync = ref.watch(filteredProfilePostsProvider(widget.userId));
+    final filteredPostsAsync =
+        ref.watch(filteredProfilePostsProvider(widget.userId));
 
     return filteredPostsAsync.when(
       data: (userSignals) {
@@ -130,18 +142,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
             const PostFilterBar(),
             Expanded(
               child: userSignals.isEmpty
-                  ? const Center(child: Text('No posts found', style: TextStyle(color: Colors.grey)))
+                  ? const Center(
+                      child: Text('No posts found',
+                          style: TextStyle(color: Colors.grey)))
                   : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: MeropeTokens.space24, vertical: 16),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: MeropeTokens.space24, vertical: 16),
                       itemCount: userSignals.length,
-                      itemBuilder: (context, index) => NexusTimelineCard(signal: userSignals[index]),
+                      itemBuilder: (context, index) =>
+                          NexusTimelineCard(signal: userSignals[index]),
                     ),
             ),
           ],
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, _) => Center(child: Text('Resonance Error: $err', style: const TextStyle(color: Colors.red))),
+      error: (err, _) => Center(
+          child: Text('Resonance Error: $err',
+              style: const TextStyle(color: Colors.red))),
     );
   }
 
@@ -195,7 +213,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
           icon: Icons.workspace_premium,
           tokens: tokens,
           children: [
-             _ProfessionalEntry(
+            _ProfessionalEntry(
               title: 'System Architect Certification',
               subtitle: 'Global Tech Alliance • Issued May 2025',
               tokens: tokens,
@@ -237,15 +255,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.bold, fontSize: 18)),
-                    Text(subtitle, style: TextStyle(color: tokens.textSecondary, fontSize: 13)),
+                    Text(title,
+                        style: TextStyle(
+                            color: tokens.textPrimary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18)),
+                    Text(subtitle,
+                        style: TextStyle(
+                            color: tokens.textSecondary, fontSize: 13)),
                   ],
                 ),
               ],
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Divider(height: 1, color: tokens.border.withValues(alpha: 0.1)),
+              child: Divider(
+                  height: 1, color: tokens.border.withValues(alpha: 0.1)),
             ),
             ...children,
           ],
@@ -271,7 +296,13 @@ class _NeuralHeatmap extends ConsumerWidget {
           child: CustomPaint(
             painter: NeuralActivityPainter(
               color: tokens.primary,
-              activityData: List.generate(91, (index) => (index % 5 == 0) ? 0.8 : (index % 3 == 0) ? 0.4 : 0.1),
+              activityData: List.generate(
+                  91,
+                  (index) => (index % 5 == 0)
+                      ? 0.8
+                      : (index % 3 == 0)
+                          ? 0.4
+                          : 0.1),
             ),
           ),
         ),
@@ -279,19 +310,27 @@ class _NeuralHeatmap extends ConsumerWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Last 90 days of neural contributions', style: TextStyle(fontSize: 10, color: Colors.grey)),
+            const Text('Last 90 days of neural contributions',
+                style: TextStyle(fontSize: 10, color: Colors.grey)),
             Row(
               children: [
-                Text('Less', style: TextStyle(fontSize: 9, color: tokens.textSecondary)),
+                Text('Less',
+                    style: TextStyle(fontSize: 9, color: tokens.textSecondary)),
                 const SizedBox(width: 4),
-                ...List.generate(5, (i) => Container(
-                  width: 8,
-                  height: 8,
-                  margin: const EdgeInsets.symmetric(horizontal: 1),
-                  decoration: BoxDecoration(color: tokens.primary.withValues(alpha: 0.1 + i * 0.2), borderRadius: BorderRadius.circular(1)),
-                )),
+                ...List.generate(
+                    5,
+                    (i) => Container(
+                          width: 8,
+                          height: 8,
+                          margin: const EdgeInsets.symmetric(horizontal: 1),
+                          decoration: BoxDecoration(
+                              color: tokens.primary
+                                  .withValues(alpha: 0.1 + i * 0.2),
+                              borderRadius: BorderRadius.circular(1)),
+                        )),
                 const SizedBox(width: 4),
-                Text('More', style: TextStyle(fontSize: 9, color: tokens.textSecondary)),
+                Text('More',
+                    style: TextStyle(fontSize: 9, color: tokens.textSecondary)),
               ],
             ),
           ],
@@ -325,7 +364,8 @@ class NeuralActivityPainter extends CustomPainter {
       paint.color = color.withValues(alpha: activityData[i]);
 
       canvas.drawRRect(
-        RRect.fromRectAndRadius(Rect.fromLTWH(x, y, itemSize, itemSize), const Radius.circular(2)),
+        RRect.fromRectAndRadius(
+            Rect.fromLTWH(x, y, itemSize, itemSize), const Radius.circular(2)),
         paint,
       );
     }
@@ -355,11 +395,19 @@ class _ProfessionalEntry extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.w600, fontSize: 15)),
-          Text(subtitle, style: TextStyle(color: tokens.textSecondary, fontSize: 13)),
+          Text(title,
+              style: TextStyle(
+                  color: tokens.textPrimary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15)),
+          Text(subtitle,
+              style: TextStyle(color: tokens.textSecondary, fontSize: 13)),
           if (description != null) ...[
             const SizedBox(height: 4),
-            Text(description!, style: TextStyle(color: tokens.textPrimary.withValues(alpha: 0.8), fontSize: 14)),
+            Text(description!,
+                style: TextStyle(
+                    color: tokens.textPrimary.withValues(alpha: 0.8),
+                    fontSize: 14)),
           ],
         ],
       ),
@@ -384,7 +432,8 @@ class _SkillChip extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: TextStyle(color: tokens.primary, fontSize: 12, fontWeight: FontWeight.w500),
+        style: TextStyle(
+            color: tokens.primary, fontSize: 12, fontWeight: FontWeight.w500),
       ),
     );
   }
@@ -415,7 +464,8 @@ class _ProfileHeader extends StatelessWidget {
               child: Opacity(
                 opacity: 0.3,
                 child: MeropeImage(
-                  imageUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1964&auto=format&fit=crop',
+                  imageUrl:
+                      'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1964&auto=format&fit=crop',
                   fit: BoxFit.cover,
                 ),
               ),
@@ -457,7 +507,9 @@ class _ProfileHeader extends StatelessWidget {
                       Row(
                         children: [
                           Text(
-                            user.displayName.isNotEmpty ? user.displayName : user.username,
+                            user.displayName.isNotEmpty
+                                ? user.displayName
+                                : user.username,
                             style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
@@ -466,16 +518,19 @@ class _ProfileHeader extends StatelessWidget {
                           ),
                           if (user.isVerified) ...[
                             const SizedBox(width: 8),
-                            Icon(Icons.verified, color: tokens.primary, size: 20),
+                            Icon(Icons.verified,
+                                color: tokens.primary, size: 20),
                           ],
                         ],
                       ),
                       Text(
                         '@${user.username}',
-                        style: TextStyle(color: tokens.textSecondary, fontSize: 16),
+                        style: TextStyle(
+                            color: tokens.textSecondary, fontSize: 16),
                       ),
                       const SizedBox(height: 8),
-                      ResonanceStreakWidget(streak: user.streak, tokens: tokens),
+                      ResonanceStreakWidget(
+                          streak: user.streak, tokens: tokens),
                       const SizedBox(height: 12),
                       _ReputationBar(
                         level: user.level,
@@ -491,7 +546,9 @@ class _ProfileHeader extends StatelessWidget {
                     style: OutlinedButton.styleFrom(
                       foregroundColor: tokens.primary,
                       side: BorderSide(color: tokens.primary),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(MeropeTokens.radiusMd)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(MeropeTokens.radiusMd)),
                     ),
                     child: const Text('Edit Profile'),
                   ),
@@ -500,22 +557,33 @@ class _ProfileHeader extends StatelessWidget {
               const SizedBox(height: MeropeTokens.space16),
               Text(
                 user.bio ?? 'No bio yet.',
-                style: TextStyle(color: tokens.textPrimary, fontSize: 15, height: 1.4),
+                style: TextStyle(
+                    color: tokens.textPrimary, fontSize: 15, height: 1.4),
               ),
               const SizedBox(height: MeropeTokens.space16),
               Row(
                 children: [
                   InkWell(
                     onTap: () => context.push('/following'),
-                    child: _StatItem(label: 'Following', value: '${user.followingCount ?? 0}', tokens: tokens),
+                    child: _StatItem(
+                        label: 'Following',
+                        value: '${user.followingCount ?? 0}',
+                        tokens: tokens),
                   ),
                   const SizedBox(width: 24),
                   InkWell(
                     onTap: () => context.push('/followers'),
-                    child: _StatItem(label: 'Followers', value: '${user.followerCount ?? 0}', tokens: tokens),
+                    child: _StatItem(
+                        label: 'Followers',
+                        value: '${user.followerCount ?? 0}',
+                        tokens: tokens),
                   ),
                   const SizedBox(width: 24),
-                  _StatItem(label: 'Reputation', value: '${user.xp / 1000}', tokens: tokens, isInfluence: true),
+                  _StatItem(
+                      label: 'Reputation',
+                      value: '${user.xp / 1000}',
+                      tokens: tokens,
+                      isInfluence: true),
                 ],
               ),
               const SizedBox(height: MeropeTokens.space16),
@@ -597,13 +665,16 @@ class _ReputationBar extends StatefulWidget {
   State<_ReputationBar> createState() => _ReputationBarState();
 }
 
-class _ReputationBarState extends State<_ReputationBar> with SingleTickerProviderStateMixin {
+class _ReputationBarState extends State<_ReputationBar>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 3))..repeat();
+    _controller =
+        AnimationController(vsync: this, duration: const Duration(seconds: 3))
+          ..repeat();
   }
 
   @override
@@ -629,13 +700,19 @@ class _ReputationBarState extends State<_ReputationBar> with SingleTickerProvide
               ),
               child: Text(
                 'LVL ${widget.level}',
-                style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold),
               ),
             ),
             const SizedBox(width: 8),
             Text(
               '${widget.tier} Tier',
-              style: TextStyle(color: widget.tokens.primary, fontSize: 12, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                  color: widget.tokens.primary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -659,12 +736,24 @@ class _ReputationBarState extends State<_ReputationBar> with SingleTickerProvide
                   width: 200 * progress,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [widget.tokens.primary, widget.tokens.secondary, widget.tokens.primary],
-                      stops: [_controller.value - 0.2, _controller.value, _controller.value + 0.2],
+                      colors: [
+                        widget.tokens.primary,
+                        widget.tokens.secondary,
+                        widget.tokens.primary
+                      ],
+                      stops: [
+                        _controller.value - 0.2,
+                        _controller.value,
+                        _controller.value + 0.2
+                      ],
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
                     ),
-                    boxShadow: [BoxShadow(color: widget.tokens.primary.withValues(alpha: 0.5), blurRadius: 4)],
+                    boxShadow: [
+                      BoxShadow(
+                          color: widget.tokens.primary.withValues(alpha: 0.5),
+                          blurRadius: 4)
+                    ],
                   ),
                 ),
               ),

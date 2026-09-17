@@ -31,7 +31,8 @@ class CinemaHub extends AsyncNotifier<List<CinemaVideo>> {
         id: 'v1',
         title: 'The Future of Neural Networks in 2026',
         author: 'HyperWave Tech',
-        thumbnailUrl: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=2072&auto=format&fit=crop',
+        thumbnailUrl:
+            'https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=2072&auto=format&fit=crop',
         views: '1.2M',
         timestamp: '2 days ago',
         isFeatured: true,
@@ -40,7 +41,8 @@ class CinemaHub extends AsyncNotifier<List<CinemaVideo>> {
         id: 'v2',
         title: 'Node Architecture Deep Dive #1',
         author: 'Distributed Core',
-        thumbnailUrl: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop',
+        thumbnailUrl:
+            'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop',
         views: '45k',
         timestamp: '5 hours ago',
       ),
@@ -48,7 +50,8 @@ class CinemaHub extends AsyncNotifier<List<CinemaVideo>> {
         id: 'v3',
         title: 'How to build a wave protocol in 10 minutes',
         author: 'Wave Academy',
-        thumbnailUrl: 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2070&auto=format&fit=crop',
+        thumbnailUrl:
+            'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2070&auto=format&fit=crop',
         views: '890k',
         timestamp: '3 days ago',
       ),
@@ -56,4 +59,5 @@ class CinemaHub extends AsyncNotifier<List<CinemaVideo>> {
   }
 }
 
-final cinemaHubProvider = AsyncNotifierProvider<CinemaHub, List<CinemaVideo>>(CinemaHub.new);
+final cinemaHubProvider =
+    AsyncNotifierProvider<CinemaHub, List<CinemaVideo>>(CinemaHub.new);

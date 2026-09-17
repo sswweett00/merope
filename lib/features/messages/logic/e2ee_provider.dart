@@ -20,7 +20,8 @@ class DecryptionParams {
 String _decryptMessageTask(DecryptionParams params) {
   final data = jsonDecode(params.encryptedJson) as Map<String, dynamic>;
   final sessionKey = encrypt.Key.fromBase64(params.sessionKeyBase64);
-  final encrypter = encrypt.Encrypter(encrypt.AES(sessionKey, mode: encrypt.AESMode.gcm));
+  final encrypter =
+      encrypt.Encrypter(encrypt.AES(sessionKey, mode: encrypt.AESMode.gcm));
   final iv = encrypt.IV.fromBase64(data['iv'] as String);
 
   return encrypter.decrypt64(data['content'] as String, iv: iv);
@@ -48,7 +49,8 @@ class E2EEController extends AsyncNotifier<void> {
 
   Future<String> encryptMessage(String conversationId, String plaintext) async {
     final sessionKey = await _getOrCreateSessionKey(conversationId);
-    final encrypter = encrypt.Encrypter(encrypt.AES(sessionKey, mode: encrypt.AESMode.gcm));
+    final encrypter =
+        encrypt.Encrypter(encrypt.AES(sessionKey, mode: encrypt.AESMode.gcm));
     final iv = encrypt.IV.fromSecureRandom(16);
     final encrypted = encrypter.encrypt(plaintext, iv: iv);
 
@@ -58,7 +60,8 @@ class E2EEController extends AsyncNotifier<void> {
     });
   }
 
-  Future<String> decryptMessage(String conversationId, String encryptedJson) async {
+  Future<String> decryptMessage(
+      String conversationId, String encryptedJson) async {
     try {
       final sessionKey = await _getOrCreateSessionKey(conversationId);
 
@@ -74,7 +77,9 @@ class E2EEController extends AsyncNotifier<void> {
       MeropeLogger.error('E2EE: Invalid encrypted payload format', error: e);
       return '[Decryption Error: Invalid payload format]';
     } on Exception catch (e) {
-      MeropeLogger.error('E2EE: Decryption failed - key mismatch or tampered content', error: e);
+      MeropeLogger.error(
+          'E2EE: Decryption failed - key mismatch or tampered content',
+          error: e);
       return '[Decryption Error: Key mismatch or tampered content]';
     }
   }
@@ -95,7 +100,8 @@ class E2EEController extends AsyncNotifier<void> {
 
     // 3. Generate and store if none exists
     final newKey = encrypt.Key.fromSecureRandom(32);
-    await _storage.write(key: 'session_key_$conversationId', value: newKey.base64);
+    await _storage.write(
+        key: 'session_key_$conversationId', value: newKey.base64);
     _sessionKeyCache[conversationId] = newKey;
     return newKey;
   }
@@ -106,4 +112,5 @@ class E2EEController extends AsyncNotifier<void> {
   }
 }
 
-final e2EEControllerProvider = AsyncNotifierProvider<E2EEController, void>(E2EEController.new);
+final e2EEControllerProvider =
+    AsyncNotifierProvider<E2EEController, void>(E2EEController.new);

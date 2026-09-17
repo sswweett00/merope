@@ -30,4 +30,6 @@ class VaultContentNotifier extends AsyncNotifier<List<VaultItem>> {
   }
 }
 
-final vaultContentProvider = AsyncNotifierProvider<VaultContentNotifier, List<VaultItem>>(VaultContentNotifier.new);
+final vaultContentProvider =
+    AsyncNotifierProvider<VaultContentNotifier, List<VaultItem>>(
+        VaultContentNotifier.new);

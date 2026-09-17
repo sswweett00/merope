@@ -38,7 +38,8 @@ class ApiClient {
     if (!kIsWeb) {
       (dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
         final client = HttpClient();
-        client.badCertificateCallback = (X509Certificate cert, String host, int port) {
+        client.badCertificateCallback =
+            (X509Certificate cert, String host, int port) {
           if (expectedCertSha256 == null || expectedCertSha256.trim().isEmpty) {
             return false;
           }
@@ -52,7 +53,8 @@ class ApiClient {
     dio.transformer = BackgroundTransformer(_isolateManager);
 
     dio.interceptors.add(ApiVersionInterceptor());
-    dio.interceptors.add(AuthInterceptor(_sessionStorage, onRefresh: () => refreshCallback?.call() ?? Future.value(false)));
+    dio.interceptors.add(AuthInterceptor(_sessionStorage,
+        onRefresh: () => refreshCallback?.call() ?? Future.value(false)));
     dio.interceptors.add(RetryInterceptor(dio));
     if (kDebugMode) {
       dio.interceptors.add(LogInterceptor(
@@ -65,7 +67,8 @@ class ApiClient {
     }
   }
 
-  Future<ApiResult<T>> get<T>(String path, {Map<String, dynamic>? queryParameters}) async {
+  Future<ApiResult<T>> get<T>(String path,
+      {Map<String, dynamic>? queryParameters}) async {
     try {
       final response = await dio.get(path, queryParameters: queryParameters);
       return ApiResult.success(response.data as T);
@@ -74,25 +77,30 @@ class ApiClient {
     }
   }
 
-  Future<ApiResult<T>> post<T>(String path, {dynamic data, Map<String, dynamic>? queryParameters}) async {
+  Future<ApiResult<T>> post<T>(String path,
+      {dynamic data, Map<String, dynamic>? queryParameters}) async {
     try {
-      final response = await dio.post(path, data: data, queryParameters: queryParameters);
+      final response =
+          await dio.post(path, data: data, queryParameters: queryParameters);
       return ApiResult.success(response.data as T);
     } catch (e) {
       return ApiResult.error(e);
     }
   }
 
-  Future<ApiResult<T>> put<T>(String path, {dynamic data, Map<String, dynamic>? queryParameters}) async {
+  Future<ApiResult<T>> put<T>(String path,
+      {dynamic data, Map<String, dynamic>? queryParameters}) async {
     try {
-      final response = await dio.put(path, data: data, queryParameters: queryParameters);
+      final response =
+          await dio.put(path, data: data, queryParameters: queryParameters);
       return ApiResult.success(response.data as T);
     } catch (e) {
       return ApiResult.error(e);
     }
   }
 
-  Future<ApiResult<T>> delete<T>(String path, {Map<String, dynamic>? queryParameters}) async {
+  Future<ApiResult<T>> delete<T>(String path,
+      {Map<String, dynamic>? queryParameters}) async {
     try {
       final response = await dio.delete(path, queryParameters: queryParameters);
       return ApiResult.success(response.data as T);
@@ -174,7 +182,8 @@ class AuthInterceptor extends Interceptor {
   Completer<bool>? _refreshCompleter;
 
   @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
+  void onRequest(
+      RequestOptions options, RequestInterceptorHandler handler) async {
     final token = await _sessionStorage.getToken();
     if (token != null && token.isNotEmpty) {
       final authValue = 'Bearer $token';
@@ -184,7 +193,8 @@ class AuthInterceptor extends Interceptor {
         final signature = await AetherAuthShield.signApexChallenge(authValue);
         options.headers['X-Aether-Signature'] = signature;
 
-        final deviceSig = await AetherAuthShieldNotifier().getSecureDeviceSignature();
+        final deviceSig =
+            await AetherAuthShieldNotifier().getSecureDeviceSignature();
         options.headers['X-Merope-Device-Sig'] = deviceSig;
       } catch (e) {
         debugPrint('Security Shield: Failed to sign request');
@@ -225,7 +235,9 @@ class AuthInterceptor extends Interceptor {
   }
 
   Future<Response> _retry(RequestOptions requestOptions) async {
-    final dio = Dio(requestOptions.baseUrl.isNotEmpty ? BaseOptions(baseUrl: requestOptions.baseUrl) : BaseOptions());
+    final dio = Dio(requestOptions.baseUrl.isNotEmpty
+        ? BaseOptions(baseUrl: requestOptions.baseUrl)
+        : BaseOptions());
     final token = await _sessionStorage.getToken();
 
     final options = Options(
@@ -258,7 +270,10 @@ class RetryInterceptor extends Interceptor {
       if (attempt < _maxRetries) {
         await Future.delayed(Duration(milliseconds: 500 * (attempt + 1)));
         try {
-          final response = await _dio.fetch(err.requestOptions.copyWith(extra: {...err.requestOptions.extra, 'retryAttempt': attempt + 1}));
+          final response = await _dio.fetch(err.requestOptions.copyWith(extra: {
+            ...err.requestOptions.extra,
+            'retryAttempt': attempt + 1
+          }));
           handler.resolve(response);
           return;
         } catch (_) {}

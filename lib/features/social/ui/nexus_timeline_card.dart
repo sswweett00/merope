@@ -39,7 +39,8 @@ class _NexusTimelineCardState extends ConsumerState<NexusTimelineCard> {
   @override
   void initState() {
     super.initState();
-    _confettiController = ConfettiController(duration: const Duration(seconds: 2));
+    _confettiController =
+        ConfettiController(duration: const Duration(seconds: 2));
     if (widget.signal.effect == 'confetti') {
       _confettiController.play();
     }
@@ -57,8 +58,11 @@ class _NexusTimelineCardState extends ConsumerState<NexusTimelineCard> {
     final themeState = ref.watch(themeProvider);
     final tokens = themeState.currentTokens;
     final timeStr = _formatTimestamp(widget.signal.createdAt);
-    final mainResonance = widget.signal.resonances.firstWhereOrNull((r) => r.type == '❤️') ??
-        (widget.signal.resonances.isNotEmpty ? widget.signal.resonances.first : const SignalResonance(type: '❤️', amplitude: 0));
+    final mainResonance =
+        widget.signal.resonances.firstWhereOrNull((r) => r.type == '❤️') ??
+            (widget.signal.resonances.isNotEmpty
+                ? widget.signal.resonances.first
+                : const SignalResonance(type: '❤️', amplitude: 0));
     final isViral = mainResonance.amplitude > 50;
 
     return Dismissible(
@@ -67,12 +71,14 @@ class _NexusTimelineCardState extends ConsumerState<NexusTimelineCard> {
         if (direction == DismissDirection.startToEnd) {
           // Quick Echo
           MeropeHaptics.trigger(MeropeTokens.hapticMedium);
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Quick Echo!')));
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text('Quick Echo!')));
           return false;
         } else {
           // Quick Share
           MeropeHaptics.trigger(MeropeTokens.hapticLight);
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Preparing to share...')));
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Preparing to share...')));
           return false;
         }
       },
@@ -99,42 +105,55 @@ class _NexusTimelineCardState extends ConsumerState<NexusTimelineCard> {
                   ? LayeredPostWidget(signal: widget.signal, tokens: tokens)
                   : MeropeCard(
                       hasAtmosphere: isViral,
-                      atmosphereIntensity: (mainResonance.amplitude / 100).clamp(0.0, 1.0),
+                      atmosphereIntensity:
+                          (mainResonance.amplitude / 100).clamp(0.0, 1.0),
                       color: tokens.surface,
                       padding: const EdgeInsets.all(MeropeTokens.space16),
                       onTap: () => context.push('/post/${widget.signal.id}'),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _CardHeader(signal: widget.signal, timeStr: timeStr, tokens: tokens),
+                          _CardHeader(
+                              signal: widget.signal,
+                              timeStr: timeStr,
+                              tokens: tokens),
                           const SizedBox(height: MeropeTokens.space12),
-                        _SignalContent(content: widget.signal.content, tokens: tokens),
-                        if (widget.signal.content.length > 200)
-                          _NeuralSummaryButton(
-                            signalId: widget.signal.id,
-                            summary: widget.signal.neuralSummary,
-                            tokens: tokens,
-                          ),
-                        if (widget.signal.repostOf != null) ...[
+                          _SignalContent(
+                              content: widget.signal.content, tokens: tokens),
+                          if (widget.signal.content.length > 200)
+                            _NeuralSummaryButton(
+                              signalId: widget.signal.id,
+                              summary: widget.signal.neuralSummary,
+                              tokens: tokens,
+                            ),
+                          if (widget.signal.repostOf != null) ...[
                             const SizedBox(height: MeropeTokens.space12),
-                            _QuotedSignal(signal: widget.signal.repostOf!, tokens: tokens),
+                            _QuotedSignal(
+                                signal: widget.signal.repostOf!,
+                                tokens: tokens),
                           ],
                           if (widget.signal.media.isNotEmpty) ...[
                             const SizedBox(height: MeropeTokens.space16),
-                            RepaintBoundary(child: _ParallaxMedia(media: widget.signal.media)),
-                            if (widget.signal.media.any((m) => m.type == MediaType.audio))
-                              RepaintBoundary(child: _WaveformPlayer(tokens: tokens)),
+                            RepaintBoundary(
+                                child:
+                                    _ParallaxMedia(media: widget.signal.media)),
+                            if (widget.signal.media
+                                .any((m) => m.type == MediaType.audio))
+                              RepaintBoundary(
+                                  child: _WaveformPlayer(tokens: tokens)),
                           ],
                           if (widget.signal.cards.isNotEmpty) ...[
                             const SizedBox(height: MeropeTokens.space16),
-                            ...widget.signal.cards.map((card) => _renderAppCard(card, tokens)),
+                            ...widget.signal.cards
+                                .map((card) => _renderAppCard(card, tokens)),
                           ],
                           const SizedBox(height: MeropeTokens.space16),
                           _CardActions(
                             signal: widget.signal,
                             tokens: tokens,
                             ref: ref,
-                            onTriggerParticles: (pos) => _particleController.add(pos),
+                            onTriggerParticles: (pos) =>
+                                _particleController.add(pos),
                           ),
                         ],
                       ),
@@ -153,7 +172,13 @@ class _NexusTimelineCardState extends ConsumerState<NexusTimelineCard> {
               confettiController: _confettiController,
               blastDirectionality: BlastDirectionality.explosive,
               shouldLoop: false,
-              colors: const [Colors.green, Colors.blue, Colors.pink, Colors.orange, Colors.purple],
+              colors: const [
+                Colors.green,
+                Colors.blue,
+                Colors.pink,
+                Colors.orange,
+                Colors.purple
+              ],
             ),
           ),
         ],
@@ -341,16 +366,21 @@ class _ParallaxMediaState extends State<_ParallaxMedia> {
                     right: 0,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(widget.media.length, (i) => AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        margin: const EdgeInsets.symmetric(horizontal: 3),
-                        width: _currentPage == i ? 12 : 6,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: _currentPage == i ? Colors.white : Colors.white54,
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                      )),
+                      children: List.generate(
+                          widget.media.length,
+                          (i) => AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                margin:
+                                    const EdgeInsets.symmetric(horizontal: 3),
+                                width: _currentPage == i ? 12 : 6,
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  color: _currentPage == i
+                                      ? Colors.white
+                                      : Colors.white54,
+                                  borderRadius: BorderRadius.circular(3),
+                                ),
+                              )),
                     ),
                   ),
               ],
@@ -395,20 +425,24 @@ class _ParallaxFlowDelegate extends FlowDelegate {
     final listItemBox = listItemContext.findRenderObject() as RenderBox?;
     if (listItemBox == null) return;
 
-    final listItemOffset = listItemBox.localToGlobal(Offset.zero, ancestor: scrollableBox);
+    final listItemOffset =
+        listItemBox.localToGlobal(Offset.zero, ancestor: scrollableBox);
 
     final viewportDimension = scrollable.position.viewportDimension;
-    final scrollFraction = (listItemOffset.dy / viewportDimension).clamp(0.0, 1.0);
+    final scrollFraction =
+        (listItemOffset.dy / viewportDimension).clamp(0.0, 1.0);
 
     final verticalAlignment = Alignment(0.0, scrollFraction * 2 - 1);
 
     final backgroundSize = context.getChildSize(0)!;
     final listItemSize = context.size;
-    final childRect = verticalAlignment.inscribe(backgroundSize, Offset.zero & listItemSize);
+    final childRect =
+        verticalAlignment.inscribe(backgroundSize, Offset.zero & listItemSize);
 
     context.paintChild(
       0,
-      transform: Transform.translate(offset: Offset(0.0, childRect.top)).transform,
+      transform:
+          Transform.translate(offset: Offset(0.0, childRect.top)).transform,
     );
   }
 
@@ -424,7 +458,8 @@ class _CardHeader extends StatelessWidget {
   final String timeStr;
   final MeropeColorTokens tokens;
 
-  const _CardHeader({required this.signal, required this.timeStr, required this.tokens});
+  const _CardHeader(
+      {required this.signal, required this.timeStr, required this.tokens});
 
   @override
   Widget build(BuildContext context) {
@@ -489,7 +524,10 @@ class _AuthorAvatar extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: LinearGradient(
-              colors: [tokens.primary.withValues(alpha: 0.7), tokens.secondary.withValues(alpha: 0.7)],
+              colors: [
+                tokens.primary.withValues(alpha: 0.7),
+                tokens.secondary.withValues(alpha: 0.7)
+              ],
             ),
           ),
           child: MeropeImage.avatar(
@@ -523,15 +561,18 @@ class _WaveformPlayer extends StatelessWidget {
           Expanded(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(20, (i) => Container(
-                width: 2,
-                height: 10.0 + (i % 5) * 5,
-                color: tokens.primary.withValues(alpha: 0.5),
-              )),
+              children: List.generate(
+                  20,
+                  (i) => Container(
+                        width: 2,
+                        height: 10.0 + (i % 5) * 5,
+                        color: tokens.primary.withValues(alpha: 0.5),
+                      )),
             ),
           ),
           const SizedBox(width: 12),
-          Text('0:12', style: TextStyle(color: tokens.textSecondary, fontSize: 10)),
+          Text('0:12',
+              style: TextStyle(color: tokens.textSecondary, fontSize: 10)),
         ],
       ),
     );
@@ -553,8 +594,11 @@ class _CardActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mainResonance = signal.resonances.firstWhereOrNull((r) => r.type == '❤️') ??
-        (signal.resonances.isNotEmpty ? signal.resonances.first : const SignalResonance(type: '❤️', amplitude: 0));
+    final mainResonance =
+        signal.resonances.firstWhereOrNull((r) => r.type == '❤️') ??
+            (signal.resonances.isNotEmpty
+                ? signal.resonances.first
+                : const SignalResonance(type: '❤️', amplitude: 0));
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -568,7 +612,9 @@ class _CardActions extends StatelessWidget {
           onResonanceComplete: (added) {
             MeropeHaptics.trigger(MeropeTokens.hapticHeavy);
             MeropeAcoustics.trigger(AcousticEffect.resonance);
-            ref.read(nexusTimelineProvider.notifier).resonateSignal(signal.id, '❤️', added);
+            ref
+                .read(nexusTimelineProvider.notifier)
+                .resonateSignal(signal.id, '❤️', added);
           },
         ),
         _ActionButton(
@@ -583,12 +629,15 @@ class _CardActions extends StatelessWidget {
         _ActionButton(
           icon: Icons.repeat,
           label: '${signal.amplificationCount}',
-          isActive: signal.resonances.any((r) => r.type == '🔄' && r.isResonated),
+          isActive:
+              signal.resonances.any((r) => r.type == '🔄' && r.isResonated),
           activeColor: tokens.secondary,
           onTap: () {
             MeropeHaptics.trigger(MeropeTokens.hapticMedium);
             MeropeAcoustics.trigger(AcousticEffect.transmission);
-            ref.read(nexusTimelineProvider.notifier).resonateSignal(signal.id, '🔄', 1);
+            ref
+                .read(nexusTimelineProvider.notifier)
+                .resonateSignal(signal.id, '🔄', 1);
           },
           tokens: tokens,
         ),
@@ -601,9 +650,10 @@ class _CardActions extends StatelessWidget {
             final position = box.localToGlobal(Offset.zero);
 
             // Zenith: Large tipping requires biometric handshake
-            final success = await ref.read(biometricAuthProvider.notifier).authenticate(
-              reason: 'Authorize 100 MRO Energy Wave Transmission',
-            );
+            final success =
+                await ref.read(biometricAuthProvider.notifier).authenticate(
+                      reason: 'Authorize 100 MRO Energy Wave Transmission',
+                    );
 
             if (!success) {
               MeropeAcoustics.trigger(AcousticEffect.error);
@@ -619,16 +669,19 @@ class _CardActions extends StatelessWidget {
             if (result.isSuccess && context.mounted) {
               MeropeAcoustics.trigger(AcousticEffect.syncSuccess);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Energy wave authorized! +50 XP'), duration: Duration(seconds: 1)),
+                const SnackBar(
+                    content: Text('Energy wave authorized! +50 XP'),
+                    duration: Duration(seconds: 1)),
               );
             }
           },
           tokens: tokens,
         ),
         IconButton(
-          icon: Icon(Icons.share_outlined, size: 20, color: tokens.textSecondary),
+          icon:
+              Icon(Icons.share_outlined, size: 20, color: tokens.textSecondary),
           onPressed: () {
-             MeropeHaptics.trigger(MeropeTokens.hapticSoft);
+            MeropeHaptics.trigger(MeropeTokens.hapticSoft);
           },
         ),
         _ActionButton(
@@ -638,7 +691,9 @@ class _CardActions extends StatelessWidget {
           activeColor: tokens.primary,
           onTap: () {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Signal Boost: 50 MRO spent to reach +5000 explorers')),
+              const SnackBar(
+                  content: Text(
+                      'Signal Boost: 50 MRO spent to reach +5000 explorers')),
             );
           },
           tokens: tokens,
@@ -653,7 +708,8 @@ class _NeuralSummaryButton extends StatefulWidget {
   final String? summary;
   final MeropeColorTokens tokens;
 
-  const _NeuralSummaryButton({required this.signalId, this.summary, required this.tokens});
+  const _NeuralSummaryButton(
+      {required this.signalId, this.summary, required this.tokens});
 
   @override
   State<_NeuralSummaryButton> createState() => _NeuralSummaryButtonState();
@@ -669,10 +725,15 @@ class _NeuralSummaryButtonState extends State<_NeuralSummaryButton> {
       children: [
         TextButton.icon(
           onPressed: () => setState(() => _isExpanded = !_isExpanded),
-          icon: Icon(Icons.auto_awesome, size: 14, color: widget.tokens.primary),
+          icon:
+              Icon(Icons.auto_awesome, size: 14, color: widget.tokens.primary),
           label: Text(_isExpanded ? 'Hide Summary' : 'Summarize with AI',
-            style: TextStyle(color: widget.tokens.primary, fontSize: 11, fontWeight: FontWeight.bold)),
-          style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size.zero),
+              style: TextStyle(
+                  color: widget.tokens.primary,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold)),
+          style: TextButton.styleFrom(
+              padding: EdgeInsets.zero, minimumSize: Size.zero),
         ),
         if (_isExpanded)
           Container(
@@ -680,11 +741,16 @@ class _NeuralSummaryButtonState extends State<_NeuralSummaryButton> {
             decoration: BoxDecoration(
               color: widget.tokens.primary.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: widget.tokens.primary.withValues(alpha: 0.1)),
+              border: Border.all(
+                  color: widget.tokens.primary.withValues(alpha: 0.1)),
             ),
             child: Text(
-              widget.summary ?? 'AI is analyzing this signal... Neural core synced.',
-              style: TextStyle(color: widget.tokens.textPrimary, fontSize: 13, fontStyle: FontStyle.italic),
+              widget.summary ??
+                  'AI is analyzing this signal... Neural core synced.',
+              style: TextStyle(
+                  color: widget.tokens.textPrimary,
+                  fontSize: 13,
+                  fontStyle: FontStyle.italic),
             ),
           ),
       ],
@@ -720,7 +786,10 @@ class _QuotedSignal extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 signal.author.displayName ?? signal.author.username,
-                style: TextStyle(color: tokens.textPrimary, fontSize: 12, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    color: tokens.textPrimary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold),
               ),
             ],
           ),
@@ -766,14 +835,18 @@ class _ActionButton extends StatelessWidget {
             Icon(
               icon,
               size: 20,
-              color: isActive ? (activeColor ?? tokens.primary) : tokens.textSecondary,
+              color: isActive
+                  ? (activeColor ?? tokens.primary)
+                  : tokens.textSecondary,
             ),
             const SizedBox(width: 6),
             Text(
               label,
               style: TextStyle(
                 fontSize: 13,
-                color: isActive ? (activeColor ?? tokens.primary) : tokens.textSecondary,
+                color: isActive
+                    ? (activeColor ?? tokens.primary)
+                    : tokens.textSecondary,
                 fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
               ),
             ),

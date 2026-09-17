@@ -43,26 +43,30 @@ class CatalystController extends AsyncNotifier<CatalystRequirements?> {
   Future<void> activateCatalyst() async {
     final current = state.value;
     if (current == null || !current.isEligible || current.isActive) return;
-    state = AsyncValue.data(CatalystRequirements(
-      currentFollowers: current.currentFollowers,
-      currentLikes: current.currentLikes,
-      isActive: true,
-      earnings: current.earnings,
-    ),);
+    state = AsyncValue.data(
+      CatalystRequirements(
+        currentFollowers: current.currentFollowers,
+        currentLikes: current.currentLikes,
+        isActive: true,
+        earnings: current.earnings,
+      ),
+    );
   }
 
   Future<void> simulateGrowth() async {
     if (!kDebugMode) return;
-    state = AsyncValue.data(CatalystRequirements(
-      currentFollowers: 1200,
-      currentLikes: 4500,
-      isActive: state.value?.isActive ?? false,
-      earnings: state.value?.earnings ?? 0.0,
-    ),);
+    state = AsyncValue.data(
+      CatalystRequirements(
+        currentFollowers: 1200,
+        currentLikes: 4500,
+        isActive: state.value?.isActive ?? false,
+        earnings: state.value?.earnings ?? 0.0,
+      ),
+    );
   }
 }
 
 final catalystControllerProvider =
     AsyncNotifierProvider<CatalystController, CatalystRequirements?>(
-      CatalystController.new,
-    );
+  CatalystController.new,
+);

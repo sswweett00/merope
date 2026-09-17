@@ -80,7 +80,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           bottomNavigationBar: isMobile ? _buildBottomBar(tokens) : null,
           body: AnimatedSwitcher(
             duration: MeropeTokens.durationNormal,
-            child: _screens[_currentIndex < _screens.length ? _currentIndex : 0],
+            child:
+                _screens[_currentIndex < _screens.length ? _currentIndex : 0],
           ),
         );
       },
@@ -99,11 +100,32 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _BottomIcon(icon: Icons.radar, isSelected: _currentIndex == 0, onTap: () => _navigateToTab(0), tokens: tokens),
-              _BottomIcon(icon: Icons.wifi_tethering, isSelected: _currentIndex == 3, onTap: () => _navigateToTab(3), tokens: tokens),
-              _BottomIcon(icon: Icons.flash_on, isSelected: false, onTap: () => CreatePostOverlay.show(context), tokens: tokens, isSpecial: true),
-              _BottomIcon(icon: Icons.search, isSelected: _currentIndex == 8, onTap: () => _navigateToTab(8), tokens: tokens),
-              _BottomIcon(icon: Icons.person_outline, isSelected: _currentIndex == 9, onTap: () => _navigateToTab(9), tokens: tokens),
+              _BottomIcon(
+                  icon: Icons.radar,
+                  isSelected: _currentIndex == 0,
+                  onTap: () => _navigateToTab(0),
+                  tokens: tokens),
+              _BottomIcon(
+                  icon: Icons.wifi_tethering,
+                  isSelected: _currentIndex == 3,
+                  onTap: () => _navigateToTab(3),
+                  tokens: tokens),
+              _BottomIcon(
+                  icon: Icons.flash_on,
+                  isSelected: false,
+                  onTap: () => CreatePostOverlay.show(context),
+                  tokens: tokens,
+                  isSpecial: true),
+              _BottomIcon(
+                  icon: Icons.search,
+                  isSelected: _currentIndex == 8,
+                  onTap: () => _navigateToTab(8),
+                  tokens: tokens),
+              _BottomIcon(
+                  icon: Icons.person_outline,
+                  isSelected: _currentIndex == 9,
+                  onTap: () => _navigateToTab(9),
+                  tokens: tokens),
             ],
           ),
         ),
@@ -117,11 +139,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       padding: const EdgeInsets.symmetric(vertical: MeropeTokens.space24),
       decoration: BoxDecoration(
         color: tokens.surface.withValues(alpha: 0.8),
-        border: Border(right: BorderSide(color: tokens.border.withValues(alpha: 0.5), width: 0.5)),
+        border: Border(
+            right: BorderSide(
+                color: tokens.border.withValues(alpha: 0.5), width: 0.5)),
       ),
       child: ClipRRect(
         child: BackdropFilter(
-          filter: ColorFilter.mode(tokens.surface.withValues(alpha: 0.1), BlendMode.srcOver),
+          filter: ColorFilter.mode(
+              tokens.surface.withValues(alpha: 0.1), BlendMode.srcOver),
           child: SingleChildScrollView(
             child: Column(
               children: [
@@ -307,9 +332,13 @@ class _BottomIcon extends StatelessWidget {
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            gradient: LinearGradient(colors: [tokens.primary, tokens.secondary]),
+            gradient:
+                LinearGradient(colors: [tokens.primary, tokens.secondary]),
             shape: BoxShape.circle,
-            boxShadow: [BoxShadow(color: tokens.primary.withValues(alpha: 0.4), blurRadius: 12)],
+            boxShadow: [
+              BoxShadow(
+                  color: tokens.primary.withValues(alpha: 0.4), blurRadius: 12)
+            ],
           ),
           child: const Icon(Icons.add, color: Colors.white),
         ),
@@ -331,7 +360,8 @@ class _BottomIcon extends StatelessWidget {
               margin: const EdgeInsets.only(top: 4),
               width: 4,
               height: 4,
-              decoration: BoxDecoration(color: tokens.primary, shape: BoxShape.circle),
+              decoration:
+                  BoxDecoration(color: tokens.primary, shape: BoxShape.circle),
             ),
         ],
       ),

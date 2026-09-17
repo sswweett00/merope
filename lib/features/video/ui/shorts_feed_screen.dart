@@ -15,7 +15,8 @@ class _ShortsFeedScreenState extends ConsumerState<ShortsFeedScreen> {
   final List<Map<String, dynamic>> _shortsData = [
     {
       'author': '@cyber_creator',
-      'caption': 'Merope Engine v1.0 ile 60fps dikey video performansı 🔥 #flutter #merope #cyber',
+      'caption':
+          'Merope Engine v1.0 ile 60fps dikey video performansı 🔥 #flutter #merope #cyber',
       'music': 'Cybernetic Beats - Merope Original',
       'likes': 14200,
       'comments': 842,
@@ -23,7 +24,8 @@ class _ShortsFeedScreenState extends ConsumerState<ShortsFeedScreen> {
     },
     {
       'author': '@dev_expert',
-      'caption': 'Tek tıkla e2ee şifreli dikey video yayını başlatma testi! 🚀 #security #crypto',
+      'caption':
+          'Tek tıkla e2ee şifreli dikey video yayını başlatma testi! 🚀 #security #crypto',
       'music': 'Decentralized Groove - CryptoBeats',
       'likes': 8920,
       'comments': 312,
@@ -31,7 +33,8 @@ class _ShortsFeedScreenState extends ConsumerState<ShortsFeedScreen> {
     },
     {
       'author': '@design_pro',
-      'caption': 'Merope Design Tokens ile cam (glassmorphism) efektli arayüzler ✨ #design',
+      'caption':
+          'Merope Design Tokens ile cam (glassmorphism) efektli arayüzler ✨ #design',
       'music': 'Glassmorphism Theme Synth',
       'likes': 23400,
       'comments': 1205,
@@ -88,7 +91,10 @@ class _ShortsFeedScreenState extends ConsumerState<ShortsFeedScreen> {
                 child: Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [Colors.transparent, Colors.black.withValues(alpha: 0.85)],
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withValues(alpha: 0.85)
+                      ],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                     ),
@@ -121,14 +127,19 @@ class _ShortsFeedScreenState extends ConsumerState<ShortsFeedScreen> {
                         ),
                         const SizedBox(width: 10),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
                             color: tokens.primary,
-                            borderRadius: BorderRadius.circular(MeropeTokens.radiusSm),
+                            borderRadius:
+                                BorderRadius.circular(MeropeTokens.radiusSm),
                           ),
                           child: const Text(
                             'Takip Et',
-                            style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold),
                           ),
                         ),
                       ],
@@ -143,12 +154,14 @@ class _ShortsFeedScreenState extends ConsumerState<ShortsFeedScreen> {
                     const SizedBox(height: 10),
                     Row(
                       children: [
-                        const Icon(Icons.music_note, color: Colors.white70, size: 16),
+                        const Icon(Icons.music_note,
+                            color: Colors.white70, size: 16),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
                             item['music'] as String,
-                            style: const TextStyle(color: Colors.white70, fontSize: 13),
+                            style: const TextStyle(
+                                color: Colors.white70, fontSize: 13),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -173,28 +186,37 @@ class _ShortsFeedScreenState extends ConsumerState<ShortsFeedScreen> {
                       onPressed: () {
                         setState(() {
                           item['isLiked'] = !isLiked;
-                          item['likes'] = (item['likes'] as int) + (isLiked ? -1 : 1);
+                          item['likes'] =
+                              (item['likes'] as int) + (isLiked ? -1 : 1);
                         });
                       },
                     ),
                     Text(
                       '${item['likes']}',
-                      style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 16),
                     IconButton(
-                      icon: const Icon(Icons.chat_bubble_outline, color: Colors.white, size: 32),
+                      icon: const Icon(Icons.chat_bubble_outline,
+                          color: Colors.white, size: 32),
                       onPressed: () {
                         _showCommentsModal(context, tokens);
                       },
                     ),
                     Text(
                       '${item['comments']}',
-                      style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 16),
                     IconButton(
-                      icon: const Icon(Icons.share, color: Colors.white, size: 32),
+                      icon: const Icon(Icons.share,
+                          color: Colors.white, size: 32),
                       onPressed: () {},
                     ),
                     const SizedBox(height: 24),
@@ -207,7 +229,8 @@ class _ShortsFeedScreenState extends ConsumerState<ShortsFeedScreen> {
                         color: Colors.black,
                         border: Border.all(color: Colors.white, width: 2),
                       ),
-                      child: Icon(Icons.disc_full, color: tokens.primary, size: 28),
+                      child: Icon(Icons.disc_full,
+                          color: tokens.primary, size: 28),
                     ),
                   ],
                 ),
@@ -233,7 +256,10 @@ class _ShortsFeedScreenState extends ConsumerState<ShortsFeedScreen> {
           children: [
             Text(
               'Yorumlar (842)',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: tokens.textPrimary),
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: tokens.textPrimary),
             ),
             const Divider(),
             Expanded(
@@ -242,10 +268,15 @@ class _ShortsFeedScreenState extends ConsumerState<ShortsFeedScreen> {
                 itemBuilder: (context, i) => ListTile(
                   leading: CircleAvatar(
                     backgroundColor: tokens.primary,
-                    child: Text('U$i', style: const TextStyle(color: Colors.white)),
+                    child: Text('U$i',
+                        style: const TextStyle(color: Colors.white)),
                   ),
-                  title: Text('Kullanıcı #$i', style: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.bold)),
-                  subtitle: Text('Bu Merope Shorts harika olmuş!', style: TextStyle(color: tokens.textSecondary)),
+                  title: Text('Kullanıcı #$i',
+                      style: TextStyle(
+                          color: tokens.textPrimary,
+                          fontWeight: FontWeight.bold)),
+                  subtitle: Text('Bu Merope Shorts harika olmuş!',
+                      style: TextStyle(color: tokens.textSecondary)),
                 ),
               ),
             ),

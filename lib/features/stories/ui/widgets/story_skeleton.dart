@@ -18,7 +18,8 @@ class StorySkeleton extends StatelessWidget {
             Container(
               width: 64,
               height: 64,
-              decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white),
+              decoration: const BoxDecoration(
+                  shape: BoxShape.circle, color: Colors.white),
             ),
             const SizedBox(width: MeropeTokens.space12),
             Expanded(

@@ -3,7 +3,8 @@ import 'package:flutter/foundation.dart';
 enum LogLevel { debug, info, warn, error, fatal }
 
 class MeropeLogger {
-  static void log(LogLevel level, String message, {Object? error, StackTrace? stack}) {
+  static void log(LogLevel level, String message,
+      {Object? error, StackTrace? stack}) {
     if (kReleaseMode && level == LogLevel.debug) return;
 
     final timestamp = DateTime.now().toIso8601String();

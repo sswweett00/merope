@@ -46,4 +46,5 @@ class CollectiveList extends AsyncNotifier<List<Collective>> {
   }
 }
 
-final collectiveListProvider = AsyncNotifierProvider<CollectiveList, List<Collective>>(CollectiveList.new);
+final collectiveListProvider =
+    AsyncNotifierProvider<CollectiveList, List<Collective>>(CollectiveList.new);

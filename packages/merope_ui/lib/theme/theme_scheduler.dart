@@ -15,13 +15,16 @@ class ThemeSchedulerNotifier extends StateNotifier<bool> {
     final hour = DateTime.now().hour;
     // If night time (19:00 - 06:00), switch to Obsidian or Cyberpunk, else Arctic or Default
     if (hour >= 19 || hour < 6) {
-      ref.read(themeCustomizerProvider.notifier).setPreset(ThemePreset.obsidian);
+      ref
+          .read(themeCustomizerProvider.notifier)
+          .setPreset(ThemePreset.obsidian);
     } else {
       ref.read(themeCustomizerProvider.notifier).setPreset(ThemePreset.arctic);
     }
   }
 }
 
-final themeSchedulerProvider = StateNotifierProvider<ThemeSchedulerNotifier, bool>((ref) {
+final themeSchedulerProvider =
+    StateNotifierProvider<ThemeSchedulerNotifier, bool>((ref) {
   return ThemeSchedulerNotifier();
 });

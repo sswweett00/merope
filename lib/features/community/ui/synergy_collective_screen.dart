@@ -15,16 +15,21 @@ class SynergyCollectiveScreen extends ConsumerStatefulWidget {
   const SynergyCollectiveScreen({super.key});
 
   @override
-  ConsumerState<SynergyCollectiveScreen> createState() => _SynergyCollectiveScreenState();
+  ConsumerState<SynergyCollectiveScreen> createState() =>
+      _SynergyCollectiveScreenState();
 }
 
-class _SynergyCollectiveScreenState extends ConsumerState<SynergyCollectiveScreen> with SingleTickerProviderStateMixin {
+class _SynergyCollectiveScreenState
+    extends ConsumerState<SynergyCollectiveScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 5))..repeat();
+    _controller =
+        AnimationController(vsync: this, duration: const Duration(seconds: 5))
+          ..repeat();
   }
 
   @override
@@ -90,14 +95,20 @@ class _SynergyCollectiveScreenState extends ConsumerState<SynergyCollectiveScree
           collectivesAsync.when(
             data: (collectives) {
               final prefs = ref.watch(viewPreferencesProvider)['collectives'] ??
-                  const ViewPreferences(mode: ViewMode.list, activeFilter: 'All');
+                  const ViewPreferences(
+                      mode: ViewMode.list, activeFilter: 'All');
 
               return SliverToBoxAdapter(
                 child: Column(
                   children: [
                     UniversalViewControls(
                       domain: 'collectives',
-                      filters: const ['All', 'Technology', 'Creative', 'Social'],
+                      filters: const [
+                        'All',
+                        'Technology',
+                        'Creative',
+                        'Social'
+                      ],
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -111,7 +122,8 @@ class _SynergyCollectiveScreenState extends ConsumerState<SynergyCollectiveScree
                             padding: const EdgeInsets.only(bottom: 16),
                             child: _CollectiveCard(
                               name: c.name,
-                              nodes: '${(c.memberCount / 1000).toStringAsFixed(1)}k',
+                              nodes:
+                                  '${(c.memberCount / 1000).toStringAsFixed(1)}k',
                               description: c.description,
                               icon: Icons.hub,
                               tokens: tokens,
@@ -126,8 +138,10 @@ class _SynergyCollectiveScreenState extends ConsumerState<SynergyCollectiveScree
                 ),
               );
             },
-            loading: () => const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator())),
-            error: (err, _) => SliverToBoxAdapter(child: Center(child: Text('Collectives Error: $err'))),
+            loading: () => const SliverToBoxAdapter(
+                child: Center(child: CircularProgressIndicator())),
+            error: (err, _) => SliverToBoxAdapter(
+                child: Center(child: Text('Collectives Error: $err'))),
           ),
         ],
       ),
@@ -178,12 +192,19 @@ class _SynergyCollectiveScreenState extends ConsumerState<SynergyCollectiveScree
                         influence: 0.0,
                         isOfficial: false,
                         icon: '',
-                        slug: nameController.text.toLowerCase().replaceAll(' ', '-'),
+                        slug: nameController.text
+                            .toLowerCase()
+                            .replaceAll(' ', '-'),
                         createdAt: DateTime.now(),
                         updatedAt: DateTime.now(),
-                        stats: const CollectiveStats(totalThreads: 0, totalReplies: 0, weeklyActivity: 0),
+                        stats: const CollectiveStats(
+                            totalThreads: 0,
+                            totalReplies: 0,
+                            weeklyActivity: 0),
                       );
-                      ref.read(collectiveControllerProvider.notifier).createCollective(collective);
+                      ref
+                          .read(collectiveControllerProvider.notifier)
+                          .createCollective(collective);
                       Navigator.pop(context);
                     }
                   },
@@ -193,7 +214,8 @@ class _SynergyCollectiveScreenState extends ConsumerState<SynergyCollectiveScree
             ),
           );
         },
-        label: const Text('Create Collective', style: TextStyle(color: Colors.white)),
+        label: const Text('Create Collective',
+            style: TextStyle(color: Colors.white)),
         icon: const Icon(Icons.add, color: Colors.white),
         backgroundColor: tokens.primary,
       ),
@@ -232,7 +254,8 @@ class _NeuralMapHeader extends StatelessWidget {
             animation: controller,
             builder: (context, _) {
               return CustomPaint(
-                painter: NeuralMapPainter(nodes: nodes, animationValue: controller.value),
+                painter: NeuralMapPainter(
+                    nodes: nodes, animationValue: controller.value),
                 isComplex: true,
                 willChange: true,
               );
@@ -269,8 +292,11 @@ class _CollectiveCard extends StatelessWidget {
       return ListTile(
         contentPadding: EdgeInsets.zero,
         leading: Icon(icon, color: tokens.primary),
-        title: Text(name, style: TextStyle(fontWeight: FontWeight.bold, color: tokens.textPrimary)),
-        subtitle: Text(nodes, style: TextStyle(color: tokens.textSecondary, fontSize: 12)),
+        title: Text(name,
+            style: TextStyle(
+                fontWeight: FontWeight.bold, color: tokens.textPrimary)),
+        subtitle: Text(nodes,
+            style: TextStyle(color: tokens.textSecondary, fontSize: 12)),
         trailing: _buildRoleChip(),
         onTap: () {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -296,15 +322,24 @@ class _CollectiveCard extends StatelessWidget {
             ),
             title: Row(
               children: [
-                Text(name, style: TextStyle(fontWeight: FontWeight.bold, color: tokens.textPrimary, fontSize: 18)),
+                Text(name,
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: tokens.textPrimary,
+                        fontSize: 18)),
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
                     color: tokens.background,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Text(nodes, style: TextStyle(color: tokens.textSecondary, fontSize: 10, fontWeight: FontWeight.bold)),
+                  child: Text(nodes,
+                      style: TextStyle(
+                          color: tokens.textSecondary,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold)),
                 ),
                 const Spacer(),
                 _buildRoleChip(),
@@ -312,7 +347,8 @@ class _CollectiveCard extends StatelessWidget {
             ),
             subtitle: Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: Text(description, style: TextStyle(color: tokens.textSecondary, fontSize: 14)),
+              child: Text(description,
+                  style: TextStyle(color: tokens.textSecondary, fontSize: 14)),
             ),
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -339,7 +375,8 @@ class _CollectiveCard extends StatelessWidget {
       ),
       child: Text(
         role.name.toUpperCase(),
-        style: TextStyle(color: color, fontSize: 8, fontWeight: FontWeight.bold),
+        style:
+            TextStyle(color: color, fontSize: 8, fontWeight: FontWeight.bold),
       ),
     );
   }

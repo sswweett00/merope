@@ -50,7 +50,12 @@ class _MultiStreamScreenState extends ConsumerState<MultiStreamScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.all(12),
-              child: Text('LIVE CHAT', style: TextStyle(color: tokens.primary, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1)),
+              child: Text('LIVE CHAT',
+                  style: TextStyle(
+                      color: tokens.primary,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1)),
             ),
             const Expanded(child: _ChatThread()),
           ],
@@ -101,13 +106,19 @@ class _MultiStreamScreenState extends ConsumerState<MultiStreamScreen> {
         children: [
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(20)),
-            child: const Text('LIVE', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+            decoration: BoxDecoration(
+                color: Colors.red, borderRadius: BorderRadius.circular(20)),
+            child: const Text('LIVE',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12)),
           ),
           const SizedBox(width: 12),
           Text(
             'Resonance Room #${widget.roomId}',
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+                color: Colors.white, fontWeight: FontWeight.bold),
           ),
           const Spacer(),
           IconButton(
@@ -127,13 +138,20 @@ class _MultiStreamScreenState extends ConsumerState<MultiStreamScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _CircleAction(icon: Icons.chat_bubble_outline, onTap: () => setState(() => _showChat = !_showChat)),
-          _CircleAction(icon: Icons.grid_view, onTap: () => setState(() => _layout = 'grid')),
-          _CircleAction(icon: Icons.person_pin, onTap: () => setState(() => _layout = 'focus')),
+          _CircleAction(
+              icon: Icons.chat_bubble_outline,
+              onTap: () => setState(() => _showChat = !_showChat)),
+          _CircleAction(
+              icon: Icons.grid_view,
+              onTap: () => setState(() => _layout = 'grid')),
+          _CircleAction(
+              icon: Icons.person_pin,
+              onTap: () => setState(() => _layout = 'focus')),
           _CircleAction(
             icon: Icons.add,
             color: tokens.primary,
-            onTap: () => setState(() => _streamerCount = (_streamerCount % 12) + 1),
+            onTap: () =>
+                setState(() => _streamerCount = (_streamerCount % 12) + 1),
           ),
           const _CircleAction(icon: Icons.mic, color: Colors.white24),
           const _CircleAction(icon: Icons.videocam, color: Colors.white24),
@@ -157,8 +175,13 @@ class _ChatThread extends StatelessWidget {
           text: TextSpan(
             style: const TextStyle(fontSize: 12),
             children: [
-              TextSpan(text: 'User$index: ', style: const TextStyle(color: Colors.white54, fontWeight: FontWeight.bold)),
-              const TextSpan(text: 'Sending neural waves to this channel! ⚡️', style: TextStyle(color: Colors.white)),
+              TextSpan(
+                  text: 'User$index: ',
+                  style: const TextStyle(
+                      color: Colors.white54, fontWeight: FontWeight.bold)),
+              const TextSpan(
+                  text: 'Sending neural waves to this channel! ⚡️',
+                  style: TextStyle(color: Colors.white)),
             ],
           ),
         ),
@@ -188,13 +211,16 @@ class _ReactionItem extends StatefulWidget {
   State<_ReactionItem> createState() => _ReactionItemState();
 }
 
-class _ReactionItemState extends State<_ReactionItem> with SingleTickerProviderStateMixin {
+class _ReactionItemState extends State<_ReactionItem>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 3))..repeat();
+    _controller =
+        AnimationController(vsync: this, duration: const Duration(seconds: 3))
+          ..repeat();
   }
 
   @override
@@ -214,7 +240,8 @@ class _ReactionItemState extends State<_ReactionItem> with SingleTickerProviderS
           right: 20 + (widget.index * 40.0),
           child: Opacity(
             opacity: (1.0 - val).clamp(0.0, 1.0),
-            child: Text(['⚡️', '❤️', '🔥', '💎', '💠'][widget.index % 5], style: const TextStyle(fontSize: 24)),
+            child: Text(['⚡️', '❤️', '🔥', '💎', '💠'][widget.index % 5],
+                style: const TextStyle(fontSize: 24)),
           ),
         );
       },
@@ -236,14 +263,18 @@ class _StreamView extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          const Center(child: Icon(Icons.person, color: Colors.white12, size: 64)),
+          const Center(
+              child: Icon(Icons.person, color: Colors.white12, size: 64)),
           Positioned(
             bottom: 8,
             left: 8,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(4)),
-              child: Text('Streamer #$index', style: const TextStyle(color: Colors.white, fontSize: 10)),
+              decoration: BoxDecoration(
+                  color: Colors.black54,
+                  borderRadius: BorderRadius.circular(4)),
+              child: Text('Streamer #$index',
+                  style: const TextStyle(color: Colors.white, fontSize: 10)),
             ),
           ),
         ],
@@ -257,7 +288,8 @@ class _CircleAction extends StatelessWidget {
   final VoidCallback? onTap;
   final Color color;
 
-  const _CircleAction({required this.icon, this.onTap, this.color = Colors.black45});
+  const _CircleAction(
+      {required this.icon, this.onTap, this.color = Colors.black45});
 
   @override
   Widget build(BuildContext context) {

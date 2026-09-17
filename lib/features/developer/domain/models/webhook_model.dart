@@ -4,6 +4,7 @@ part 'webhook_model.freezed.dart';
 part 'webhook_model.g.dart';
 
 enum WebhookRetryStrategy { linear, exponential }
+
 enum WebhookStatus { active, paused, failed }
 
 @freezed
@@ -11,11 +12,14 @@ class WebhookRetryPolicy with _$WebhookRetryPolicy {
   const factory WebhookRetryPolicy({
     @JsonKey(name: 'max_retries') @Default(3) int maxRetries,
     @JsonKey(name: 'retry_interval') @Default(60) int retryInterval,
-    @JsonKey(name: 'backoff_strategy') @Default(WebhookRetryStrategy.exponential) WebhookRetryStrategy backoffStrategy,
+    @JsonKey(name: 'backoff_strategy')
+    @Default(WebhookRetryStrategy.exponential)
+    WebhookRetryStrategy backoffStrategy,
     @Default(30) int timeout,
   }) = _WebhookRetryPolicy;
 
-  factory WebhookRetryPolicy.fromJson(Map<String, dynamic> json) => _$WebhookRetryPolicyFromJson(json);
+  factory WebhookRetryPolicy.fromJson(Map<String, dynamic> json) =>
+      _$WebhookRetryPolicyFromJson(json);
 }
 
 @freezed
@@ -29,7 +33,8 @@ class WebhookStats with _$WebhookStats {
     @JsonKey(name: 'last_failed_at') DateTime? lastFailedAt,
   }) = _WebhookStats;
 
-  factory WebhookStats.fromJson(Map<String, dynamic> json) => _$WebhookStatsFromJson(json);
+  factory WebhookStats.fromJson(Map<String, dynamic> json) =>
+      _$WebhookStatsFromJson(json);
 }
 
 @freezed
@@ -44,7 +49,8 @@ class WebhookDeliveryLog with _$WebhookDeliveryLog {
     @JsonKey(name: 'response_body') String? responseBody,
   }) = _WebhookDeliveryLog;
 
-  factory WebhookDeliveryLog.fromJson(Map<String, dynamic> json) => _$WebhookDeliveryLogFromJson(json);
+  factory WebhookDeliveryLog.fromJson(Map<String, dynamic> json) =>
+      _$WebhookDeliveryLogFromJson(json);
 }
 
 @freezed
@@ -64,12 +70,16 @@ class Webhook with _$Webhook {
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
     WebhookStats? stats,
     @Default(WebhookStatus.active) WebhookStatus status,
-    @JsonKey(name: 'delivery_logs') @Default([]) List<WebhookDeliveryLog> deliveryLogs,
+    @JsonKey(name: 'delivery_logs')
+    @Default([])
+    List<WebhookDeliveryLog> deliveryLogs,
   }) = _Webhook;
 
-  factory Webhook.fromJson(Map<String, dynamic> json) => _$WebhookFromJson(json);
+  factory Webhook.fromJson(Map<String, dynamic> json) =>
+      _$WebhookFromJson(json);
 
-  bool get isHealthy => status == WebhookStatus.active && (stats?.failureCount ?? 0) == 0;
+  bool get isHealthy =>
+      status == WebhookStatus.active && (stats?.failureCount ?? 0) == 0;
 
   bool get hasFailures => (stats?.failureCount ?? 0) > 0;
 }

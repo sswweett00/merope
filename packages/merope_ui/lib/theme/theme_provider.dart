@@ -44,7 +44,9 @@ class ThemeNotifier extends StateNotifier<ThemeState> {
     final newIsDark = !state.isDark;
     state = ThemeState(
       theme: newIsDark ? AppTheme.dark : AppTheme.light,
-      tokens: newIsDark ? MeropeColorTokens.darkDefault() : MeropeColorTokens.lightDefault(),
+      tokens: newIsDark
+          ? MeropeColorTokens.darkDefault()
+          : MeropeColorTokens.lightDefault(),
     );
   }
 }

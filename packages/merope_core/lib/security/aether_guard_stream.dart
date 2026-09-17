@@ -20,14 +20,16 @@ class AetherGuardStream {
     required String secretKey,
     Duration validDuration = const Duration(minutes: 15),
   }) {
-    final expiresAtMs = DateTime.now().add(validDuration).millisecondsSinceEpoch;
+    final expiresAtMs =
+        DateTime.now().add(validDuration).millisecondsSinceEpoch;
     final nonceHex = _generateNonceHex();
 
     final payloadToSign = '$streamId:$viewerId:$expiresAtMs:$nonceHex';
     final hmac = Hmac(sha256, utf8.encode(secretKey));
     final signatureHex = hmac.convert(utf8.encode(payloadToSign)).toString();
 
-    final dynamicWatermarkCode = _computeDynamicWatermark(viewerId, streamId, nonceHex);
+    final dynamicWatermarkCode =
+        _computeDynamicWatermark(viewerId, streamId, nonceHex);
 
     return AetherStreamToken(
       streamId: streamId,
@@ -48,7 +50,8 @@ class AetherGuardStream {
       return false; // Token expired
     }
 
-    final payloadToSign = '${token.streamId}:${token.viewerId}:${token.expiresAtMs}:${token.nonceHex}';
+    final payloadToSign =
+        '${token.streamId}:${token.viewerId}:${token.expiresAtMs}:${token.nonceHex}';
     final hmac = Hmac(sha256, utf8.encode(secretKey));
     final expectedSig = hmac.convert(utf8.encode(payloadToSign)).toString();
 
@@ -71,7 +74,8 @@ class AetherGuardStream {
     return expected == chunkSignatureHex;
   }
 
-  static String _computeDynamicWatermark(String viewerId, String streamId, String nonce) {
+  static String _computeDynamicWatermark(
+      String viewerId, String streamId, String nonce) {
     final raw = '$viewerId@$streamId#$nonce';
     final hash = sha256.convert(utf8.encode(raw)).toString();
     return hash.substring(0, 12).toUpperCase();
@@ -151,4 +155,5 @@ class AetherGuardStreamNotifier extends AsyncNotifier<void> {
 }
 
 final aetherGuardStreamProvider =
-    AsyncNotifierProvider<AetherGuardStreamNotifier, void>(AetherGuardStreamNotifier.new);
+    AsyncNotifierProvider<AetherGuardStreamNotifier, void>(
+        AetherGuardStreamNotifier.new);

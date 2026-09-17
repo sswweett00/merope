@@ -19,7 +19,8 @@ class SharedMemoryItem with _$SharedMemoryItem {
     Map<String, dynamic>? metadata,
   }) = _SharedMemoryItem;
 
-  factory SharedMemoryItem.fromJson(Map<String, dynamic> json) => _$SharedMemoryItemFromJson(json);
+  factory SharedMemoryItem.fromJson(Map<String, dynamic> json) =>
+      _$SharedMemoryItemFromJson(json);
 }
 
 @freezed
@@ -36,5 +37,6 @@ class SharedMemory with _$SharedMemory {
     @Default([]) List<String> tags,
   }) = _SharedMemory;
 
-  factory SharedMemory.fromJson(Map<String, dynamic> json) => _$SharedMemoryFromJson(json);
+  factory SharedMemory.fromJson(Map<String, dynamic> json) =>
+      _$SharedMemoryFromJson(json);
 }

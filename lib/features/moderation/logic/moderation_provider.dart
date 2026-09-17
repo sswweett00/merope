@@ -12,7 +12,17 @@ import '../data/datasources/moderation_remote_datasource.dart';
 import '../data/datasources/moderation_local_datasource.dart';
 import '../data/database/moderation_database.dart';
 
-enum ModerationCategoryFilter { all, bot, spam, harassment, impersonation, csam, copyright, misinformation, coordinatedInauthentic }
+enum ModerationCategoryFilter {
+  all,
+  bot,
+  spam,
+  harassment,
+  impersonation,
+  csam,
+  copyright,
+  misinformation,
+  coordinatedInauthentic
+}
 
 class ModerationFilterState {
   final ModerationCategoryFilter category;
@@ -54,14 +64,17 @@ class ModerationFilterState {
       ModerationCategoryFilter.impersonation => ModerationReason.impersonation,
       ModerationCategoryFilter.csam => ModerationReason.csam,
       ModerationCategoryFilter.copyright => ModerationReason.copyright,
-      ModerationCategoryFilter.misinformation => ModerationReason.misinformation,
-      ModerationCategoryFilter.coordinatedInauthentic => ModerationReason.coordinatedInauthentic,
+      ModerationCategoryFilter.misinformation =>
+        ModerationReason.misinformation,
+      ModerationCategoryFilter.coordinatedInauthentic =>
+        ModerationReason.coordinatedInauthentic,
       ModerationCategoryFilter.all => null,
     };
   }
 }
 
-final moderationFiltersProvider = StateProvider<ModerationFilterState>((ref) => const ModerationFilterState());
+final moderationFiltersProvider = StateProvider<ModerationFilterState>(
+    (ref) => const ModerationFilterState());
 
 class ModerationQueueState {
   final List<ModerationQueueItem> items;
@@ -145,7 +158,9 @@ class ModerationQueueNotifier extends AsyncNotifier<ModerationQueueState> {
           forceRefresh: forceRefresh,
         );
 
-        final newItems = forceRefresh ? page.items : [...state.valueOrNull?.items ?? [], ...page.items];
+        final newItems = forceRefresh
+            ? page.items
+            : [...state.valueOrNull?.items ?? [], ...page.items];
         final result = ModerationQueueState(
           items: newItems,
           nextCursor: page.nextCursor,
@@ -167,7 +182,8 @@ class ModerationQueueNotifier extends AsyncNotifier<ModerationQueueState> {
           state = AsyncValue.data(errorState);
           return errorState;
         }
-        await Future.delayed(Duration(milliseconds: 500 * (1 << (attempt - 1))));
+        await Future.delayed(
+            Duration(milliseconds: 500 * (1 << (attempt - 1))));
       }
     }
 
@@ -204,7 +220,9 @@ class ModerationQueueNotifier extends AsyncNotifier<ModerationQueueState> {
   }
 }
 
-final moderationQueueProvider = AsyncNotifierProvider<ModerationQueueNotifier, ModerationQueueState>(ModerationQueueNotifier.new);
+final moderationQueueProvider =
+    AsyncNotifierProvider<ModerationQueueNotifier, ModerationQueueState>(
+        ModerationQueueNotifier.new);
 
 class ModerationActionState {
   final bool isBanning;
@@ -255,7 +273,8 @@ class ModerationActionsController extends StateNotifier<ModerationActionState> {
     _cancelToken = CancelToken();
   }
 
-  Future<void> _applyOptimistic(List<ModerationQueueItem> optimisticItems) async {
+  Future<void> _applyOptimistic(
+      List<ModerationQueueItem> optimisticItems) async {
     final notifier = ref.read(moderationQueueProvider.notifier);
     if (notifier is ModerationQueueNotifier) {
       notifier.updateItems(optimisticItems);
@@ -265,13 +284,17 @@ class ModerationActionsController extends StateNotifier<ModerationActionState> {
   Future<void> banUser(String userId, {String? moderatorNote}) async {
     MeropeHaptics.trigger(MeropeTokens.hapticHeavy);
     _cancelPending();
-    final previousItems = ref.read(moderationQueueProvider).valueOrNull?.items ?? [];
+    final previousItems =
+        ref.read(moderationQueueProvider).valueOrNull?.items ?? [];
 
     try {
       state = state.copyWith(isBanning: true, errorMessage: null);
       final optimisticItems = previousItems.map((item) {
         if (item.userId == userId) {
-          return item.copyWith(lastAction: LastAction.banned, moderatorNote: moderatorNote, updatedAt: DateTime.now());
+          return item.copyWith(
+              lastAction: LastAction.banned,
+              moderatorNote: moderatorNote,
+              updatedAt: DateTime.now());
         }
         return item;
       }).toList();
@@ -281,7 +304,9 @@ class ModerationActionsController extends StateNotifier<ModerationActionState> {
 
       final currentState = ref.read(moderationQueueProvider);
       if (currentState.hasValue) {
-        final updated = currentState.value!.items.where((item) => item.userId != userId).toList();
+        final updated = currentState.value!.items
+            .where((item) => item.userId != userId)
+            .toList();
         await _applyOptimistic(updated);
       }
     } catch (e) {
@@ -303,13 +328,17 @@ class ModerationActionsController extends StateNotifier<ModerationActionState> {
   Future<void> markSafe(String userId, {String? moderatorNote}) async {
     MeropeHaptics.trigger(MeropeTokens.hapticLight);
     _cancelPending();
-    final previousItems = ref.read(moderationQueueProvider).valueOrNull?.items ?? [];
+    final previousItems =
+        ref.read(moderationQueueProvider).valueOrNull?.items ?? [];
 
     try {
       state = state.copyWith(isMarkingSafe: true, errorMessage: null);
       final optimisticItems = previousItems.map((item) {
         if (item.userId == userId) {
-          return item.copyWith(lastAction: LastAction.safe, moderatorNote: moderatorNote, updatedAt: DateTime.now());
+          return item.copyWith(
+              lastAction: LastAction.safe,
+              moderatorNote: moderatorNote,
+              updatedAt: DateTime.now());
         }
         return item;
       }).toList();
@@ -319,7 +348,9 @@ class ModerationActionsController extends StateNotifier<ModerationActionState> {
 
       final currentState = ref.read(moderationQueueProvider);
       if (currentState.hasValue) {
-        final updated = currentState.value!.items.where((item) => item.userId != userId).toList();
+        final updated = currentState.value!.items
+            .where((item) => item.userId != userId)
+            .toList();
         await _applyOptimistic(updated);
       }
     } catch (e) {
@@ -338,26 +369,34 @@ class ModerationActionsController extends StateNotifier<ModerationActionState> {
     state = state.copyWith(isMarkingSafe: false);
   }
 
-  Future<void> escalate(String userId, {String? target, String? moderatorNote}) async {
+  Future<void> escalate(String userId,
+      {String? target, String? moderatorNote}) async {
     MeropeHaptics.trigger(MeropeTokens.hapticMedium);
     _cancelPending();
-    final previousItems = ref.read(moderationQueueProvider).valueOrNull?.items ?? [];
+    final previousItems =
+        ref.read(moderationQueueProvider).valueOrNull?.items ?? [];
 
     try {
       state = state.copyWith(isEscalating: true, errorMessage: null);
       final optimisticItems = previousItems.map((item) {
         if (item.userId == userId) {
-          return item.copyWith(lastAction: LastAction.escalated, moderatorNote: moderatorNote, updatedAt: DateTime.now());
+          return item.copyWith(
+              lastAction: LastAction.escalated,
+              moderatorNote: moderatorNote,
+              updatedAt: DateTime.now());
         }
         return item;
       }).toList();
       await _applyOptimistic(optimisticItems);
 
-      await repository.escalate(userId: userId, target: target, moderatorNote: moderatorNote);
+      await repository.escalate(
+          userId: userId, target: target, moderatorNote: moderatorNote);
 
       final currentState = ref.read(moderationQueueProvider);
       if (currentState.hasValue) {
-        final updated = currentState.value!.items.where((item) => item.userId != userId).toList();
+        final updated = currentState.value!.items
+            .where((item) => item.userId != userId)
+            .toList();
         await _applyOptimistic(updated);
       }
     } catch (e) {
@@ -376,28 +415,40 @@ class ModerationActionsController extends StateNotifier<ModerationActionState> {
     state = state.copyWith(isEscalating: false);
   }
 
-  Future<void> bulkAction(ModerationActionType type, List<String> userIds, {String? moderatorNote}) async {
+  Future<void> bulkAction(ModerationActionType type, List<String> userIds,
+      {String? moderatorNote}) async {
     MeropeHaptics.trigger(MeropeTokens.hapticHeavy);
     _cancelPending();
-    final previousItems = ref.read(moderationQueueProvider).valueOrNull?.items ?? [];
+    final previousItems =
+        ref.read(moderationQueueProvider).valueOrNull?.items ?? [];
     final targetIds = userIds.toSet();
 
     try {
       state = state.copyWith(isBulkProcessing: true, errorMessage: null);
       final optimisticItems = previousItems.map((item) {
         if (targetIds.contains(item.userId)) {
-          final action = type == ModerationActionType.ban ? LastAction.banned : type == ModerationActionType.escalate ? LastAction.escalated : LastAction.safe;
-          return item.copyWith(lastAction: action, moderatorNote: moderatorNote, updatedAt: DateTime.now());
+          final action = type == ModerationActionType.ban
+              ? LastAction.banned
+              : type == ModerationActionType.escalate
+                  ? LastAction.escalated
+                  : LastAction.safe;
+          return item.copyWith(
+              lastAction: action,
+              moderatorNote: moderatorNote,
+              updatedAt: DateTime.now());
         }
         return item;
       }).toList();
       await _applyOptimistic(optimisticItems);
 
-      await repository.bulkAction(type: type, userIds: userIds, moderatorNote: moderatorNote);
+      await repository.bulkAction(
+          type: type, userIds: userIds, moderatorNote: moderatorNote);
 
       final currentState = ref.read(moderationQueueProvider);
       if (currentState.hasValue) {
-        final updated = currentState.value!.items.where((item) => !targetIds.contains(item.userId)).toList();
+        final updated = currentState.value!.items
+            .where((item) => !targetIds.contains(item.userId))
+            .toList();
         await _applyOptimistic(updated);
       }
     } catch (e) {
@@ -408,7 +459,8 @@ class ModerationActionsController extends StateNotifier<ModerationActionState> {
         return item;
       }).toList();
       await _applyOptimistic(rollbackItems);
-      state = state.copyWith(isBulkProcessing: false, errorMessage: e.toString());
+      state =
+          state.copyWith(isBulkProcessing: false, errorMessage: e.toString());
       await Future.delayed(const Duration(seconds: 3));
       state = state.copyWith(errorMessage: null);
       return;
@@ -422,16 +474,20 @@ final moderationRepositoryProvider = Provider<IModerationRepository>((ref) {
   final dio = apiClient.dio;
   return ModerationRepositoryImpl(
     remoteDataSource: ModerationRemoteDataSourceImpl(dio: dio),
-    localDataSource: ModerationLocalDataSourceImpl(ref.read(moderationDatabaseProvider)),
+    localDataSource:
+        ModerationLocalDataSourceImpl(ref.read(moderationDatabaseProvider)),
   );
 });
 
-final moderationActionsControllerProvider = StateNotifierProvider<ModerationActionsController, ModerationActionState>((ref) {
+final moderationActionsControllerProvider =
+    StateNotifierProvider<ModerationActionsController, ModerationActionState>(
+        (ref) {
   final repository = ref.watch(moderationRepositoryProvider);
   return ModerationActionsController(ref, repository);
 });
 
-class SuspiciousAccountsNotifier extends AsyncNotifier<List<SuspiciousAccount>> {
+class SuspiciousAccountsNotifier
+    extends AsyncNotifier<List<SuspiciousAccount>> {
   @override
   FutureOr<List<SuspiciousAccount>> build() async {
     // Simulated fetch
@@ -447,7 +503,9 @@ class SuspiciousAccountsNotifier extends AsyncNotifier<List<SuspiciousAccount>> 
   }
 }
 
-final suspiciousAccountsControllerProvider = AsyncNotifierProvider<SuspiciousAccountsNotifier, List<SuspiciousAccount>>(SuspiciousAccountsNotifier.new);
+final suspiciousAccountsControllerProvider =
+    AsyncNotifierProvider<SuspiciousAccountsNotifier, List<SuspiciousAccount>>(
+        SuspiciousAccountsNotifier.new);
 
 final moderationDatabaseProvider = Provider<ModerationDatabase>((ref) {
   return ModerationDatabase();

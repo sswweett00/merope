@@ -45,15 +45,19 @@ class ContentAnalytics {
     required this.dailyMetrics,
   });
 
-  factory ContentAnalytics.fromJson(Map<String, dynamic> json) => ContentAnalytics(
-    totalViews: json['totalViews'] as int? ?? 0,
-    totalLikes: json['totalLikes'] as int? ?? 0,
-    totalComments: json['totalComments'] as int? ?? 0,
-    totalShares: json['totalShares'] as int? ?? 0,
-    totalBookmarks: json['totalBookmarks'] as int? ?? 0,
-    engagementRate: (json['engagementRate'] as num?)?.toDouble() ?? 0.0,
-    dailyMetrics: (json['dailyMetrics'] as List?)?.map((e) => ContentMetric.fromJson(e)).toList() ?? [],
-  );
+  factory ContentAnalytics.fromJson(Map<String, dynamic> json) =>
+      ContentAnalytics(
+        totalViews: json['totalViews'] as int? ?? 0,
+        totalLikes: json['totalLikes'] as int? ?? 0,
+        totalComments: json['totalComments'] as int? ?? 0,
+        totalShares: json['totalShares'] as int? ?? 0,
+        totalBookmarks: json['totalBookmarks'] as int? ?? 0,
+        engagementRate: (json['engagementRate'] as num?)?.toDouble() ?? 0.0,
+        dailyMetrics: (json['dailyMetrics'] as List?)
+                ?.map((e) => ContentMetric.fromJson(e))
+                .toList() ??
+            [],
+      );
 }
 
 class ContentMetric {
@@ -72,12 +76,12 @@ class ContentMetric {
   });
 
   factory ContentMetric.fromJson(Map<String, dynamic> json) => ContentMetric(
-    date: json['date'] as String? ?? '',
-    views: json['views'] as int? ?? 0,
-    likes: json['likes'] as int? ?? 0,
-    comments: json['comments'] as int? ?? 0,
-    shares: json['shares'] as int? ?? 0,
-  );
+        date: json['date'] as String? ?? '',
+        views: json['views'] as int? ?? 0,
+        likes: json['likes'] as int? ?? 0,
+        comments: json['comments'] as int? ?? 0,
+        shares: json['shares'] as int? ?? 0,
+      );
 }
 
 class MediaUploadResult {
@@ -202,7 +206,8 @@ class ContentApiService {
 
   Future<bool> deleteComment(String postId, String commentId) async {
     try {
-      await _apiClient.delete('/api/v10/content/posts/$postId/comments/$commentId');
+      await _apiClient
+          .delete('/api/v10/content/posts/$postId/comments/$commentId');
       return true;
     } on MeropeAPIException catch (_) {
       return false;
@@ -217,7 +222,8 @@ class ContentApiService {
 
       final data = response.data;
       if (data == null) {
-        return SocialPostActionResult(success: false, error: 'No response from server');
+        return SocialPostActionResult(
+            success: false, error: 'No response from server');
       }
 
       final post = MeropeSignal.fromJson(data);
@@ -244,7 +250,8 @@ class ContentApiService {
 
       final data = response.data;
       if (data == null) {
-        return SocialPostActionResult(success: false, error: 'No response from server');
+        return SocialPostActionResult(
+            success: false, error: 'No response from server');
       }
 
       final post = MeropeSignal.fromJson(data);
@@ -298,7 +305,8 @@ class ContentApiService {
 
       final data = response.data;
       if (data == null) {
-        return MediaUploadResult(success: false, error: 'No response from server');
+        return MediaUploadResult(
+            success: false, error: 'No response from server');
       }
 
       return MediaUploadResult(
@@ -337,7 +345,8 @@ class ContentApiService {
 
       final data = response.data;
       if (data == null) {
-        return MediaUploadResult(success: false, error: 'No response from server');
+        return MediaUploadResult(
+            success: false, error: 'No response from server');
       }
 
       return MediaUploadResult(
@@ -374,7 +383,8 @@ class ContentApiService {
 
       final data = response.data;
       if (data == null) {
-        return SocialPostActionResult(success: false, error: 'No response from server');
+        return SocialPostActionResult(
+            success: false, error: 'No response from server');
       }
 
       final post = MeropeSignal.fromJson(data);
@@ -402,7 +412,8 @@ class ContentApiService {
 
       final data = response.data;
       if (data == null) {
-        return SocialPostActionResult(success: false, error: 'No response from server');
+        return SocialPostActionResult(
+            success: false, error: 'No response from server');
       }
 
       final post = MeropeSignal.fromJson(data);

@@ -13,7 +13,8 @@ class PresenceService implements IPresenceRepository {
   PresenceService(this._realtime);
 
   @override
-  Future<void> updatePresence({required String userId, required bool isOnline}) async {
+  Future<void> updatePresence(
+      {required String userId, required bool isOnline}) async {
     _presenceCache[userId] = isOnline ? 'online' : 'offline';
     if (_realtime.isConnected) {
       _realtime.sendEvent(

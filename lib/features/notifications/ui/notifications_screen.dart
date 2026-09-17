@@ -19,18 +19,22 @@ class NotificationsScreen extends ConsumerWidget {
       backgroundColor: Colors.transparent,
       body: Column(
         children: [
-          _Header(tokens: tokens, onClear: () => ref.read(notificationsListProvider.notifier).clearAll()),
+          _Header(
+              tokens: tokens,
+              onClear: () =>
+                  ref.read(notificationsListProvider.notifier).clearAll()),
           Expanded(
             child: notificationsAsync.when(
               data: (notifications) => notifications.isEmpty
-                ? _EmptyNotifications(tokens: tokens)
-                : ListView.builder(
-                    padding: const EdgeInsets.all(MeropeTokens.space24),
-                    itemCount: notifications.length,
-                    itemBuilder: (context, index) {
-                      return _NotificationItem(notification: notifications[index], tokens: tokens);
-                    },
-                  ),
+                  ? _EmptyNotifications(tokens: tokens)
+                  : ListView.builder(
+                      padding: const EdgeInsets.all(MeropeTokens.space24),
+                      itemCount: notifications.length,
+                      itemBuilder: (context, index) {
+                        return _NotificationItem(
+                            notification: notifications[index], tokens: tokens);
+                      },
+                    ),
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (err, _) => Center(child: Text('Signals Error: $err')),
             ),
@@ -85,9 +89,11 @@ class _EmptyNotifications extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.notifications_none, size: 64, color: tokens.textSecondary.withValues(alpha: 0.2)),
+          Icon(Icons.notifications_none,
+              size: 64, color: tokens.textSecondary.withValues(alpha: 0.2)),
           const SizedBox(height: 16),
-          Text('No new signals', style: TextStyle(color: tokens.textSecondary, fontSize: 16)),
+          Text('No new signals',
+              style: TextStyle(color: tokens.textSecondary, fontSize: 16)),
         ],
       ),
     );
@@ -112,12 +118,15 @@ class _NotificationItem extends StatelessWidget {
             text: TextSpan(
               style: TextStyle(color: tokens.textPrimary, fontSize: 14),
               children: [
-                TextSpan(text: '${notification.authorName} ', style: const TextStyle(fontWeight: FontWeight.bold)),
+                TextSpan(
+                    text: '${notification.authorName} ',
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
                 TextSpan(text: notification.message),
               ],
             ),
           ),
-          subtitle: Text(notification.timestamp, style: TextStyle(color: tokens.textSecondary, fontSize: 12)),
+          subtitle: Text(notification.timestamp,
+              style: TextStyle(color: tokens.textSecondary, fontSize: 12)),
           trailing: notification.type == MeropeNotificationType.sync
               ? TextButton(
                   onPressed: () {

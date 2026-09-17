@@ -27,9 +27,9 @@ abstract class AdLoadCallback {
 
 abstract class AdProvider {
   String get name;
-  
+
   Future<void> initialize();
-  
+
   Widget buildBannerAd({
     required AdUnit adUnit,
     AdRequest? request,

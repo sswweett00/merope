@@ -8,7 +8,8 @@ class SparkDiscoveryScreen extends ConsumerStatefulWidget {
   const SparkDiscoveryScreen({super.key});
 
   @override
-  ConsumerState<SparkDiscoveryScreen> createState() => _SparkDiscoveryScreenState();
+  ConsumerState<SparkDiscoveryScreen> createState() =>
+      _SparkDiscoveryScreenState();
 }
 
 class _SparkDiscoveryScreenState extends ConsumerState<SparkDiscoveryScreen> {
@@ -34,8 +35,8 @@ class _SparkDiscoveryScreenState extends ConsumerState<SparkDiscoveryScreen> {
           // Background - Search or Result
           Positioned.fill(
             child: _isSearching
-              ? _buildSearchingView(tokens)
-              : _buildMatchView(tokens),
+                ? _buildSearchingView(tokens)
+                : _buildMatchView(tokens),
           ),
 
           // Header
@@ -56,7 +57,8 @@ class _SparkDiscoveryScreenState extends ConsumerState<SparkDiscoveryScreen> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: Colors.white10,
                     borderRadius: BorderRadius.circular(20),
@@ -65,7 +67,8 @@ class _SparkDiscoveryScreenState extends ConsumerState<SparkDiscoveryScreen> {
                     children: [
                       Icon(Icons.bolt, color: tokens.primary, size: 16),
                       const SizedBox(width: 4),
-                      const Text('12 Tokens', style: TextStyle(color: Colors.white, fontSize: 12)),
+                      const Text('12 Tokens',
+                          style: TextStyle(color: Colors.white, fontSize: 12)),
                     ],
                   ),
                 ),
@@ -118,10 +121,11 @@ class _SparkDiscoveryScreenState extends ConsumerState<SparkDiscoveryScreen> {
           const SizedBox(height: 40),
           const Text(
             'Searching for new connections...',
-            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),
+            style: TextStyle(
+                color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),
           ),
           const Text(
-             'Finding your perfect match',
+            'Finding your perfect match',
             style: TextStyle(color: Colors.white54, fontSize: 13),
           ),
         ],
@@ -134,7 +138,8 @@ class _SparkDiscoveryScreenState extends ConsumerState<SparkDiscoveryScreen> {
       children: [
         Positioned.fill(
           child: MeropeImage(
-            imageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1964&auto=format&fit=crop',
+            imageUrl:
+                'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1964&auto=format&fit=crop',
             fit: BoxFit.cover,
           ),
         ),
@@ -142,7 +147,10 @@ class _SparkDiscoveryScreenState extends ConsumerState<SparkDiscoveryScreen> {
           child: Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.transparent, Colors.black.withValues(alpha: 0.7)],
+                colors: [
+                  Colors.transparent,
+                  Colors.black.withValues(alpha: 0.7)
+                ],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
@@ -159,7 +167,10 @@ class _SparkDiscoveryScreenState extends ConsumerState<SparkDiscoveryScreen> {
                 children: [
                   const Text(
                     'Elena Wave, 24',
-                    style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(width: 8),
                   Icon(Icons.verified, color: tokens.primary, size: 20),
@@ -220,7 +231,11 @@ class _SparkAction extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        Text(label, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500)),
+        Text(label,
+            style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w500)),
       ],
     );
   }
@@ -254,13 +269,16 @@ class _RippleAnimation extends StatefulWidget {
   State<_RippleAnimation> createState() => _RippleAnimationState();
 }
 
-class _RippleAnimationState extends State<_RippleAnimation> with SingleTickerProviderStateMixin {
+class _RippleAnimationState extends State<_RippleAnimation>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat();
+    _controller =
+        AnimationController(vsync: this, duration: const Duration(seconds: 2))
+          ..repeat();
   }
 
   @override
@@ -284,7 +302,9 @@ class _RippleAnimationState extends State<_RippleAnimation> with SingleTickerPro
                 height: 100 + progress * 200,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: widget.color.withValues(alpha: 1.0 - progress), width: 2),
+                  border: Border.all(
+                      color: widget.color.withValues(alpha: 1.0 - progress),
+                      width: 2),
                 ),
               );
             }),

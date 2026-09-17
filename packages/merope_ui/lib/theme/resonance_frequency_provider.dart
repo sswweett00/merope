@@ -1,7 +1,12 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-enum ResonanceEvent { signalBroadcast, messageSent, collectiveJoin, reactionBurst }
+enum ResonanceEvent {
+  signalBroadcast,
+  messageSent,
+  collectiveJoin,
+  reactionBurst
+}
 
 class ResonanceFrequency extends Notifier<double> {
   Timer? _decayTimer;
@@ -15,10 +20,18 @@ class ResonanceFrequency extends Notifier<double> {
   void triggerEvent(ResonanceEvent event) {
     double boost = 0.0;
     switch (event) {
-      case ResonanceEvent.signalBroadcast: boost = 0.5; break;
-      case ResonanceEvent.messageSent: boost = 0.2; break;
-      case ResonanceEvent.collectiveJoin: boost = 0.8; break;
-      case ResonanceEvent.reactionBurst: boost = 0.3; break;
+      case ResonanceEvent.signalBroadcast:
+        boost = 0.5;
+        break;
+      case ResonanceEvent.messageSent:
+        boost = 0.2;
+        break;
+      case ResonanceEvent.collectiveJoin:
+        boost = 0.8;
+        break;
+      case ResonanceEvent.reactionBurst:
+        boost = 0.3;
+        break;
     }
 
     state = (state + boost).clamp(1.0, 3.0);
@@ -37,4 +50,5 @@ class ResonanceFrequency extends Notifier<double> {
   }
 }
 
-final resonanceFrequencyProvider = NotifierProvider<ResonanceFrequency, double>(ResonanceFrequency.new);
+final resonanceFrequencyProvider =
+    NotifierProvider<ResonanceFrequency, double>(ResonanceFrequency.new);

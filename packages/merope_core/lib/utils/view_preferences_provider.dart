@@ -22,16 +22,23 @@ class ViewPreferences {
   }
 }
 
-class ViewPreferencesNotifier extends StateNotifier<Map<String, ViewPreferences>> {
-  ViewPreferencesNotifier() : super({
-    'feed': const ViewPreferences(mode: ViewMode.list, activeFilter: 'All'),
-    'market': const ViewPreferences(mode: ViewMode.grid, activeFilter: 'All'),
-    'talent': const ViewPreferences(mode: ViewMode.list, activeFilter: 'All'),
-    'orbit': const ViewPreferences(mode: ViewMode.focus, activeFilter: 'All'),
-  });
+class ViewPreferencesNotifier
+    extends StateNotifier<Map<String, ViewPreferences>> {
+  ViewPreferencesNotifier()
+      : super({
+          'feed':
+              const ViewPreferences(mode: ViewMode.list, activeFilter: 'All'),
+          'market':
+              const ViewPreferences(mode: ViewMode.grid, activeFilter: 'All'),
+          'talent':
+              const ViewPreferences(mode: ViewMode.list, activeFilter: 'All'),
+          'orbit':
+              const ViewPreferences(mode: ViewMode.focus, activeFilter: 'All'),
+        });
 
   void setMode(String domain, ViewMode mode) {
-    final current = state[domain] ?? const ViewPreferences(mode: ViewMode.list, activeFilter: 'All');
+    final current = state[domain] ??
+        const ViewPreferences(mode: ViewMode.list, activeFilter: 'All');
     state = {
       ...state,
       domain: current.copyWith(mode: mode),
@@ -39,7 +46,8 @@ class ViewPreferencesNotifier extends StateNotifier<Map<String, ViewPreferences>
   }
 
   void setFilter(String domain, String filter) {
-    final current = state[domain] ?? const ViewPreferences(mode: ViewMode.list, activeFilter: 'All');
+    final current = state[domain] ??
+        const ViewPreferences(mode: ViewMode.list, activeFilter: 'All');
     state = {
       ...state,
       domain: current.copyWith(activeFilter: filter),
@@ -47,6 +55,7 @@ class ViewPreferencesNotifier extends StateNotifier<Map<String, ViewPreferences>
   }
 }
 
-final viewPreferencesProvider = StateNotifierProvider<ViewPreferencesNotifier, Map<String, ViewPreferences>>((ref) {
+final viewPreferencesProvider = StateNotifierProvider<ViewPreferencesNotifier,
+    Map<String, ViewPreferences>>((ref) {
   return ViewPreferencesNotifier();
 });

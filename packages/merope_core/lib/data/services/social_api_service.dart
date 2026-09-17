@@ -76,7 +76,8 @@ class SocialApiService {
 
       final data = response.data;
       if (data == null) {
-        return SocialPostActionResult(success: false, error: 'No response from server');
+        return SocialPostActionResult(
+            success: false, error: 'No response from server');
       }
 
       final post = MeropeSignal.fromJson(data);
@@ -104,7 +105,8 @@ class SocialApiService {
 
       final data = response.data;
       if (data == null) {
-        return SocialPostActionResult(success: false, error: 'No response from server');
+        return SocialPostActionResult(
+            success: false, error: 'No response from server');
       }
 
       final post = MeropeSignal.fromJson(data);
@@ -131,7 +133,8 @@ class SocialApiService {
 
       final data = response.data;
       if (data == null) {
-        return SocialPostActionResult(success: false, error: 'No response from server');
+        return SocialPostActionResult(
+            success: false, error: 'No response from server');
       }
 
       final post = MeropeSignal.fromJson(data);
@@ -158,7 +161,8 @@ class SocialApiService {
 
       final data = response.data;
       if (data == null) {
-        return SocialPostActionResult(success: false, error: 'No response from server');
+        return SocialPostActionResult(
+            success: false, error: 'No response from server');
       }
 
       final post = MeropeSignal.fromJson(data);
@@ -205,7 +209,8 @@ class SocialApiService {
     }
   }
 
-  Future<SearchResult> searchUsers(String query, {int limit = 20, String? cursor}) async {
+  Future<SearchResult> searchUsers(String query,
+      {int limit = 20, String? cursor}) async {
     try {
       final queryParams = <String, dynamic>{
         'q': query,
@@ -229,9 +234,7 @@ class SocialApiService {
           [];
 
       final postsJson = data['posts'] as List? ?? [];
-      final posts = postsJson
-          .map((e) => MeropeSignal.fromJson(e))
-          .toList();
+      final posts = postsJson.map((e) => MeropeSignal.fromJson(e)).toList();
 
       return SearchResult(
         users: users,
@@ -261,7 +264,8 @@ class SocialApiService {
     }
   }
 
-  Future<List<UserProfile>> getFollowers(String userId, {int limit = 20, String? cursor}) async {
+  Future<List<UserProfile>> getFollowers(String userId,
+      {int limit = 20, String? cursor}) async {
     try {
       final queryParams = <String, dynamic>{'limit': limit};
       if (cursor != null) queryParams['cursor'] = cursor;
@@ -285,7 +289,8 @@ class SocialApiService {
     }
   }
 
-  Future<List<UserProfile>> getFollowing(String userId, {int limit = 20, String? cursor}) async {
+  Future<List<UserProfile>> getFollowing(String userId,
+      {int limit = 20, String? cursor}) async {
     try {
       final queryParams = <String, dynamic>{'limit': limit};
       if (cursor != null) queryParams['cursor'] = cursor;

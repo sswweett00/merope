@@ -35,7 +35,11 @@ class _ServerConnectionBanner extends ConsumerWidget {
               SizedBox(width: 8),
               Text(
                 'SERVER CONNECTION LOST',
-                style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1),
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1),
               ),
             ],
           ),
@@ -52,7 +56,8 @@ class MeropeApp extends ConsumerStatefulWidget {
   ConsumerState<MeropeApp> createState() => _MeropeAppState();
 }
 
-class _MeropeAppState extends ConsumerState<MeropeApp> with WidgetsBindingObserver {
+class _MeropeAppState extends ConsumerState<MeropeApp>
+    with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();

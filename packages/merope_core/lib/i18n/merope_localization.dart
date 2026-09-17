@@ -4,7 +4,8 @@ class MeropeLocalization {
   final Locale locale;
   MeropeLocalization(this.locale);
 
-  static const LocalizationsDelegate<MeropeLocalization> delegate = _MeropeLocalizationDelegate();
+  static const LocalizationsDelegate<MeropeLocalization> delegate =
+      _MeropeLocalizationDelegate();
 
   static MeropeLocalization of(BuildContext context) {
     return Localizations.of<MeropeLocalization>(context, MeropeLocalization)!;
@@ -77,14 +78,16 @@ class MeropeLocalization {
   }
 }
 
-class _MeropeLocalizationDelegate extends LocalizationsDelegate<MeropeLocalization> {
+class _MeropeLocalizationDelegate
+    extends LocalizationsDelegate<MeropeLocalization> {
   const _MeropeLocalizationDelegate();
 
   @override
   bool isSupported(Locale locale) => ['en', 'tr'].contains(locale.languageCode);
 
   @override
-  Future<MeropeLocalization> load(Locale locale) async => MeropeLocalization(locale);
+  Future<MeropeLocalization> load(Locale locale) async =>
+      MeropeLocalization(locale);
 
   @override
   bool shouldReload(_MeropeLocalizationDelegate old) => false;

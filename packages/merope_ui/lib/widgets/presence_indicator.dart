@@ -29,7 +29,10 @@ class PresenceIndicator extends StatelessWidget {
           const SizedBox(width: 8),
           Text(
             activity!,
-            style: TextStyle(color: tokens.textSecondary, fontSize: 11, fontStyle: FontStyle.italic),
+            style: TextStyle(
+                color: tokens.textSecondary,
+                fontSize: 11,
+                fontStyle: FontStyle.italic),
           ),
         ],
       );
@@ -46,17 +49,23 @@ class PresenceIndicator extends StatelessWidget {
         color: color,
         shape: BoxShape.circle,
         border: Border.all(color: Colors.white, width: 2),
-        boxShadow: [BoxShadow(color: color.withValues(alpha: 0.4), blurRadius: 4)],
+        boxShadow: [
+          BoxShadow(color: color.withValues(alpha: 0.4), blurRadius: 4)
+        ],
       ),
     );
   }
 
   Color _getStatusColor() {
     switch (status) {
-      case PresenceStatus.online: return tokens.onlineStatus;
-      case PresenceStatus.idle: return tokens.idleStatus;
-      case PresenceStatus.dnd: return tokens.dndStatus;
-      case PresenceStatus.offline: return tokens.offlineStatus;
+      case PresenceStatus.online:
+        return tokens.onlineStatus;
+      case PresenceStatus.idle:
+        return tokens.idleStatus;
+      case PresenceStatus.dnd:
+        return tokens.dndStatus;
+      case PresenceStatus.offline:
+        return tokens.offlineStatus;
     }
   }
 }

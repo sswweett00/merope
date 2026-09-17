@@ -39,7 +39,8 @@ class FeedSkeleton extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              Container(width: double.infinity, height: 12, color: Colors.white),
+              Container(
+                  width: double.infinity, height: 12, color: Colors.white),
               const SizedBox(height: 8),
               Container(width: 200, height: 12, color: Colors.white),
               const SizedBox(height: 16),

@@ -44,7 +44,8 @@ class TalentOpportunityCard extends StatelessWidget {
                     height: 48,
                     decoration: BoxDecoration(
                       color: tokens.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(MeropeTokens.radiusSm),
+                      borderRadius:
+                          BorderRadius.circular(MeropeTokens.radiusSm),
                     ),
                     child: Icon(Icons.business, color: tokens.primary),
                   ),
@@ -72,24 +73,34 @@ class TalentOpportunityCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  Icon(Icons.bookmark_border, color: tokens.textSecondary, size: 20),
+                  Icon(Icons.bookmark_border,
+                      color: tokens.textSecondary, size: 20),
                 ],
               ),
               const SizedBox(height: 16),
               Row(
                 children: [
-                  _InfoItem(icon: Icons.location_on_outlined, label: location, tokens: tokens),
+                  _InfoItem(
+                      icon: Icons.location_on_outlined,
+                      label: location,
+                      tokens: tokens),
                   const SizedBox(width: 16),
-                  _InfoItem(icon: Icons.work_outline, label: type, tokens: tokens),
+                  _InfoItem(
+                      icon: Icons.work_outline, label: type, tokens: tokens),
                   const SizedBox(width: 16),
-                  _InfoItem(icon: Icons.payments_outlined, label: compensation, tokens: tokens),
+                  _InfoItem(
+                      icon: Icons.payments_outlined,
+                      label: compensation,
+                      tokens: tokens),
                 ],
               ),
               const SizedBox(height: 16),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
-                children: tags.map((tag) => _Tag(label: tag, tokens: tokens)).toList(),
+                children: tags
+                    .map((tag) => _Tag(label: tag, tokens: tokens))
+                    .toList(),
               ),
             ],
           ),
@@ -104,7 +115,8 @@ class _InfoItem extends StatelessWidget {
   final String label;
   final MeropeColorTokens tokens;
 
-  const _InfoItem({required this.icon, required this.label, required this.tokens});
+  const _InfoItem(
+      {required this.icon, required this.label, required this.tokens});
 
   @override
   Widget build(BuildContext context) {

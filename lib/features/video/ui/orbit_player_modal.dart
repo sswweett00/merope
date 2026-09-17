@@ -47,7 +47,8 @@ class _OrbitPlayerModalState extends ConsumerState<OrbitPlayerModal> {
                     const SizedBox(height: 16),
                     Text(
                       'Resonating: ${widget.title}',
-                      style: const TextStyle(color: Colors.white70, fontSize: 18),
+                      style:
+                          const TextStyle(color: Colors.white70, fontSize: 18),
                     ),
                   ],
                 ),
@@ -61,20 +62,32 @@ class _OrbitPlayerModalState extends ConsumerState<OrbitPlayerModal> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                    icon:
+                        const Icon(Icons.close, color: Colors.white, size: 28),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                   Text(
                     widget.title,
-                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold),
                   ),
                   DropdownButton<String>(
                     dropdownColor: Colors.black87,
                     value: _fidelityLevel,
                     underline: const SizedBox.shrink(),
                     icon: const Icon(Icons.layers, color: Colors.white),
-                    items: ['Quantum 8K', 'Hyper Fidelity', 'Standard Node', 'Low Latency']
-                        .map((q) => DropdownMenuItem(value: q, child: Text(q, style: const TextStyle(color: Colors.white))))
+                    items: [
+                      'Quantum 8K',
+                      'Hyper Fidelity',
+                      'Standard Node',
+                      'Low Latency'
+                    ]
+                        .map((q) => DropdownMenuItem(
+                            value: q,
+                            child: Text(q,
+                                style: const TextStyle(color: Colors.white))))
                         .toList(),
                     onChanged: (val) {
                       if (val != null) setState(() => _fidelityLevel = val);
@@ -108,18 +121,32 @@ class _OrbitPlayerModalState extends ConsumerState<OrbitPlayerModal> {
                         Row(
                           children: [
                             IconButton(
-                              icon: Icon(_isActive ? Icons.pause : Icons.play_arrow, color: Colors.white, size: 32),
-                              onPressed: () => setState(() => _isActive = !_isActive),
+                              icon: Icon(
+                                  _isActive ? Icons.pause : Icons.play_arrow,
+                                  color: Colors.white,
+                                  size: 32),
+                              onPressed: () =>
+                                  setState(() => _isActive = !_isActive),
                             ),
                             const SizedBox(width: 8),
-                            const Text('Node 42 / Hub 100', style: TextStyle(color: Colors.white70)),
+                            const Text('Node 42 / Hub 100',
+                                style: TextStyle(color: Colors.white70)),
                           ],
                         ),
                         Row(
                           children: [
-                            IconButton(icon: const Icon(Icons.closed_caption, color: Colors.white), onPressed: () {}),
-                            IconButton(icon: const Icon(Icons.graphic_eq, color: Colors.white), onPressed: () {}),
-                            IconButton(icon: const Icon(Icons.aspect_ratio, color: Colors.white), onPressed: () {}),
+                            IconButton(
+                                icon: const Icon(Icons.closed_caption,
+                                    color: Colors.white),
+                                onPressed: () {}),
+                            IconButton(
+                                icon: const Icon(Icons.graphic_eq,
+                                    color: Colors.white),
+                                onPressed: () {}),
+                            IconButton(
+                                icon: const Icon(Icons.aspect_ratio,
+                                    color: Colors.white),
+                                onPressed: () {}),
                           ],
                         ),
                       ],

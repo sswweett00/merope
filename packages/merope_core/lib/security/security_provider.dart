@@ -11,4 +11,5 @@ class SecuritySettings extends Notifier<bool> {
   }
 }
 
-final securitySettingsProvider = NotifierProvider<SecuritySettings, bool>(SecuritySettings.new);
+final securitySettingsProvider =
+    NotifierProvider<SecuritySettings, bool>(SecuritySettings.new);

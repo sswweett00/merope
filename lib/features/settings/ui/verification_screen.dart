@@ -23,12 +23,17 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
       backgroundColor: tokens.background,
       appBar: AppBar(
         backgroundColor: tokens.surface,
-        title: Text(_currentStep == 0 ? 'Verified Status' : 'Handshake Phase $_currentStep', style: TextStyle(color: tokens.textPrimary)),
+        title: Text(
+            _currentStep == 0
+                ? 'Verified Status'
+                : 'Handshake Phase $_currentStep',
+            style: TextStyle(color: tokens.textPrimary)),
         iconTheme: IconThemeData(color: tokens.textPrimary),
       ),
       body: AnimatedSwitcher(
         duration: MeropeTokens.durationNormal,
-        child: _currentStep == 0 ? _buildIntro(tokens) : _buildUploadStep(tokens),
+        child:
+            _currentStep == 0 ? _buildIntro(tokens) : _buildUploadStep(tokens),
       ),
     );
   }
@@ -53,7 +58,10 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
           const SizedBox(height: 32),
           Text(
             'Identity Handshake',
-            style: TextStyle(color: tokens.textPrimary, fontSize: 24, fontWeight: FontWeight.bold),
+            style: TextStyle(
+                color: tokens.textPrimary,
+                fontSize: 24,
+                fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           Text(
@@ -100,9 +108,15 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
         children: [
           Icon(Icons.cloud_upload_outlined, size: 64, color: tokens.primary),
           const SizedBox(height: 32),
-          Text('Upload National ID', style: TextStyle(color: tokens.textPrimary, fontSize: 20, fontWeight: FontWeight.bold)),
+          Text('Upload National ID',
+              style: TextStyle(
+                  color: tokens.textPrimary,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
-          Text('Ensure all edges are visible and the image is clear.', style: TextStyle(color: tokens.textSecondary, fontSize: 14), textAlign: TextAlign.center),
+          Text('Ensure all edges are visible and the image is clear.',
+              style: TextStyle(color: tokens.textSecondary, fontSize: 14),
+              textAlign: TextAlign.center),
           const SizedBox(height: 48),
           Container(
             height: 200,
@@ -110,17 +124,22 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
             decoration: BoxDecoration(
               color: tokens.surfaceVariant.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: tokens.primary.withValues(alpha: 0.3), width: 2, style: BorderStyle.none), // Simulated border
+              border: Border.all(
+                  color: tokens.primary.withValues(alpha: 0.3),
+                  width: 2,
+                  style: BorderStyle.none), // Simulated border
             ),
-            child: Icon(Icons.add_a_photo_outlined, color: tokens.textSecondary, size: 32),
+            child: Icon(Icons.add_a_photo_outlined,
+                color: tokens.textSecondary, size: 32),
           ),
           const SizedBox(height: 48),
           MeropeButton(
             text: 'Simulate Upload',
             onPressed: () {
-               MeropeHaptics.neuralSyncPulse();
-               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Identity packet transmitted.')));
-               setState(() => _currentStep = 0);
+              MeropeHaptics.neuralSyncPulse();
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                  content: Text('Identity packet transmitted.')));
+              setState(() => _currentStep = 0);
             },
             style: MeropeButtonStyle.primary,
           ),
@@ -155,8 +174,14 @@ class _VerificationRequirement extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.bold, fontSize: 16)),
-                Text(subtitle, style: TextStyle(color: tokens.textSecondary, fontSize: 13)),
+                Text(title,
+                    style: TextStyle(
+                        color: tokens.textPrimary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16)),
+                Text(subtitle,
+                    style:
+                        TextStyle(color: tokens.textSecondary, fontSize: 13)),
               ],
             ),
           ),

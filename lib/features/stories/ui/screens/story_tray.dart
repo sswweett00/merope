@@ -31,7 +31,8 @@ class StoryTray extends ConsumerWidget {
           itemCount: 5,
           itemBuilder: (context, index) => _StorySkeleton(tokens: tokens),
         ),
-        error: (err, _) => Center(child: Text('!', style: TextStyle(color: tokens.error))),
+        error: (err, _) =>
+            Center(child: Text('!', style: TextStyle(color: tokens.error))),
       ),
     );
   }
@@ -70,7 +71,8 @@ class _StoryItem extends StatelessWidget {
               user.isMe ? 'Sen' : (user.displayName ?? user.username),
               style: TextStyle(
                 fontSize: 11,
-                color: user.isViewed ? tokens.textSecondary : tokens.textPrimary,
+                color:
+                    user.isViewed ? tokens.textSecondary : tokens.textPrimary,
                 fontWeight: user.isViewed ? FontWeight.normal : FontWeight.w600,
               ),
               maxLines: 1,

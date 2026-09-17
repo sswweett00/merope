@@ -23,7 +23,10 @@ class PrismGridProfile extends ConsumerWidget {
           const SizedBox(height: 12),
           Text(
             'Prism Curator',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: tokens.textPrimary),
+            style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                color: tokens.textPrimary),
           ),
           Text(
             'Refracting Light into Neural Art',
@@ -45,10 +48,12 @@ class PrismGridProfile extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: tokens.surface,
                   borderRadius: BorderRadius.circular(MeropeTokens.radiusSm),
-                  border: Border.all(color: tokens.border.withValues(alpha: 0.3)),
+                  border:
+                      Border.all(color: tokens.border.withValues(alpha: 0.3)),
                 ),
                 child: Center(
-                  child: Icon(Icons.grain, color: tokens.primary.withValues(alpha: 0.3)),
+                  child: Icon(Icons.grain,
+                      color: tokens.primary.withValues(alpha: 0.3)),
                 ),
               );
             },

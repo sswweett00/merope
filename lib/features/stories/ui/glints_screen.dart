@@ -46,7 +46,8 @@ class _GlintsScreenState extends ConsumerState<GlintsScreen> {
                   const Text('⚡ ', style: TextStyle(fontSize: 18)),
                   Text(
                     '${currentGlint['streak']} Day Streak',
-                    style: TextStyle(color: tokens.primary, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        color: tokens.primary, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
@@ -74,14 +75,19 @@ class _GlintsScreenState extends ConsumerState<GlintsScreen> {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: isSelected ? tokens.primary : tokens.border,
+                              color:
+                                  isSelected ? tokens.primary : tokens.border,
                               width: isSelected ? 3 : 1.5,
                             ),
                           ),
                           child: Center(
                             child: Icon(
-                              glint['isMe'] == true ? Icons.add_a_photo : Icons.blur_on,
-                              color: isSelected ? tokens.primary : tokens.textSecondary,
+                              glint['isMe'] == true
+                                  ? Icons.add_a_photo
+                                  : Icons.blur_on,
+                              color: isSelected
+                                  ? tokens.primary
+                                  : tokens.textSecondary,
                             ),
                           ),
                         ),
@@ -90,7 +96,9 @@ class _GlintsScreenState extends ConsumerState<GlintsScreen> {
                           glint['name'] as String,
                           style: TextStyle(
                             fontSize: 12,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
                             color: tokens.textPrimary,
                           ),
                         ),
@@ -116,11 +124,16 @@ class _GlintsScreenState extends ConsumerState<GlintsScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.auto_awesome, size: 80, color: tokens.primary.withValues(alpha: 0.6)),
+                        Icon(Icons.auto_awesome,
+                            size: 80,
+                            color: tokens.primary.withValues(alpha: 0.6)),
                         const SizedBox(height: 12),
                         Text(
                           '${currentGlint['name']} Burst',
-                          style: TextStyle(color: tokens.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              color: tokens.textPrimary,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
@@ -137,7 +150,9 @@ class _GlintsScreenState extends ConsumerState<GlintsScreen> {
                             height: 4,
                             margin: const EdgeInsets.symmetric(horizontal: 2),
                             decoration: BoxDecoration(
-                              color: i == 0 ? tokens.primary : tokens.border.withValues(alpha: 0.4),
+                              color: i == 0
+                                  ? tokens.primary
+                                  : tokens.border.withValues(alpha: 0.4),
                               borderRadius: BorderRadius.circular(2),
                             ),
                           ),

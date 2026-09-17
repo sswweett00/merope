@@ -54,8 +54,10 @@ class OrbitFeed extends AsyncNotifier<List<OrbitVideo>> {
         id: 'v1',
         title: 'Neural Singularity: Phase 1',
         authorName: 'Merope Core',
-        videoUrl: 'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4',
-        thumbnailUrl: 'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070&auto=format&fit=crop',
+        videoUrl:
+            'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4',
+        thumbnailUrl:
+            'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070&auto=format&fit=crop',
         likes: 12500,
         echoes: 450,
       ),
@@ -63,8 +65,10 @@ class OrbitFeed extends AsyncNotifier<List<OrbitVideo>> {
         id: 'v2',
         title: 'Resonance Waves in Motion',
         authorName: 'WaveMaster',
-        videoUrl: 'https://test-videos.co.uk/vids/jellyfish/mp4/h264/720/Jellyfish_720_10s_1MB.mp4',
-        thumbnailUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1964&auto=format&fit=crop',
+        videoUrl:
+            'https://test-videos.co.uk/vids/jellyfish/mp4/h264/720/Jellyfish_720_10s_1MB.mp4',
+        thumbnailUrl:
+            'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1964&auto=format&fit=crop',
         likes: 8400,
         echoes: 120,
       ),
@@ -105,7 +109,8 @@ class OrbitFeed extends AsyncNotifier<List<OrbitVideo>> {
   }
 }
 
-final orbitFeedProvider = AsyncNotifierProvider<OrbitFeed, List<OrbitVideo>>(OrbitFeed.new);
+final orbitFeedProvider =
+    AsyncNotifierProvider<OrbitFeed, List<OrbitVideo>>(OrbitFeed.new);
 
 class MiniPlayerState {
   final OrbitVideo? activeVideo;
@@ -127,4 +132,6 @@ class MiniPlayerNotifier extends Notifier<MiniPlayerState> {
   }
 }
 
-final miniPlayerProvider = NotifierProvider<MiniPlayerNotifier, MiniPlayerState>(MiniPlayerNotifier.new);
+final miniPlayerProvider =
+    NotifierProvider<MiniPlayerNotifier, MiniPlayerState>(
+        MiniPlayerNotifier.new);

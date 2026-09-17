@@ -48,7 +48,13 @@ class MarketplaceScreen extends ConsumerWidget {
           ),
           const UniversalViewControls(
             domain: 'market',
-            filters: const ['All', 'Hardware', 'Software', 'Digital', 'Services'],
+            filters: const [
+              'All',
+              'Hardware',
+              'Software',
+              'Digital',
+              'Services'
+            ],
           ),
           Expanded(
             child: marketplaceAsync.when(
@@ -59,7 +65,9 @@ class MarketplaceScreen extends ConsumerWidget {
                 }).toList();
 
                 if (filtered.isEmpty) {
-                  return Center(child: Text('No items found', style: TextStyle(color: tokens.textSecondary)));
+                  return Center(
+                      child: Text('No items found',
+                          style: TextStyle(color: tokens.textSecondary)));
                 }
 
                 return DynamicLayoutEngine(
@@ -147,7 +155,8 @@ class _ProductCard extends StatelessWidget {
 
     if (isCompact) {
       return ListTile(
-        onTap: () => EscrowPaymentSheet.show(context, productId: id, title: title, price: price, tokens: tokens),
+        onTap: () => EscrowPaymentSheet.show(context,
+            productId: id, title: title, price: price, tokens: tokens),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: Hero(
           tag: heroTag,
@@ -158,18 +167,27 @@ class _ProductCard extends StatelessWidget {
               color: tokens.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(Icons.shopping_bag_outlined, color: tokens.primary, size: 20),
+            child: Icon(Icons.shopping_bag_outlined,
+                color: tokens.primary, size: 20),
           ),
         ),
-        title: Text(title, style: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.bold, fontSize: 14)),
-        subtitle: Text(category, style: TextStyle(color: tokens.textSecondary, fontSize: 12)),
-        trailing: Text(price, style: TextStyle(color: tokens.primary, fontWeight: FontWeight.bold)),
+        title: Text(title,
+            style: TextStyle(
+                color: tokens.textPrimary,
+                fontWeight: FontWeight.bold,
+                fontSize: 14)),
+        subtitle: Text(category,
+            style: TextStyle(color: tokens.textSecondary, fontSize: 12)),
+        trailing: Text(price,
+            style:
+                TextStyle(color: tokens.primary, fontWeight: FontWeight.bold)),
       );
     }
 
     return MeropeCard(
       color: tokens.surface,
-      onTap: () => EscrowPaymentSheet.show(context, productId: id, title: title, price: price, tokens: tokens),
+      onTap: () => EscrowPaymentSheet.show(context,
+          productId: id, title: title, price: price, tokens: tokens),
       child: Stack(
         children: [
           Column(
@@ -182,9 +200,11 @@ class _ProductCard extends StatelessWidget {
                     width: double.infinity,
                     decoration: BoxDecoration(
                       color: tokens.primary.withValues(alpha: 0.05),
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(MeropeTokens.radiusMd)),
+                      borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(MeropeTokens.radiusMd)),
                     ),
-                    child: Icon(Icons.shopping_bag_outlined, color: tokens.primary, size: 40),
+                    child: Icon(Icons.shopping_bag_outlined,
+                        color: tokens.primary, size: 40),
                   ),
                 ),
               ),
@@ -198,15 +218,20 @@ class _ProductCard extends StatelessWidget {
                       children: [
                         Text(
                           category,
-                          style: TextStyle(color: tokens.textSecondary, fontSize: 10, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              color: tokens.textSecondary,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold),
                         ),
                         Row(
                           children: [
-                            const Icon(Icons.star, color: Colors.amber, size: 12),
+                            const Icon(Icons.star,
+                                color: Colors.amber, size: 12),
                             const SizedBox(width: 2),
                             Text(
                               rating.toString(),
-                              style: TextStyle(color: tokens.textSecondary, fontSize: 10),
+                              style: TextStyle(
+                                  color: tokens.textSecondary, fontSize: 10),
                             ),
                           ],
                         ),
@@ -215,7 +240,10 @@ class _ProductCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       title,
-                      style: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.bold, fontSize: 14),
+                      style: TextStyle(
+                          color: tokens.textPrimary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -225,12 +253,17 @@ class _ProductCard extends StatelessWidget {
                       children: [
                         Text(
                           price,
-                          style: TextStyle(color: tokens.primary, fontWeight: FontWeight.w900, fontSize: 16),
+                          style: TextStyle(
+                              color: tokens.primary,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 16),
                         ),
                         Container(
                           padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(color: tokens.primary, shape: BoxShape.circle),
-                          child: const Icon(Icons.add, color: Colors.white, size: 14),
+                          decoration: BoxDecoration(
+                              color: tokens.primary, shape: BoxShape.circle),
+                          child: const Icon(Icons.add,
+                              color: Colors.white, size: 14),
                         ),
                       ],
                     ),

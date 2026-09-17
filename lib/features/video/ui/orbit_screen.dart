@@ -33,7 +33,9 @@ class _OrbitScreenState extends ConsumerState<OrbitScreen> {
         children: [
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
-            child: _viewMode == 0 ? _buildClipsContent(prefs, tokens) : const SparkDiscoveryScreen(),
+            child: _viewMode == 0
+                ? _buildClipsContent(prefs, tokens)
+                : const SparkDiscoveryScreen(),
           ),
           if (prefs.mode != ViewMode.focus || _viewMode == 1)
             Positioned(
@@ -94,27 +96,37 @@ class _OrbitScreenState extends ConsumerState<OrbitScreen> {
       data: (videos) {
         final filtered = videos.where((v) {
           if (prefs.activeFilter == 'All') return true;
-          return v.title.contains(prefs.activeFilter); // Simplified matching for mock
+          return v.title
+              .contains(prefs.activeFilter); // Simplified matching for mock
         }).toList();
 
         if (filtered.isEmpty) {
-          return const Center(child: Text('No clips found', style: TextStyle(color: Colors.white70)));
+          return const Center(
+              child: Text('No clips found',
+                  style: TextStyle(color: Colors.white70)));
         }
 
         return DynamicLayoutEngine(
           items: filtered,
           mode: prefs.mode,
-          padding: prefs.mode == ViewMode.focus ? EdgeInsets.zero : const EdgeInsets.only(top: 200, left: 16, right: 16),
+          padding: prefs.mode == ViewMode.focus
+              ? EdgeInsets.zero
+              : const EdgeInsets.only(top: 200, left: 16, right: 16),
           itemBuilder: (context, index, video) {
             if (prefs.mode == ViewMode.grid || prefs.mode == ViewMode.masonry) {
               return _VideoPreviewCard(video: video, tokens: tokens);
             }
-            return OrbitVideoItem(video: video, tokens: tokens, isFocus: prefs.mode == ViewMode.focus);
+            return OrbitVideoItem(
+                video: video,
+                tokens: tokens,
+                isFocus: prefs.mode == ViewMode.focus);
           },
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, _) => Center(child: Text('Error: $err', style: const TextStyle(color: Colors.white))),
+      error: (err, _) => Center(
+          child:
+              Text('Error: $err', style: const TextStyle(color: Colors.white))),
     );
   }
 }
@@ -138,9 +150,15 @@ class _VideoPreviewCard extends StatelessWidget {
           Positioned(
             bottom: 8,
             left: 8,
-            child: Text('@${video.authorName}', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+            child: Text('@${video.authorName}',
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold)),
           ),
-          const Center(child: Icon(Icons.play_arrow_rounded, color: Colors.white, size: 32)),
+          const Center(
+              child: Icon(Icons.play_arrow_rounded,
+                  color: Colors.white, size: 32)),
         ],
       ),
     );
@@ -153,7 +171,11 @@ class _ToggleButton extends StatelessWidget {
   final VoidCallback onTap;
   final MeropeColorTokens tokens;
 
-  const _ToggleButton({required this.label, required this.isSelected, required this.onTap, required this.tokens});
+  const _ToggleButton(
+      {required this.label,
+      required this.isSelected,
+      required this.onTap,
+      required this.tokens});
 
   @override
   Widget build(BuildContext context) {

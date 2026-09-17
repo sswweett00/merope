@@ -79,7 +79,9 @@ class MiniPlayerBar extends ConsumerWidget {
             ),
             IconButton(
               icon: Icon(
-                playerState.isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
+                playerState.isPlaying
+                    ? Icons.pause_circle_filled
+                    : Icons.play_circle_filled,
                 color: tokens.primary,
                 size: 32,
               ),

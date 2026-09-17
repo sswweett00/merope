@@ -21,7 +21,8 @@ class JobDetailScreen extends ConsumerWidget {
       backgroundColor: tokens.background,
       appBar: AppBar(
         backgroundColor: tokens.surface,
-        title: Text('Opportunity Details', style: TextStyle(color: tokens.textPrimary)),
+        title: Text('Opportunity Details',
+            style: TextStyle(color: tokens.textPrimary)),
         iconTheme: IconThemeData(color: tokens.textPrimary),
       ),
       body: SingleChildScrollView(
@@ -45,8 +46,14 @@ class JobDetailScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(job.title, style: TextStyle(color: tokens.textPrimary, fontSize: 20, fontWeight: FontWeight.bold)),
-                      Text('${job.company} • ${job.location}', style: TextStyle(color: tokens.textSecondary, fontSize: 14)),
+                      Text(job.title,
+                          style: TextStyle(
+                              color: tokens.textPrimary,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold)),
+                      Text('${job.company} • ${job.location}',
+                          style: TextStyle(
+                              color: tokens.textSecondary, fontSize: 14)),
                     ],
                   ),
                 ),
@@ -56,20 +63,24 @@ class JobDetailScreen extends ConsumerWidget {
             _SectionHeader(title: 'Description', tokens: tokens),
             Text(
               'We are seeking a high-performance individual to join our neural core team. Experience with distributed systems and real-time social OS architecture is a plus.',
-              style: TextStyle(color: tokens.textPrimary, fontSize: 15, height: 1.5),
+              style: TextStyle(
+                  color: tokens.textPrimary, fontSize: 15, height: 1.5),
             ),
             const SizedBox(height: 24),
             _SectionHeader(title: 'Requirements', tokens: tokens),
             ...job.tags.map((t) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Row(
-                children: [
-                  Icon(Icons.check_circle_outline, color: tokens.secondary, size: 16),
-                  const SizedBox(width: 8),
-                  Text(t, style: TextStyle(color: tokens.textPrimary, fontSize: 14)),
-                ],
-              ),
-            )),
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    children: [
+                      Icon(Icons.check_circle_outline,
+                          color: tokens.secondary, size: 16),
+                      const SizedBox(width: 8),
+                      Text(t,
+                          style: TextStyle(
+                              color: tokens.textPrimary, fontSize: 14)),
+                    ],
+                  ),
+                )),
             const SizedBox(height: 32),
             Container(
               padding: const EdgeInsets.all(16),
@@ -83,19 +94,27 @@ class JobDetailScreen extends ConsumerWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Compensation', style: TextStyle(color: tokens.textSecondary, fontSize: 12)),
-                      Text(job.compensation, style: TextStyle(color: tokens.primary, fontSize: 18, fontWeight: FontWeight.bold)),
+                      Text('Compensation',
+                          style: TextStyle(
+                              color: tokens.textSecondary, fontSize: 12)),
+                      Text(job.compensation,
+                          style: TextStyle(
+                              color: tokens.primary,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold)),
                     ],
                   ),
                   MeropeButton(
                     text: 'One-Tap Apply',
                     onPressed: () {
-                       MeropeHaptics.trigger(MeropeTokens.hapticHeavy);
-                       MeropeAcoustics.trigger(AcousticEffect.resonance);
-                       ScaffoldMessenger.of(context).showSnackBar(
-                         const SnackBar(content: Text('Profile Alignment shared with recruiter!')),
-                       );
-                       context.pop();
+                      MeropeHaptics.trigger(MeropeTokens.hapticHeavy);
+                      MeropeAcoustics.trigger(AcousticEffect.resonance);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text(
+                                'Profile Alignment shared with recruiter!')),
+                      );
+                      context.pop();
                     },
                     style: MeropeButtonStyle.primary,
                   ),
@@ -120,7 +139,11 @@ class _SectionHeader extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: Text(
         title.toUpperCase(),
-        style: TextStyle(color: tokens.textSecondary, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.5),
+        style: TextStyle(
+            color: tokens.textSecondary,
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.5),
       ),
     );
   }

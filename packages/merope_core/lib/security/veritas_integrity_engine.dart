@@ -12,6 +12,8 @@ class VeritasIntegrityNotifier extends StateNotifier<VeritasIntegrityState> {
   }
 }
 
-final veritasIntegrityProvider = StateNotifierProvider<VeritasIntegrityNotifier, VeritasIntegrityState>((ref) {
+final veritasIntegrityProvider =
+    StateNotifierProvider<VeritasIntegrityNotifier, VeritasIntegrityState>(
+        (ref) {
   return VeritasIntegrityNotifier();
 });

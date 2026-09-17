@@ -33,7 +33,11 @@ class ResonancePlayerScreen extends ConsumerWidget {
         ),
         title: Text(
           'MEROPE RESONANCE',
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: tokens.textSecondary, letterSpacing: 2.0),
+          style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: tokens.textSecondary,
+              letterSpacing: 2.0),
         ),
         centerTitle: true,
       ),
@@ -55,7 +59,8 @@ class ResonancePlayerScreen extends ConsumerWidget {
                   end: Alignment.topRight,
                 ),
               ),
-              child: const Icon(Icons.vibration, size: 100, color: Colors.white),
+              child:
+                  const Icon(Icons.vibration, size: 100, color: Colors.white),
             ),
             const Spacer(),
             Row(
@@ -78,25 +83,33 @@ class ResonancePlayerScreen extends ConsumerWidget {
                       const SizedBox(height: 4),
                       Text(
                         '${wave.artist} • ${wave.album}',
-                        style: TextStyle(fontSize: 16, color: tokens.textSecondary),
+                        style: TextStyle(
+                            fontSize: 16, color: tokens.textSecondary),
                       ),
                     ],
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.bubble_chart, color: tokens.primary, size: 28),
+                  icon:
+                      Icon(Icons.bubble_chart, color: tokens.primary, size: 28),
                   onPressed: () {},
                 ),
               ],
             ),
             const SizedBox(height: 24),
             Slider(
-              value: playerState.position.inSeconds.toDouble().clamp(0, playerState.duration.inSeconds.toDouble()),
-              max: playerState.duration.inSeconds > 0 ? playerState.duration.inSeconds.toDouble() : 100,
+              value: playerState.position.inSeconds
+                  .toDouble()
+                  .clamp(0, playerState.duration.inSeconds.toDouble()),
+              max: playerState.duration.inSeconds > 0
+                  ? playerState.duration.inSeconds.toDouble()
+                  : 100,
               activeColor: tokens.primary,
               inactiveColor: tokens.border,
               onChanged: (val) {
-                ref.read(audioPlayerProvider.notifier).seek(Duration(seconds: val.toInt()));
+                ref
+                    .read(audioPlayerProvider.notifier)
+                    .seek(Duration(seconds: val.toInt()));
               },
             ),
             Row(
@@ -121,7 +134,8 @@ class ResonancePlayerScreen extends ConsumerWidget {
                   onPressed: () {},
                 ),
                 IconButton(
-                  icon: Icon(Icons.fast_rewind, color: tokens.textPrimary, size: 36),
+                  icon: Icon(Icons.fast_rewind,
+                      color: tokens.textPrimary, size: 36),
                   onPressed: () {
                     ref.read(audioPlayerProvider.notifier).previousTrack();
                   },
@@ -145,7 +159,8 @@ class ResonancePlayerScreen extends ConsumerWidget {
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.fast_forward, color: tokens.textPrimary, size: 36),
+                  icon: Icon(Icons.fast_forward,
+                      color: tokens.textPrimary, size: 36),
                   onPressed: () {
                     ref.read(audioPlayerProvider.notifier).nextTrack();
                   },
@@ -158,11 +173,19 @@ class ResonancePlayerScreen extends ConsumerWidget {
             ),
             const Spacer(),
             ExpansionTile(
-              title: Text('Neural Lyrics', style: TextStyle(color: tokens.primary, fontWeight: FontWeight.bold)),
-              children: wave.lyrics.map((line) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Text(line, style: TextStyle(color: tokens.textPrimary, fontSize: 14)),
-              ),).toList(),
+              title: Text('Neural Lyrics',
+                  style: TextStyle(
+                      color: tokens.primary, fontWeight: FontWeight.bold)),
+              children: wave.lyrics
+                  .map(
+                    (line) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Text(line,
+                          style: TextStyle(
+                              color: tokens.textPrimary, fontSize: 14)),
+                    ),
+                  )
+                  .toList(),
             ),
             const SizedBox(height: 12),
           ],

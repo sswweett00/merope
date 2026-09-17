@@ -19,12 +19,19 @@ class VscoGridProfile extends ConsumerWidget {
           CircleAvatar(
             radius: 40,
             backgroundColor: tokens.primary,
-            child: const Text('M', style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold)),
+            child: const Text('M',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold)),
           ),
           const SizedBox(height: 12),
           Text(
             '@merope_curator',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: tokens.textPrimary),
+            style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                color: tokens.textPrimary),
           ),
           const SizedBox(height: 4),
           Text(
@@ -49,7 +56,8 @@ class VscoGridProfile extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: tokens.surface,
                   borderRadius: BorderRadius.circular(MeropeTokens.radiusSm),
-                  border: Border.all(color: tokens.border.withValues(alpha: 0.3)),
+                  border:
+                      Border.all(color: tokens.border.withValues(alpha: 0.3)),
                 ),
                 child: Center(
                   child: Icon(

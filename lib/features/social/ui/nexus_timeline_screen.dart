@@ -27,11 +27,13 @@ class NexusTimelineScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      floatingActionButton: prefs.mode == ViewMode.focus ? null : FloatingActionButton(
-        onPressed: () => CreatePostOverlay.show(context),
-        backgroundColor: tokens.primary,
-        child: const Icon(Icons.flash_on, color: Colors.white),
-      ),
+      floatingActionButton: prefs.mode == ViewMode.focus
+          ? null
+          : FloatingActionButton(
+              onPressed: () => CreatePostOverlay.show(context),
+              backgroundColor: tokens.primary,
+              child: const Icon(Icons.flash_on, color: Colors.white),
+            ),
       body: Column(
         children: [
           if (prefs.mode != ViewMode.focus) _TimelineHeader(tokens: tokens),
@@ -41,7 +43,8 @@ class NexusTimelineScreen extends ConsumerWidget {
           ),
           Expanded(
             child: RefreshIndicator(
-              onRefresh: () => ref.read(nexusTimelineProvider.notifier).refresh(),
+              onRefresh: () =>
+                  ref.read(nexusTimelineProvider.notifier).refresh(),
               color: tokens.primary,
               child: NotificationListener<ScrollNotification>(
                 onNotification: (notification) {
@@ -57,12 +60,14 @@ class NexusTimelineScreen extends ConsumerWidget {
                       return _EmptyFeedState(tokens: tokens);
                     }
 
-                    final timelineState = ref.read(nexusTimelineProvider).value!;
+                    final timelineState =
+                        ref.read(nexusTimelineProvider).value!;
 
                     return DynamicLayoutEngine<MeropeSignal>(
                       items: filtered,
                       mode: prefs.mode,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 12),
                       itemBuilder: (context, index, signal) {
                         Widget card = NexusTimelineCard(signal: signal);
 
@@ -75,16 +80,18 @@ class NexusTimelineScreen extends ConsumerWidget {
                           );
                         }
 
-                        if (index == filtered.length - 1 && timelineState.hasMore) {
-                           return Column(
-                             children: [
-                               card,
-                               Padding(
-                                 padding: const EdgeInsets.all(32.0),
-                                 child: CircularProgressIndicator(color: tokens.primary),
-                               ),
-                             ],
-                           );
+                        if (index == filtered.length - 1 &&
+                            timelineState.hasMore) {
+                          return Column(
+                            children: [
+                              card,
+                              Padding(
+                                padding: const EdgeInsets.all(32.0),
+                                child: CircularProgressIndicator(
+                                    color: tokens.primary),
+                              ),
+                            ],
+                          );
                         }
 
                         return card;
@@ -92,7 +99,8 @@ class NexusTimelineScreen extends ConsumerWidget {
                     );
                   },
                   loading: () => FeedSkeleton(tokens: tokens),
-                  error: (err, stack) => Center(child: Text('Loading Error: $err')),
+                  error: (err, stack) =>
+                      Center(child: Text('Loading Error: $err')),
                 ),
               ),
             ),
@@ -118,10 +126,14 @@ class _EmptyFeedState extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: RadialGradient(
-                colors: [tokens.primary.withValues(alpha: 0.1), Colors.transparent],
+                colors: [
+                  tokens.primary.withValues(alpha: 0.1),
+                  Colors.transparent
+                ],
               ),
             ),
-            child: Icon(Icons.radar, size: 64, color: tokens.primary.withValues(alpha: 0.5)),
+            child: Icon(Icons.radar,
+                size: 64, color: tokens.primary.withValues(alpha: 0.5)),
           ),
           const SizedBox(height: 24),
           Text(
@@ -214,7 +226,9 @@ class _QuickBroadcastBarState extends State<_QuickBroadcastBar> {
 
   void _submit() {
     if (_controller.text.trim().isNotEmpty) {
-      widget.ref.read(nexusTimelineProvider.notifier).broadcastSignal(_controller.text.trim());
+      widget.ref
+          .read(nexusTimelineProvider.notifier)
+          .broadcastSignal(_controller.text.trim());
       _controller.clear();
       FocusScope.of(context).unfocus();
     }
@@ -223,7 +237,8 @@ class _QuickBroadcastBarState extends State<_QuickBroadcastBar> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(top: MeropeTokens.space24, bottom: MeropeTokens.space24),
+      margin: const EdgeInsets.only(
+          top: MeropeTokens.space24, bottom: MeropeTokens.space24),
       padding: const EdgeInsets.all(MeropeTokens.space16),
       decoration: BoxDecoration(
         color: widget.tokens.surface,
@@ -242,7 +257,8 @@ class _QuickBroadcastBarState extends State<_QuickBroadcastBar> {
               controller: _controller,
               decoration: InputDecoration(
                 hintText: "What's on your mind?",
-                hintStyle: TextStyle(color: widget.tokens.textSecondary.withValues(alpha: 0.5)),
+                hintStyle: TextStyle(
+                    color: widget.tokens.textSecondary.withValues(alpha: 0.5)),
                 border: InputBorder.none,
               ),
               onSubmitted: (_) => _submit(),

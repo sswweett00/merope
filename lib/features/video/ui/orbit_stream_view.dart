@@ -49,7 +49,9 @@ class _OrbitStreamViewState extends ConsumerState<OrbitStreamView> {
           },
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(child: Text('Error: $err', style: const TextStyle(color: Colors.white))),
+        error: (err, _) => Center(
+            child: Text('Error: $err',
+                style: const TextStyle(color: Colors.white))),
       ),
     );
   }
@@ -96,10 +98,12 @@ class _OrbitVideoItemState extends ConsumerState<OrbitVideoItem> {
     final screenWidth = MediaQuery.of(context).size.width;
     if (details.localPosition.dx < screenWidth / 2) {
       // Left side: Brightness
-      setState(() => _brightness = (_brightness - details.delta.dy / 300).clamp(0.0, 1.0));
+      setState(() =>
+          _brightness = (_brightness - details.delta.dy / 300).clamp(0.0, 1.0));
     } else {
       // Right side: Volume
-      setState(() => _volume = (_volume - details.delta.dy / 300).clamp(0.0, 1.0));
+      setState(
+          () => _volume = (_volume - details.delta.dy / 300).clamp(0.0, 1.0));
     }
   }
 
@@ -110,22 +114,28 @@ class _OrbitVideoItemState extends ConsumerState<OrbitVideoItem> {
       onVerticalDragUpdate: _handleVerticalDrag,
       onVerticalDragEnd: (details) {
         // Zenith: Swipe down to activate Mini-Player
-        if (details.primaryVelocity != null && details.primaryVelocity! > 1500) {
+        if (details.primaryVelocity != null &&
+            details.primaryVelocity! > 1500) {
           ref.read(miniPlayerProvider.notifier).activate(widget.video);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Mini-Player Activated'), duration: Duration(seconds: 1)),
+            const SnackBar(
+                content: Text('Mini-Player Activated'),
+                duration: Duration(seconds: 1)),
           );
         }
       },
       onLongPressStart: (_) => setState(() => _isFastForwarding = true),
       onLongPressEnd: (_) => setState(() => _isFastForwarding = false),
       child: Container(
-        margin: widget.isFocus ? EdgeInsets.zero : const EdgeInsets.only(bottom: 16),
+        margin: widget.isFocus
+            ? EdgeInsets.zero
+            : const EdgeInsets.only(bottom: 16),
         height: widget.isFocus ? double.infinity : 400,
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: Colors.black,
-          borderRadius: widget.isFocus ? BorderRadius.zero : BorderRadius.circular(16),
+          borderRadius:
+              widget.isFocus ? BorderRadius.zero : BorderRadius.circular(16),
         ),
         child: Stack(
           children: [
@@ -140,14 +150,19 @@ class _OrbitVideoItemState extends ConsumerState<OrbitVideoItem> {
             // Brightness Overlay
             Positioned.fill(
               child: IgnorePointer(
-                child: Container(color: Colors.black.withValues(alpha: 1.0 - _brightness)),
+                child: Container(
+                    color: Colors.black.withValues(alpha: 1.0 - _brightness)),
               ),
             ),
             Positioned.fill(
               child: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Colors.black.withValues(alpha: 0.6), Colors.transparent, Colors.black.withValues(alpha: 0.6)],
+                    colors: [
+                      Colors.black.withValues(alpha: 0.6),
+                      Colors.transparent,
+                      Colors.black.withValues(alpha: 0.6)
+                    ],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                   ),
@@ -161,11 +176,17 @@ class _OrbitVideoItemState extends ConsumerState<OrbitVideoItem> {
                 left: 40,
                 right: 40,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(4)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                      color: Colors.black54,
+                      borderRadius: BorderRadius.circular(4)),
                   child: const Text(
                     "AI Captions: Synchronizing neural frequency for global resonance...",
-                    style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -181,7 +202,8 @@ class _OrbitVideoItemState extends ConsumerState<OrbitVideoItem> {
                     scale: val * 1.5,
                     child: Opacity(
                       opacity: 1.0 - val,
-                      child: const Icon(Icons.favorite, color: Colors.white, size: 80),
+                      child: const Icon(Icons.favorite,
+                          color: Colors.white, size: 80),
                     ),
                   ),
                 ),
@@ -193,14 +215,22 @@ class _OrbitVideoItemState extends ConsumerState<OrbitVideoItem> {
                 right: 0,
                 child: Center(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(color: Colors.black45, borderRadius: BorderRadius.circular(20)),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                        color: Colors.black45,
+                        borderRadius: BorderRadius.circular(20)),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.fast_forward, color: widget.tokens.primary, size: 16),
+                        Icon(Icons.fast_forward,
+                            color: widget.tokens.primary, size: 16),
                         const SizedBox(width: 8),
-                        const Text("2X RESONANCE", style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                        const Text("2X RESONANCE",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold)),
                       ],
                     ),
                   ),
@@ -216,7 +246,10 @@ class _OrbitVideoItemState extends ConsumerState<OrbitVideoItem> {
                 children: [
                   Text(
                     '@${widget.video.authorName}',
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -234,10 +267,14 @@ class _OrbitVideoItemState extends ConsumerState<OrbitVideoItem> {
               child: Column(
                 children: [
                   _SideAction(
-                    icon: widget.video.isLiked ? Icons.favorite : Icons.favorite_border,
+                    icon: widget.video.isLiked
+                        ? Icons.favorite
+                        : Icons.favorite_border,
                     label: '${widget.video.likes}',
                     color: widget.video.isLiked ? Colors.red : Colors.white,
-                    onTap: () => ref.read(orbitFeedProvider.notifier).toggleLike(widget.video.id),
+                    onTap: () => ref
+                        .read(orbitFeedProvider.notifier)
+                        .toggleLike(widget.video.id),
                   ),
                   const SizedBox(height: 20),
                   _SideAction(
@@ -290,7 +327,8 @@ class _SideAction extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+                color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
           ),
         ],
       ),

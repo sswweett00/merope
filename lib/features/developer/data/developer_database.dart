@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
-import 'developer_database_io.dart' if (dart.library.html) 'developer_database_web.dart' as platform;
+import 'developer_database_io.dart'
+    if (dart.library.html) 'developer_database_web.dart' as platform;
 
 part 'developer_database.g.dart';
 
@@ -9,16 +10,17 @@ class DeveloperApps extends Table {
   TextColumn get name => text()();
   TextColumn get description => text().nullable()();
   TextColumn get clientId => text()();
-  TextColumn get clientIdNormalized => text().customConstraint('UNIQUE NOT NULL')();
+  TextColumn get clientIdNormalized =>
+      text().customConstraint('UNIQUE NOT NULL')();
   TextColumn get data => text()();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 
   @override
   List<Set<Column>> get uniqueKeys => [
-    {id},
-    {clientIdNormalized},
-  ];
+        {id},
+        {clientIdNormalized},
+      ];
 }
 
 class ApiKeys extends Table {
@@ -34,7 +36,9 @@ class ApiKeys extends Table {
   BoolColumn get isActive => boolean().withDefault(const Constant(true))();
 
   @override
-  List<Set<Column>> get uniqueKeys => [{id}];
+  List<Set<Column>> get uniqueKeys => [
+        {id}
+      ];
 }
 
 class Webhooks extends Table {

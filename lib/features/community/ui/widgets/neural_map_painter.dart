@@ -21,17 +21,18 @@ class NeuralNode {
 class NeuralMapPainter extends CustomPainter {
   final List<NeuralNode> nodes;
   final double animationValue;
-  final TextPainter _textPainter = TextPainter(textDirection: TextDirection.ltr);
+  final TextPainter _textPainter =
+      TextPainter(textDirection: TextDirection.ltr);
 
   NeuralMapPainter({required this.nodes, required this.animationValue});
 
   @override
   void paint(Canvas canvas, Size size) {
-    final linePaint = Paint()
-      ..strokeWidth = 1.0;
+    final linePaint = Paint()..strokeWidth = 1.0;
 
     final nodePaint = Paint()..style = PaintingStyle.fill;
-    final glowPaint = Paint()..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+    final glowPaint = Paint()
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
 
     // Draw Connections
     for (var i = 0; i < nodes.length; i++) {
@@ -44,13 +45,16 @@ class NeuralMapPainter extends CustomPainter {
         final dy = n1.y - n2.y;
         final distSq = dx * dx + dy * dy;
 
-        if (distSq < 0.16) { // 0.4 * 0.4
+        if (distSq < 0.16) {
+          // 0.4 * 0.4
           final dist = math.sqrt(distSq);
           final p2 = Offset(n2.x * size.width, n2.y * size.height);
           canvas.drawLine(
             p1,
             p2,
-            linePaint..color = Colors.white.withValues(alpha: (1.0 - dist / 0.4) * 0.2),
+            linePaint
+              ..color =
+                  Colors.white.withValues(alpha: (1.0 - dist / 0.4) * 0.2),
           );
         }
       }
@@ -62,20 +66,26 @@ class NeuralMapPainter extends CustomPainter {
       final currentRadius = node.radius + pulse;
       final center = Offset(node.x * size.width, node.y * size.height);
 
-      canvas.drawCircle(center, currentRadius + 4, glowPaint..color = node.color.withValues(alpha: 0.3));
+      canvas.drawCircle(center, currentRadius + 4,
+          glowPaint..color = node.color.withValues(alpha: 0.3));
       canvas.drawCircle(center, currentRadius, nodePaint..color = node.color);
 
       _textPainter.text = TextSpan(
         text: node.label,
-        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+        style: const TextStyle(
+            color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
       );
       _textPainter.layout();
-      _textPainter.paint(canvas, Offset(center.dx - _textPainter.width / 2, center.dy + currentRadius + 4));
+      _textPainter.paint(
+          canvas,
+          Offset(center.dx - _textPainter.width / 2,
+              center.dy + currentRadius + 4));
     }
   }
 
   @override
   bool shouldRepaint(covariant NeuralMapPainter oldDelegate) {
-    return oldDelegate.animationValue != animationValue || oldDelegate.nodes != nodes;
+    return oldDelegate.animationValue != animationValue ||
+        oldDelegate.nodes != nodes;
   }
 }

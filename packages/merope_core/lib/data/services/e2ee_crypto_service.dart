@@ -36,7 +36,8 @@ class E2EECryptoService {
     final keyBytes = Uint8List.fromList(_hexToBytes(keyHex));
     final iv = Uint8List.fromList(_generateRandomBytes(12));
     final aesKey = encrypt.Key(keyBytes);
-    final encrypter = encrypt.Encrypter(encrypt.AES(aesKey, mode: encrypt.AESMode.gcm));
+    final encrypter =
+        encrypt.Encrypter(encrypt.AES(aesKey, mode: encrypt.AESMode.gcm));
     final encrypted = encrypter.encrypt(plaintext, iv: encrypt.IV(iv));
 
     final combined = Uint8List.fromList(iv.toList() + encrypted.bytes.toList());
@@ -53,7 +54,8 @@ class E2EECryptoService {
 
       final keyBytes = Uint8List.fromList(_hexToBytes(keyHex));
       final aesKey = encrypt.Key(keyBytes);
-      final encrypter = encrypt.Encrypter(encrypt.AES(aesKey, mode: encrypt.AESMode.gcm));
+      final encrypter =
+          encrypt.Encrypter(encrypt.AES(aesKey, mode: encrypt.AESMode.gcm));
 
       final decrypted = encrypter.decrypt(
         encrypt.Encrypted(Uint8List.fromList(encryptedBytes)),

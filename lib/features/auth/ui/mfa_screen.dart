@@ -65,7 +65,8 @@ class _MFAScreenState extends ConsumerState<MFAScreen> {
                     MeropeHaptics.trigger(MeropeTokens.hapticHeavy);
                     context.go('/');
                   } else {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Invalid code sequence.')));
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text('Invalid code sequence.')));
                   }
                 },
                 style: MeropeButtonStyle.primary,

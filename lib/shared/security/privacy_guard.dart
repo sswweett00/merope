@@ -23,7 +23,8 @@ class PrivacyGuard extends ConsumerStatefulWidget {
   ConsumerState<PrivacyGuard> createState() => _PrivacyGuardState();
 }
 
-class _PrivacyGuardState extends ConsumerState<PrivacyGuard> with WidgetsBindingObserver {
+class _PrivacyGuardState extends ConsumerState<PrivacyGuard>
+    with WidgetsBindingObserver {
   bool _isPaused = false;
   bool _isLocked = false;
 
@@ -64,7 +65,8 @@ class _PrivacyGuardState extends ConsumerState<PrivacyGuard> with WidgetsBinding
     }
 
     setState(() {
-      _isPaused = state == AppLifecycleState.inactive || state == AppLifecycleState.paused;
+      _isPaused = state == AppLifecycleState.inactive ||
+          state == AppLifecycleState.paused;
       if (state == AppLifecycleState.paused && widget.biometricLockEnabled) {
         _isLocked = true;
       }
@@ -91,9 +93,13 @@ class _PrivacyGuardState extends ConsumerState<PrivacyGuard> with WidgetsBinding
               child: GestureDetector(
                 onTap: _isLocked ? _requestUnlock : null,
                 child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: MeropeTokens.blurHigh, sigmaY: MeropeTokens.blurHigh),
+                  filter: ImageFilter.blur(
+                      sigmaX: MeropeTokens.blurHigh,
+                      sigmaY: MeropeTokens.blurHigh),
                   child: Container(
-                    color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.7),
+                    color: Theme.of(context)
+                        .scaffoldBackgroundColor
+                        .withValues(alpha: 0.7),
                     child: Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -101,11 +107,15 @@ class _PrivacyGuardState extends ConsumerState<PrivacyGuard> with WidgetsBinding
                           Icon(
                             Icons.lock_person_rounded,
                             size: 64,
-                            color: Theme.of(context).primaryColor.withValues(alpha: 0.6),
+                            color: Theme.of(context)
+                                .primaryColor
+                                .withValues(alpha: 0.6),
                           ),
                           const SizedBox(height: 24),
                           Text(
-                            _isLocked ? 'IDENTITY VERIFICATION REQUIRED' : 'NEURAL CORE PROTECTED',
+                            _isLocked
+                                ? 'IDENTITY VERIFICATION REQUIRED'
+                                : 'NEURAL CORE PROTECTED',
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
@@ -117,7 +127,9 @@ class _PrivacyGuardState extends ConsumerState<PrivacyGuard> with WidgetsBinding
                             const SizedBox(height: 12),
                             Text(
                               'Tap to unlock secure session',
-                              style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 13),
+                              style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.7),
+                                  fontSize: 13),
                             ),
                           ],
                         ],

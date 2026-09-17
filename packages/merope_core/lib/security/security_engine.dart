@@ -26,7 +26,8 @@ class SecurityEngine {
     argon2.init(parameters);
 
     final result = Uint8List(32);
-    argon2.generateBytes(Uint8List.fromList(combined.codeUnits), result, 0, result.length);
+    argon2.generateBytes(
+        Uint8List.fromList(combined.codeUnits), result, 0, result.length);
 
     return base64Encode(result);
   }

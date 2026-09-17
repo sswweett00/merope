@@ -73,7 +73,8 @@ class MeropeSettings extends Notifier<MeropeSettingsState> {
   }
 
   void setGhostMode(bool val) => state = state.copyWith(ghostMode: val);
-  void setLastSeen(String val) => state = state.copyWith(lastSeenVisibility: val);
+  void setLastSeen(String val) =>
+      state = state.copyWith(lastSeenVisibility: val);
   void setReadReceipts(bool val) => state = state.copyWith(readReceipts: val);
   void set2FA(bool val) => state = state.copyWith(is2FAEnabled: val);
   void setAppLock(bool val) => state = state.copyWith(isAppLockEnabled: val);
@@ -97,4 +98,5 @@ class MeropeSettings extends Notifier<MeropeSettingsState> {
   }
 }
 
-final meropeSettingsProvider = NotifierProvider<MeropeSettings, MeropeSettingsState>(MeropeSettings.new);
+final meropeSettingsProvider =
+    NotifierProvider<MeropeSettings, MeropeSettingsState>(MeropeSettings.new);

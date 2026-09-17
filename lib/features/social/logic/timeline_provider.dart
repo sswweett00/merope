@@ -72,7 +72,10 @@ class TimelineNotifier extends AsyncNotifier<TimelineState> {
     ));
   }
 
-  Future<void> broadcastSignal(String content, {List<SignalMedia> media = const [], String? pollQuestion, List<String>? pollOptions}) async {
+  Future<void> broadcastSignal(String content,
+      {List<SignalMedia> media = const [],
+      String? pollQuestion,
+      List<String>? pollOptions}) async {
     final veritas = ref.read(veritasIntegrityProvider.notifier);
 
     // Sign the post payload via Veritas
@@ -118,37 +121,42 @@ class TimelineNotifier extends AsyncNotifier<TimelineState> {
 
     final previousState = state.value;
     if (previousState != null) {
-      state = AsyncValue.data(previousState.copyWith(items: [newSignal, ...previousState.items]));
+      state = AsyncValue.data(
+          previousState.copyWith(items: [newSignal, ...previousState.items]));
     }
   }
 
-  Future<void> resonateSignal(String signalId, String resonanceType, int addedAmplitude) async {
+  Future<void> resonateSignal(
+      String signalId, String resonanceType, int addedAmplitude) async {
     final previousState = state.value;
     if (previousState == null) return;
 
     final updatedItems = previousState.items.map((signal) {
-        if (signal.id == signalId) {
-          final updatedResonances = signal.resonances.map((r) {
-            if (r.type == resonanceType) {
-              return r.copyWith(
-                amplitude: r.amplitude + addedAmplitude,
-                isResonated: true,
-              );
-            }
-            return r;
-          }).toList();
-          return signal.copyWith(resonances: updatedResonances);
-        }
-        return signal;
-      }).toList();
+      if (signal.id == signalId) {
+        final updatedResonances = signal.resonances.map((r) {
+          if (r.type == resonanceType) {
+            return r.copyWith(
+              amplitude: r.amplitude + addedAmplitude,
+              isResonated: true,
+            );
+          }
+          return r;
+        }).toList();
+        return signal.copyWith(resonances: updatedResonances);
+      }
+      return signal;
+    }).toList();
 
     state = AsyncValue.data(previousState.copyWith(items: updatedItems));
   }
 }
 
-final nexusTimelineProvider = AsyncNotifierProvider<TimelineNotifier, TimelineState>(TimelineNotifier.new);
+final nexusTimelineProvider =
+    AsyncNotifierProvider<TimelineNotifier, TimelineState>(
+        TimelineNotifier.new);
 
-final userProfileProvider = FutureProvider.family<social_api.UserModel, String>((ref, userId) async {
+final userProfileProvider =
+    FutureProvider.family<social_api.UserModel, String>((ref, userId) async {
   final api = ref.read(social_api.socialApiServiceProvider);
 
   if (userId == 'me') {

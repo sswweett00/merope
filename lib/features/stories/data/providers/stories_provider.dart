@@ -19,7 +19,8 @@ class StoryFeed extends AsyncNotifier<List<model.StoryUser>> {
     final repo = ref.read(storyRepositoryProvider);
 
     try {
-      final result = await api.getFeed(limit: _pageSize, cursor: _page > 0 ? 'cursor_$_page' : null);
+      final result = await api.getFeed(
+          limit: _pageSize, cursor: _page > 0 ? 'cursor_$_page' : null);
       if (result.error != null) throw result.error!;
 
       final stories = result.data ?? [];
@@ -104,7 +105,8 @@ class StoryFeed extends AsyncNotifier<List<model.StoryUser>> {
   }
 }
 
-final storyFeedProvider = AsyncNotifierProvider<StoryFeed, List<model.StoryUser>>(StoryFeed.new);
+final storyFeedProvider =
+    AsyncNotifierProvider<StoryFeed, List<model.StoryUser>>(StoryFeed.new);
 
 class StoryProvider extends FamilyAsyncNotifier<model.Story, String> {
   @override
@@ -124,9 +126,12 @@ class StoryProvider extends FamilyAsyncNotifier<model.Story, String> {
   }
 }
 
-final storyProvider = AsyncNotifierProviderFamily<StoryProvider, model.Story, String>(StoryProvider.new);
+final storyProvider =
+    AsyncNotifierProviderFamily<StoryProvider, model.Story, String>(
+        StoryProvider.new);
 
-class StoryViewersProvider extends FamilyAsyncNotifier<List<model.StoryUser>, String> {
+class StoryViewersProvider
+    extends FamilyAsyncNotifier<List<model.StoryUser>, String> {
   @override
   FutureOr<List<model.StoryUser>> build(String arg) async {
     final api = ref.read(storiesApiServiceProvider);
@@ -141,4 +146,5 @@ class StoryViewersProvider extends FamilyAsyncNotifier<List<model.StoryUser>, St
   }
 }
 
-final storyViewersProvider = AsyncNotifierProviderFamily<StoryViewersProvider, List<model.StoryUser>, String>(StoryViewersProvider.new);
+final storyViewersProvider = AsyncNotifierProviderFamily<StoryViewersProvider,
+    List<model.StoryUser>, String>(StoryViewersProvider.new);

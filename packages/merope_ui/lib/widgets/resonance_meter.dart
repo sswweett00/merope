@@ -24,7 +24,8 @@ class ResonanceMeter extends StatefulWidget {
   State<ResonanceMeter> createState() => _ResonanceMeterState();
 }
 
-class _ResonanceMeterState extends State<ResonanceMeter> with SingleTickerProviderStateMixin {
+class _ResonanceMeterState extends State<ResonanceMeter>
+    with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
   Timer? _resonanceTimer;
   int _currentAddedAmplitude = 0;
@@ -54,7 +55,8 @@ class _ResonanceMeterState extends State<ResonanceMeter> with SingleTickerProvid
     });
     _pulseController.repeat(reverse: true);
 
-    _resonanceTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+    _resonanceTimer =
+        Timer.periodic(const Duration(milliseconds: 100), (timer) {
       setState(() {
         _currentAddedAmplitude++;
       });
@@ -114,9 +116,11 @@ class _ResonanceMeterState extends State<ResonanceMeter> with SingleTickerProvid
                 widget.icon == '⚡' ? '❤️' : widget.icon,
                 style: TextStyle(
                   fontSize: _isPressing ? 24 : 18,
-                  shadows: widget.isResonated ? [
-                    Shadow(color: widget.activeColor, blurRadius: 10),
-                  ] : null,
+                  shadows: widget.isResonated
+                      ? [
+                          Shadow(color: widget.activeColor, blurRadius: 10),
+                        ]
+                      : null,
                 ),
               ),
             ],

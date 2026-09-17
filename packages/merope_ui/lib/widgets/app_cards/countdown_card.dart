@@ -54,7 +54,10 @@ class _CountdownCardState extends State<CountdownCard> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [widget.tokens.primary.withValues(alpha: 0.1), widget.tokens.secondary.withValues(alpha: 0.1)],
+          colors: [
+            widget.tokens.primary.withValues(alpha: 0.1),
+            widget.tokens.secondary.withValues(alpha: 0.1)
+          ],
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: widget.tokens.primary.withValues(alpha: 0.3)),
@@ -63,7 +66,10 @@ class _CountdownCardState extends State<CountdownCard> {
         children: [
           Text(
             widget.title,
-            style: TextStyle(color: widget.tokens.textPrimary, fontWeight: FontWeight.bold, fontSize: 14),
+            style: TextStyle(
+                color: widget.tokens.textPrimary,
+                fontWeight: FontWeight.bold,
+                fontSize: 14),
           ),
           const SizedBox(height: 16),
           Row(
@@ -95,7 +101,8 @@ class _CountdownCardState extends State<CountdownCard> {
           const SizedBox(width: 12),
           Text(
             '${widget.title} is LIVE!',
-            style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+                color: Colors.green, fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -108,7 +115,8 @@ class _TimeUnit extends StatelessWidget {
   final String label;
   final MeropeColorTokens tokens;
 
-  const _TimeUnit({required this.value, required this.label, required this.tokens});
+  const _TimeUnit(
+      {required this.value, required this.label, required this.tokens});
 
   @override
   Widget build(BuildContext context) {

@@ -17,17 +17,28 @@ enum ThemePreset {
 
   String get label {
     switch (this) {
-      case ThemePreset.meropeDefault: return 'Merope Default';
-      case ThemePreset.cyberpunk: return 'Cyberpunk 2077';
-      case ThemePreset.emerald: return 'Emerald Zenith';
-      case ThemePreset.midnightBlue: return 'Midnight Blue';
-      case ThemePreset.amethyst: return 'Royal Amethyst';
-      case ThemePreset.sunset: return 'Neon Sunset';
-      case ThemePreset.obsidian: return 'Obsidian Dark';
-      case ThemePreset.arctic: return 'Arctic Frost';
-      case ThemePreset.sakura: return 'Sakura Blossom';
-      case ThemePreset.gold: return 'Imperial Gold';
-      case ThemePreset.matrix: return 'Matrix Rain';
+      case ThemePreset.meropeDefault:
+        return 'Merope Default';
+      case ThemePreset.cyberpunk:
+        return 'Cyberpunk 2077';
+      case ThemePreset.emerald:
+        return 'Emerald Zenith';
+      case ThemePreset.midnightBlue:
+        return 'Midnight Blue';
+      case ThemePreset.amethyst:
+        return 'Royal Amethyst';
+      case ThemePreset.sunset:
+        return 'Neon Sunset';
+      case ThemePreset.obsidian:
+        return 'Obsidian Dark';
+      case ThemePreset.arctic:
+        return 'Arctic Frost';
+      case ThemePreset.sakura:
+        return 'Sakura Blossom';
+      case ThemePreset.gold:
+        return 'Imperial Gold';
+      case ThemePreset.matrix:
+        return 'Matrix Rain';
     }
   }
 
@@ -308,7 +319,8 @@ class CustomThemeConfig {
 }
 
 class ThemeCustomizerNotifier extends StateNotifier<CustomThemeConfig> {
-  ThemeCustomizerNotifier() : super(const CustomThemeConfig(preset: ThemePreset.meropeDefault));
+  ThemeCustomizerNotifier()
+      : super(const CustomThemeConfig(preset: ThemePreset.meropeDefault));
 
   void setPreset(ThemePreset preset) {
     state = state.copyWith(preset: preset, customPrimary: null);
@@ -357,6 +369,7 @@ class ThemeCustomizerNotifier extends StateNotifier<CustomThemeConfig> {
   }
 }
 
-final themeCustomizerProvider = StateNotifierProvider<ThemeCustomizerNotifier, CustomThemeConfig>((ref) {
+final themeCustomizerProvider =
+    StateNotifierProvider<ThemeCustomizerNotifier, CustomThemeConfig>((ref) {
   return ThemeCustomizerNotifier();
 });

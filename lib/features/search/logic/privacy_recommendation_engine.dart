@@ -17,7 +17,8 @@ class UserInterestMetric {
     this.isSensitive = false,
   });
 
-  List<double> toVector() => [watchTimeFactor, scrollSpeedFactor, interactionCount.toDouble()];
+  List<double> toVector() =>
+      [watchTimeFactor, scrollSpeedFactor, interactionCount.toDouble()];
 }
 
 @riverpod
@@ -30,16 +31,18 @@ class PrivacyRecommendationEngine extends _$PrivacyRecommendationEngine {
     return {};
   }
 
-  void trackInteraction(String category, {
+  void trackInteraction(
+    String category, {
     required double watchTime,
     required double scrollSpeed,
     bool sensitive = false,
   }) {
-    final current = state[category] ?? UserInterestMetric(
-      watchTimeFactor: 0,
-      scrollSpeedFactor: 0,
-      interactionCount: 0,
-    );
+    final current = state[category] ??
+        UserInterestMetric(
+          watchTimeFactor: 0,
+          scrollSpeedFactor: 0,
+          interactionCount: 0,
+        );
 
     state = {
       ...state,
@@ -71,7 +74,7 @@ class PrivacyRecommendationEngine extends _$PrivacyRecommendationEngine {
       // Inject negative preference signal into the vector (Mock logic)
       double baseVal = val;
       if (_negativePreferences.isNotEmpty && val > 0.5) {
-         baseVal -= 0.2; // Diminish overall score if negative prefs exist
+        baseVal -= 0.2; // Diminish overall score if negative prefs exist
       }
       return baseVal + _sampleLaplace(b);
     }).toList();

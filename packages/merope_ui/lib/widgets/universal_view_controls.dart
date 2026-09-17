@@ -41,20 +41,27 @@ class UniversalViewControls extends ConsumerWidget {
                     selected: isActive,
                     onSelected: (_) {
                       MeropeHaptics.trigger(MeropeTokens.hapticSoft);
-                      ref.read(viewPreferencesProvider.notifier).setFilter(domain, filter);
+                      ref
+                          .read(viewPreferencesProvider.notifier)
+                          .setFilter(domain, filter);
                     },
                     backgroundColor: Colors.transparent,
-                    selectedColor: const Color(0xFF5865F2).withValues(alpha: 0.2),
+                    selectedColor:
+                        const Color(0xFF5865F2).withValues(alpha: 0.2),
                     checkmarkColor: const Color(0xFF5865F2),
                     labelStyle: TextStyle(
                       color: isActive ? const Color(0xFF5865F2) : Colors.grey,
                       fontSize: 12,
-                      fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                      fontWeight:
+                          isActive ? FontWeight.bold : FontWeight.normal,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(MeropeTokens.radiusFull),
+                      borderRadius:
+                          BorderRadius.circular(MeropeTokens.radiusFull),
                       side: BorderSide(
-                        color: isActive ? const Color(0xFF5865F2) : Colors.grey.withValues(alpha: 0.2),
+                        color: isActive
+                            ? const Color(0xFF5865F2)
+                            : Colors.grey.withValues(alpha: 0.2),
                       ),
                     ),
                   ),
@@ -75,37 +82,49 @@ class UniversalViewControls extends ConsumerWidget {
                   mode: ViewMode.list,
                   icon: Icons.view_headline,
                   isActive: prefs.mode == ViewMode.list,
-                  onTap: () => ref.read(viewPreferencesProvider.notifier).setMode(domain, ViewMode.list),
+                  onTap: () => ref
+                      .read(viewPreferencesProvider.notifier)
+                      .setMode(domain, ViewMode.list),
                 ),
                 _ViewModeButton(
                   mode: ViewMode.grid,
                   icon: Icons.grid_view_rounded,
                   isActive: prefs.mode == ViewMode.grid,
-                  onTap: () => ref.read(viewPreferencesProvider.notifier).setMode(domain, ViewMode.grid),
+                  onTap: () => ref
+                      .read(viewPreferencesProvider.notifier)
+                      .setMode(domain, ViewMode.grid),
                 ),
                 _ViewModeButton(
                   mode: ViewMode.compact,
                   icon: Icons.view_compact_rounded,
                   isActive: prefs.mode == ViewMode.compact,
-                  onTap: () => ref.read(viewPreferencesProvider.notifier).setMode(domain, ViewMode.compact),
+                  onTap: () => ref
+                      .read(viewPreferencesProvider.notifier)
+                      .setMode(domain, ViewMode.compact),
                 ),
                 _ViewModeButton(
                   mode: ViewMode.masonry,
                   icon: Icons.dashboard_customize_rounded,
                   isActive: prefs.mode == ViewMode.masonry,
-                  onTap: () => ref.read(viewPreferencesProvider.notifier).setMode(domain, ViewMode.masonry),
+                  onTap: () => ref
+                      .read(viewPreferencesProvider.notifier)
+                      .setMode(domain, ViewMode.masonry),
                 ),
                 _ViewModeButton(
                   mode: ViewMode.carousel,
                   icon: Icons.view_carousel_rounded,
                   isActive: prefs.mode == ViewMode.carousel,
-                  onTap: () => ref.read(viewPreferencesProvider.notifier).setMode(domain, ViewMode.carousel),
+                  onTap: () => ref
+                      .read(viewPreferencesProvider.notifier)
+                      .setMode(domain, ViewMode.carousel),
                 ),
                 _ViewModeButton(
                   mode: ViewMode.focus,
                   icon: Icons.fullscreen_rounded,
                   isActive: prefs.mode == ViewMode.focus,
-                  onTap: () => ref.read(viewPreferencesProvider.notifier).setMode(domain, ViewMode.focus),
+                  onTap: () => ref
+                      .read(viewPreferencesProvider.notifier)
+                      .setMode(domain, ViewMode.focus),
                 ),
               ],
             ),
@@ -135,7 +154,9 @@ class _ViewModeButton extends StatelessWidget {
       icon: Icon(
         icon,
         size: 20,
-        color: isActive ? const Color(0xFF5865F2) : Colors.grey.withValues(alpha: 0.5),
+        color: isActive
+            ? const Color(0xFF5865F2)
+            : Colors.grey.withValues(alpha: 0.5),
       ),
       onPressed: () {
         MeropeHaptics.trigger(MeropeTokens.hapticSoft);

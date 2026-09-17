@@ -65,12 +65,14 @@ class PrivacySettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSecurityDashboard(MeropeColorTokens tokens, MeropeSettingsState settings) {
+  Widget _buildSecurityDashboard(
+      MeropeColorTokens tokens, MeropeSettingsState settings) {
     return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [tokens.primary, tokens.primaryVariant]),
+        gradient:
+            LinearGradient(colors: [tokens.primary, tokens.primaryVariant]),
         borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
@@ -78,12 +80,21 @@ class PrivacySettingsScreen extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Safety Score', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-              Text('${settings.safetyScore}%', style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900)),
+              const Text('Safety Score',
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold)),
+              Text('${settings.safetyScore}%',
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900)),
             ],
           ),
           const SizedBox(height: 12),
-          LinearProgressIndicator(value: settings.safetyScore / 100, backgroundColor: Colors.white24, color: Colors.white),
+          LinearProgressIndicator(
+              value: settings.safetyScore / 100,
+              backgroundColor: Colors.white24,
+              color: Colors.white),
         ],
       ),
     );
@@ -92,7 +103,11 @@ class PrivacySettingsScreen extends ConsumerWidget {
   Widget _buildSectionTitle(MeropeColorTokens tokens, String title) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-      child: Text(title, style: TextStyle(color: tokens.primary, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+      child: Text(title,
+          style: TextStyle(
+              color: tokens.primary,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2)),
     );
   }
 }

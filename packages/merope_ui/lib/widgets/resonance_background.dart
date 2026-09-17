@@ -11,10 +11,12 @@ class ResonanceBackground extends ConsumerStatefulWidget {
   const ResonanceBackground({super.key, required this.child});
 
   @override
-  ConsumerState<ResonanceBackground> createState() => _ResonanceBackgroundState();
+  ConsumerState<ResonanceBackground> createState() =>
+      _ResonanceBackgroundState();
 }
 
-class _ResonanceBackgroundState extends ConsumerState<ResonanceBackground> with SingleTickerProviderStateMixin {
+class _ResonanceBackgroundState extends ConsumerState<ResonanceBackground>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
@@ -64,7 +66,8 @@ class _ResonanceBackgroundState extends ConsumerState<ResonanceBackground> with 
             ),
           ),
         // Blur & Tint Overlay
-        if (masterTheme.primaryImagePath != null || masterTheme.secondaryImagePath != null)
+        if (masterTheme.primaryImagePath != null ||
+            masterTheme.secondaryImagePath != null)
           Positioned.fill(
             child: BackdropFilter(
               filter: ImageFilter.blur(
@@ -72,7 +75,8 @@ class _ResonanceBackgroundState extends ConsumerState<ResonanceBackground> with 
                 sigmaY: masterTheme.blurIntensity,
               ),
               child: Container(
-                color: tokens.background.withValues(alpha: masterTheme.tintOpacity),
+                color: tokens.background
+                    .withValues(alpha: masterTheme.tintOpacity),
               ),
             ),
           ),
@@ -119,12 +123,22 @@ class _WavePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..style = PaintingStyle.fill;
 
-    _drawWave(canvas, size, paint, primaryColor, 1.0 * frequency, 0.5 * frequency, 0.0);
-    _drawWave(canvas, size, paint, secondaryColor, 0.8 * frequency, 0.4 * frequency, math.pi / 2);
-    _drawWave(canvas, size, paint, primaryColor.withValues(alpha: 0.02 * frequency), 1.2 * frequency, 0.6 * frequency, math.pi);
+    _drawWave(canvas, size, paint, primaryColor, 1.0 * frequency,
+        0.5 * frequency, 0.0);
+    _drawWave(canvas, size, paint, secondaryColor, 0.8 * frequency,
+        0.4 * frequency, math.pi / 2);
+    _drawWave(
+        canvas,
+        size,
+        paint,
+        primaryColor.withValues(alpha: 0.02 * frequency),
+        1.2 * frequency,
+        0.6 * frequency,
+        math.pi);
   }
 
-  void _drawWave(Canvas canvas, Size size, Paint paint, Color color, double amplitudeMult, double speedMult, double phaseShift) {
+  void _drawWave(Canvas canvas, Size size, Paint paint, Color color,
+      double amplitudeMult, double speedMult, double phaseShift) {
     paint.color = color;
     final path = Path();
 
@@ -135,7 +149,9 @@ class _WavePainter extends CustomPainter {
     path.moveTo(0, yBase);
 
     for (double x = 0; x <= size.width; x += 2) {
-      final angle = (x / wavelength) * 2 * math.pi + (progress * 2 * math.pi * speedMult) + phaseShift;
+      final angle = (x / wavelength) * 2 * math.pi +
+          (progress * 2 * math.pi * speedMult) +
+          phaseShift;
       final y = yBase + math.sin(angle) * amplitude;
       path.lineTo(x, y);
     }

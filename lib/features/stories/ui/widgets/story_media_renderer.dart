@@ -18,7 +18,8 @@ class StoryMediaRenderer extends StatelessWidget {
         );
       case model.StoryMediaType.video:
         return const Center(
-          child: Text('Video Story (Preview)', style: TextStyle(color: Colors.white)),
+          child: Text('Video Story (Preview)',
+              style: TextStyle(color: Colors.white)),
         );
       case model.StoryMediaType.text:
         return _TextStory(segment: segment);

@@ -32,4 +32,5 @@ class BiometricAuth extends AsyncNotifier<bool> {
   }
 }
 
-final biometricAuthProvider = AsyncNotifierProvider<BiometricAuth, bool>(BiometricAuth.new);
+final biometricAuthProvider =
+    AsyncNotifierProvider<BiometricAuth, bool>(BiometricAuth.new);

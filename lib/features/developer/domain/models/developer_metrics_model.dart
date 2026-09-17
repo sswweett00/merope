@@ -13,7 +13,8 @@ class EndpointStats with _$EndpointStats {
     @JsonKey(name: 'error_rate') @Default(0.0) double errorRate,
   }) = _EndpointStats;
 
-  factory EndpointStats.fromJson(Map<String, dynamic> json) => _$EndpointStatsFromJson(json);
+  factory EndpointStats.fromJson(Map<String, dynamic> json) =>
+      _$EndpointStatsFromJson(json);
 }
 
 @freezed
@@ -24,7 +25,8 @@ class MetricDataPoint with _$MetricDataPoint {
     String? label,
   }) = _MetricDataPoint;
 
-  factory MetricDataPoint.fromJson(Map<String, dynamic> json) => _$MetricDataPointFromJson(json);
+  factory MetricDataPoint.fromJson(Map<String, dynamic> json) =>
+      _$MetricDataPointFromJson(json);
 }
 
 @freezed
@@ -42,14 +44,17 @@ class DeveloperMetrics with _$DeveloperMetrics {
     @JsonKey(name: 'success_rate') @Default(100.0) double successRate,
     @JsonKey(name: 'unique_users') @Default(0) int uniqueUsers,
     @JsonKey(name: 'bandwidth_used') @Default(0) int bandwidthUsed,
-    @JsonKey(name: 'top_endpoints') @Default([]) List<EndpointStats> topEndpoints,
+    @JsonKey(name: 'top_endpoints')
+    @Default([])
+    List<EndpointStats> topEndpoints,
     @JsonKey(name: 'sync_rate') double? syncRate,
     double? load,
     double? latency,
     @JsonKey(name: 'data_points') @Default([]) List<MetricDataPoint> dataPoints,
   }) = _DeveloperMetrics;
 
-  factory DeveloperMetrics.fromJson(Map<String, dynamic> json) => _$DeveloperMetricsFromJson(json);
+  factory DeveloperMetrics.fromJson(Map<String, dynamic> json) =>
+      _$DeveloperMetricsFromJson(json);
 
   List<MetricDataPoint> get latencySeries => dataPoints;
 

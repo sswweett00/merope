@@ -63,4 +63,5 @@ class TalentJobs extends AsyncNotifier<List<TalentJob>> {
   }
 }
 
-final talentJobsProvider = AsyncNotifierProvider<TalentJobs, List<TalentJob>>(TalentJobs.new);
+final talentJobsProvider =
+    AsyncNotifierProvider<TalentJobs, List<TalentJob>>(TalentJobs.new);

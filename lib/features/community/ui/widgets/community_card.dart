@@ -48,7 +48,8 @@ class CommunityCard extends StatelessWidget {
                         if (community.isVerified)
                           const Padding(
                             padding: EdgeInsets.only(left: 8),
-                            child: Icon(Icons.verified, size: 16, color: Colors.blue),
+                            child: Icon(Icons.verified,
+                                size: 16, color: Colors.blue),
                           ),
                       ],
                     ),

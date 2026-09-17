@@ -48,7 +48,8 @@ class _StoryReplyBarState extends State<StoryReplyBar> {
               style: TextStyle(color: widget.tokens.textPrimary),
               decoration: InputDecoration(
                 hintText: 'Mesaj gönder...',
-                hintStyle: TextStyle(color: widget.tokens.textSecondary.withValues(alpha: 0.6)),
+                hintStyle: TextStyle(
+                    color: widget.tokens.textSecondary.withValues(alpha: 0.6)),
                 border: InputBorder.none,
               ),
               onSubmitted: (val) {

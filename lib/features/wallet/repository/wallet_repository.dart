@@ -29,13 +29,15 @@ class DriftWalletRepository implements IWalletRepository {
   static const Duration _cacheTtl = Duration(minutes: 2);
 
   DriftWalletRepository(this._db, {Map<String, double>? fxRates})
-      : _fxRates = fxRates ?? const {'MRO': 1.0, 'USD': 0.035, 'EUR': 0.032, 'TRY': 1.15};
+      : _fxRates = fxRates ??
+            const {'MRO': 1.0, 'USD': 0.035, 'EUR': 0.032, 'TRY': 1.15};
 
   @override
   Future<double> getBalance({String? currency}) async {
     final target = currency ?? _defaultBaseCurrency;
     final now = DateTime.now();
-    if (_balanceCacheTime != null && now.difference(_balanceCacheTime!) < _cacheTtl) {
+    if (_balanceCacheTime != null &&
+        now.difference(_balanceCacheTime!) < _cacheTtl) {
       return _balanceCache[target] ?? 0.0;
     }
 
@@ -102,10 +104,14 @@ class DriftWalletRepository implements IWalletRepository {
   Future<List<MeropeTransaction>> searchTransactions(String query) async {
     final rows = await _db.select(_db.transactions).get();
     final lower = query.toLowerCase();
-    return rows.where((r) {
-      final desc = '${r.fromAccountId} to ${r.toAccountId} (${r.currency}) ${r.category ?? ''} ${r.receiptUrl ?? ''}';
-      return desc.toLowerCase().contains(lower);
-    }).map((row) => _mapRow(row)).toList();
+    return rows
+        .where((r) {
+          final desc =
+              '${r.fromAccountId} to ${r.toAccountId} (${r.currency}) ${r.category ?? ''} ${r.receiptUrl ?? ''}';
+          return desc.toLowerCase().contains(lower);
+        })
+        .map((row) => _mapRow(row))
+        .toList();
   }
 
   @override
@@ -116,7 +122,8 @@ class DriftWalletRepository implements IWalletRepository {
       final amount = row.amount + (row.fee ?? 0.0);
       final converted = _convert(amount, row.currency, _defaultBaseCurrency);
       final key = row.currency;
-      balances[key] = ((balances[key] ?? 0.0) + (row.toAccountId == 'me' ? converted : -converted));
+      balances[key] = ((balances[key] ?? 0.0) +
+          (row.toAccountId == 'me' ? converted : -converted));
     }
     return balances;
   }
@@ -126,7 +133,8 @@ class DriftWalletRepository implements IWalletRepository {
     double score = 0.0;
     if (tx.amount > 10000) score += 0.4;
     if (tx.fraudScore != null && tx.fraudScore! > 0.7) score += 0.3;
-    if (tx.metadata != null && tx.metadata!.containsKey('ip_risk')) score += 0.2;
+    if (tx.metadata != null && tx.metadata!.containsKey('ip_risk'))
+      score += 0.2;
     if (tx.category == 'high_risk') score += 0.1;
     return score.clamp(0.0, 1.0);
   }
@@ -138,7 +146,8 @@ class DriftWalletRepository implements IWalletRepository {
       amount: row.amount,
       type: isCredit ? TransactionType.credit : TransactionType.debit,
       createdAt: row.createdAt,
-      description: '${row.fromAccountId} to ${row.toAccountId} (${row.currency})',
+      description:
+          '${row.fromAccountId} to ${row.toAccountId} (${row.currency})',
       status: _statusFromRow(row),
       currency: row.currency,
       fee: row.fee ?? 0.0,
@@ -158,11 +167,16 @@ class DriftWalletRepository implements IWalletRepository {
 
   TransactionStatus _statusFromRow(db.Transaction row) {
     switch (row.status.toLowerCase()) {
-      case 'pending': return TransactionStatus.pending;
-      case 'completed': return TransactionStatus.completed;
-      case 'failed': return TransactionStatus.failed;
-      case 'reversed': return TransactionStatus.reversed;
-      default: return TransactionStatus.completed;
+      case 'pending':
+        return TransactionStatus.pending;
+      case 'completed':
+        return TransactionStatus.completed;
+      case 'failed':
+        return TransactionStatus.failed;
+      case 'reversed':
+        return TransactionStatus.reversed;
+      default:
+        return TransactionStatus.completed;
     }
   }
 

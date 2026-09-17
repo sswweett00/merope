@@ -28,8 +28,10 @@ class DataUsageScreen extends ConsumerWidget {
           _buildUsageItem('Sesli Mesajlar', '450 MB', Icons.mic, tokens),
           const Divider(height: 32),
           ListTile(
-            title: Text('Depolamayı Temizle', style: TextStyle(color: tokens.textPrimary)),
-            subtitle: Text('Geçici dosyaları ve önbelleği sil', style: TextStyle(color: tokens.textSecondary)),
+            title: Text('Depolamayı Temizle',
+                style: TextStyle(color: tokens.textPrimary)),
+            subtitle: Text('Geçici dosyaları ve önbelleği sil',
+                style: TextStyle(color: tokens.textSecondary)),
             trailing: Icon(Icons.delete_sweep, color: tokens.dndStatus),
             onTap: () async {
               await notifier.clearCache();
@@ -41,8 +43,10 @@ class DataUsageScreen extends ConsumerWidget {
             },
           ),
           SwitchListTile(
-            title: Text('Düşük Veri Modu', style: TextStyle(color: tokens.textPrimary)),
-            subtitle: Text('Medya indirmelerini sınırla', style: TextStyle(color: tokens.textSecondary)),
+            title: Text('Düşük Veri Modu',
+                style: TextStyle(color: tokens.textPrimary)),
+            subtitle: Text('Medya indirmelerini sınırla',
+                style: TextStyle(color: tokens.textSecondary)),
             value: settings.lowDataMode,
             onChanged: (val) => notifier.setLowDataMode(val),
             activeThumbColor: tokens.primary,
@@ -52,13 +56,16 @@ class DataUsageScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildUsageItem(String title, String value, IconData icon, MeropeColorTokens tokens) {
+  Widget _buildUsageItem(
+      String title, String value, IconData icon, MeropeColorTokens tokens) {
     return Card(
       color: tokens.surface,
       child: ListTile(
         leading: Icon(icon, color: tokens.primary),
         title: Text(title, style: TextStyle(color: tokens.textPrimary)),
-        trailing: Text(value, style: TextStyle(fontWeight: FontWeight.bold, color: tokens.textPrimary)),
+        trailing: Text(value,
+            style: TextStyle(
+                fontWeight: FontWeight.bold, color: tokens.textPrimary)),
       ),
     );
   }

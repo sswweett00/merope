@@ -211,7 +211,8 @@ class AuthRepository implements IAuthRepository {
 
       final data = response.data;
       if (data == null) {
-        return MfaVerificationResult(success: false, error: 'No response from server');
+        return MfaVerificationResult(
+            success: false, error: 'No response from server');
       }
 
       if (data['success'] == true) {
@@ -294,7 +295,8 @@ class AuthRepository implements IAuthRepository {
   Future<AuthUser?> reAuthenticateForSensitiveOperation() async {
     final isBiometricAuth = await authenticateWithBiometrics();
     if (!isBiometricAuth) {
-      throw const MeropeAPIException(message: 'Biometric authentication failed');
+      throw const MeropeAPIException(
+          message: 'Biometric authentication failed');
     }
 
     final user = await getCurrentUser();
@@ -406,7 +408,9 @@ class AuthRepository implements IAuthRepository {
           .getSingleOrNull();
 
       if (existing != null) {
-        await (_database.update(_database.users)..where((t) => t.id.equals(user.id))).write(
+        await (_database.update(_database.users)
+              ..where((t) => t.id.equals(user.id)))
+            .write(
           UsersCompanion(
             username: Value(user.username),
             email: Value(user.email),

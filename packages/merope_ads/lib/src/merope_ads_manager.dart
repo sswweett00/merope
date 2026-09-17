@@ -17,7 +17,8 @@ class MeropeAds {
 
   AdProvider get provider {
     if (!_isInitialized || _provider == null) {
-      throw StateError('MeropeAds is not initialized. Call initialize() first.');
+      throw StateError(
+          'MeropeAds is not initialized. Call initialize() first.');
     }
     return _provider!;
   }

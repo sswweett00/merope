@@ -31,7 +31,9 @@ class PersonalAuthScreen extends ConsumerWidget {
               const SizedBox(height: MeropeTokens.space8),
               Text(
                 'High-performance social OS for you.',
-                style: TextStyle(fontSize: MeropeTokens.fontSizeMd, color: tokens.textSecondary),
+                style: TextStyle(
+                    fontSize: MeropeTokens.fontSizeMd,
+                    color: tokens.textSecondary),
               ),
               const Spacer(),
               _buildInput('Username', tokens),
@@ -45,16 +47,23 @@ class PersonalAuthScreen extends ConsumerWidget {
                   onPressed: () {},
                   style: ElevatedButton.styleFrom(
                     backgroundColor: tokens.primary,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(MeropeTokens.radiusMd)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(MeropeTokens.radiusMd)),
                   ),
-                  child: Text('Get Started', style: TextStyle(color: tokens.onPrimary, fontWeight: FontWeight.bold)),
+                  child: Text('Get Started',
+                      style: TextStyle(
+                          color: tokens.onPrimary,
+                          fontWeight: FontWeight.bold)),
                 ),
               ),
               const SizedBox(height: MeropeTokens.space24),
               Center(
                 child: TextButton(
-                  onPressed: () => Navigator.pushNamed(context, '/auth/corporate'),
-                  child: Text('Switch to Corporate Account', style: TextStyle(color: tokens.textSecondary)),
+                  onPressed: () =>
+                      Navigator.pushNamed(context, '/auth/corporate'),
+                  child: Text('Switch to Corporate Account',
+                      style: TextStyle(color: tokens.textSecondary)),
                 ),
               ),
             ],
@@ -64,11 +73,13 @@ class PersonalAuthScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildInput(String label, MeropeColorTokens tokens, {bool isObscure = false}) {
+  Widget _buildInput(String label, MeropeColorTokens tokens,
+      {bool isObscure = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontSize: 12, color: tokens.textSecondary)),
+        Text(label,
+            style: TextStyle(fontSize: 12, color: tokens.textSecondary)),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),

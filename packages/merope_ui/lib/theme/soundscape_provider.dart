@@ -9,10 +9,14 @@ enum SoundscapeProfile {
 
   String get label {
     switch (this) {
-      case SoundscapeProfile.silent: return 'Sessiz / Yok';
-      case SoundscapeProfile.cyberpunkClick: return 'Cyberpunk Tıklama';
-      case SoundscapeProfile.softResonance: return 'Yumuşak Rezonans';
-      case SoundscapeProfile.heavyEnterprise: return 'Kurumsal Mekanik';
+      case SoundscapeProfile.silent:
+        return 'Sessiz / Yok';
+      case SoundscapeProfile.cyberpunkClick:
+        return 'Cyberpunk Tıklama';
+      case SoundscapeProfile.softResonance:
+        return 'Yumuşak Rezonans';
+      case SoundscapeProfile.heavyEnterprise:
+        return 'Kurumsal Mekanik';
     }
   }
 
@@ -42,6 +46,7 @@ class SoundscapeNotifier extends StateNotifier<SoundscapeProfile> {
   }
 }
 
-final soundscapeProvider = StateNotifierProvider<SoundscapeNotifier, SoundscapeProfile>((ref) {
+final soundscapeProvider =
+    StateNotifierProvider<SoundscapeNotifier, SoundscapeProfile>((ref) {
   return SoundscapeNotifier();
 });

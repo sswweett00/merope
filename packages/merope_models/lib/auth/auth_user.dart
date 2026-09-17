@@ -14,5 +14,6 @@ class AuthUser with _$AuthUser {
     required int createdAt,
   }) = _AuthUser;
 
-  factory AuthUser.fromJson(Map<String, dynamic> json) => _$AuthUserFromJson(json);
+  factory AuthUser.fromJson(Map<String, dynamic> json) =>
+      _$AuthUserFromJson(json);
 }

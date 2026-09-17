@@ -88,12 +88,14 @@ class AudioPlayerNotifier extends StateNotifier<AudioPlayerState> {
 
   void previousTrack() {
     if (state.queue.isEmpty) return;
-    final prevIndex = (state.queueIndex - 1 + state.queue.length) % state.queue.length;
+    final prevIndex =
+        (state.queueIndex - 1 + state.queue.length) % state.queue.length;
     playTrack(state.queue[prevIndex]);
     state = state.copyWith(queueIndex: prevIndex);
   }
 }
 
-final audioPlayerProvider = StateNotifierProvider<AudioPlayerNotifier, AudioPlayerState>((ref) {
+final audioPlayerProvider =
+    StateNotifierProvider<AudioPlayerNotifier, AudioPlayerState>((ref) {
   return AudioPlayerNotifier();
 });

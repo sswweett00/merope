@@ -31,7 +31,9 @@ class ModerationQueueCache extends Table {
   BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
 
   @override
-  List<Set<Column>> get uniqueKeys => [{id}];
+  List<Set<Column>> get uniqueKeys => [
+        {id}
+      ];
 }
 
 class ModerationActionLog extends Table {
@@ -45,7 +47,9 @@ class ModerationActionLog extends Table {
   BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
 
   @override
-  List<Set<Column>> get uniqueKeys => [{id}];
+  List<Set<Column>> get uniqueKeys => [
+        {id}
+      ];
 }
 
 class ModerationSavedFilter extends Table {
@@ -58,7 +62,9 @@ class ModerationSavedFilter extends Table {
   DateTimeColumn get createdAt => dateTime()();
 
   @override
-  List<Set<Column>> get uniqueKeys => [{id}];
+  List<Set<Column>> get uniqueKeys => [
+        {id}
+      ];
 }
 
 @DriftDatabase(tables: [

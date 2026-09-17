@@ -55,7 +55,10 @@ class DynamicLayoutEngine<T> extends StatelessWidget {
     if (onLoadMore != null) {
       return NotificationListener<ScrollNotification>(
         onNotification: (ScrollNotification scrollInfo) {
-          if (!isLoadingMore && hasMore && scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 200) {
+          if (!isLoadingMore &&
+              hasMore &&
+              scrollInfo.metrics.pixels >=
+                  scrollInfo.metrics.maxScrollExtent - 200) {
             onLoadMore!();
           }
           return false;
@@ -158,7 +161,8 @@ class DynamicLayoutEngine<T> extends StatelessWidget {
     return PageView.builder(
       scrollDirection: Axis.vertical,
       itemCount: items.length,
-      itemBuilder: (context, index) => itemBuilder(context, index, items[index]),
+      itemBuilder: (context, index) =>
+          itemBuilder(context, index, items[index]),
     );
   }
 }

@@ -55,7 +55,10 @@ class GrowthScreen extends ConsumerWidget {
                         children: [
                           Icon(Icons.auto_graph, color: tokens.primary),
                           const SizedBox(width: 12),
-                          Text('Viral Resonance Link', style: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.bold)),
+                          Text('Viral Resonance Link',
+                              style: TextStyle(
+                                  color: tokens.textPrimary,
+                                  fontWeight: FontWeight.bold)),
                         ],
                       ),
                       const SizedBox(height: 12),
@@ -63,12 +66,15 @@ class GrowthScreen extends ConsumerWidget {
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: tokens.background,
-                          borderRadius: BorderRadius.circular(MeropeTokens.radiusSm),
+                          borderRadius:
+                              BorderRadius.circular(MeropeTokens.radiusSm),
                           border: Border.all(color: tokens.border, width: 0.5),
                         ),
                         child: Row(
                           children: [
-                            const Expanded(child: Text('merope.io/sync/invite/u_892k', style: TextStyle(color: Colors.white70))),
+                            const Expanded(
+                                child: Text('merope.io/sync/invite/u_892k',
+                                    style: TextStyle(color: Colors.white70))),
                             Icon(Icons.copy, color: tokens.primary, size: 18),
                           ],
                         ),
@@ -90,11 +96,27 @@ class GrowthScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Influence Leaderboard', style: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.bold, fontSize: 18)),
+                  Text('Influence Leaderboard',
+                      style: TextStyle(
+                          color: tokens.textPrimary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18)),
                   const SizedBox(height: 16),
-                  _LeaderboardTile(rank: 1, name: 'NeuralArch', influence: 98.2, tokens: tokens),
-                  _LeaderboardTile(rank: 2, name: 'WaveRunner', influence: 95.7, tokens: tokens),
-                  _LeaderboardTile(rank: 3, name: 'CyberRoot', influence: 92.1, tokens: tokens),
+                  _LeaderboardTile(
+                      rank: 1,
+                      name: 'NeuralArch',
+                      influence: 98.2,
+                      tokens: tokens),
+                  _LeaderboardTile(
+                      rank: 2,
+                      name: 'WaveRunner',
+                      influence: 95.7,
+                      tokens: tokens),
+                  _LeaderboardTile(
+                      rank: 3,
+                      name: 'CyberRoot',
+                      influence: 92.1,
+                      tokens: tokens),
                 ],
               ),
             ),
@@ -111,7 +133,11 @@ class _LeaderboardTile extends StatelessWidget {
   final double influence;
   final MeropeColorTokens tokens;
 
-  const _LeaderboardTile({required this.rank, required this.name, required this.influence, required this.tokens});
+  const _LeaderboardTile(
+      {required this.rank,
+      required this.name,
+      required this.influence,
+      required this.tokens});
 
   @override
   Widget build(BuildContext context) {
@@ -120,10 +146,21 @@ class _LeaderboardTile extends StatelessWidget {
       child: MeropeCard(
         color: tokens.surface,
         child: ListTile(
-          leading: Text('#$rank', style: TextStyle(color: tokens.primary, fontWeight: FontWeight.w900, fontSize: 18)),
-          title: Text(name, style: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.bold)),
-          subtitle: Text('Viral Multiplier: 1.${rank + 2}x', style: TextStyle(color: tokens.textSecondary, fontSize: 12)),
-          trailing: Text('${influence}k', style: TextStyle(color: tokens.primary, fontWeight: FontWeight.bold, fontSize: 16)),
+          leading: Text('#$rank',
+              style: TextStyle(
+                  color: tokens.primary,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 18)),
+          title: Text(name,
+              style: TextStyle(
+                  color: tokens.textPrimary, fontWeight: FontWeight.bold)),
+          subtitle: Text('Viral Multiplier: 1.${rank + 2}x',
+              style: TextStyle(color: tokens.textSecondary, fontSize: 12)),
+          trailing: Text('${influence}k',
+              style: TextStyle(
+                  color: tokens.primary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16)),
         ),
       ),
     );

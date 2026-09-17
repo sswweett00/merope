@@ -22,12 +22,15 @@ class ImageThemeStudioScreen extends ConsumerWidget {
       final picked = await picker.pickImage(source: ImageSource.gallery);
       if (picked != null) {
         // High-performance compression via Isolate before setting theme image
-        final compressedPath = await MediaCompressionIsolate.compressMedia(picked.path);
+        final compressedPath =
+            await MediaCompressionIsolate.compressMedia(picked.path);
 
         if (isPrimary) {
           ref.read(imageThemeProvider.notifier).setPrimaryImage(compressedPath);
         } else {
-          ref.read(imageThemeProvider.notifier).setSecondaryImage(compressedPath);
+          ref
+              .read(imageThemeProvider.notifier)
+              .setSecondaryImage(compressedPath);
         }
       }
     }
@@ -36,7 +39,8 @@ class ImageThemeStudioScreen extends ConsumerWidget {
       backgroundColor: tokens.background,
       appBar: AppBar(
         backgroundColor: tokens.surface,
-        title: Text('Görsel Tabanlı Tema Stüdyosu', style: TextStyle(color: tokens.textPrimary)),
+        title: Text('Görsel Tabanlı Tema Stüdyosu',
+            style: TextStyle(color: tokens.textPrimary)),
         iconTheme: IconThemeData(color: tokens.textPrimary),
       ),
       body: ListView(
@@ -44,7 +48,10 @@ class ImageThemeStudioScreen extends ConsumerWidget {
         children: [
           Text(
             'Özel Görsel Katmanları (Maksimum 2 Resim)',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: tokens.textPrimary),
+            style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: tokens.textPrimary),
           ),
           const SizedBox(height: 8),
           Text(
@@ -76,7 +83,10 @@ class ImageThemeStudioScreen extends ConsumerWidget {
           const SizedBox(height: MeropeTokens.space32),
           Text(
             'Görsel İşleme & Karıştırma Ayarları',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: tokens.textPrimary),
+            style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: tokens.textPrimary),
           ),
           const SizedBox(height: MeropeTokens.space16),
           MeropeCard(
@@ -88,7 +98,9 @@ class ImageThemeStudioScreen extends ConsumerWidget {
                   value: imageTheme.blurIntensity,
                   min: 0,
                   max: 40,
-                  onChanged: (val) => ref.read(imageThemeProvider.notifier).setBlurIntensity(val),
+                  onChanged: (val) => ref
+                      .read(imageThemeProvider.notifier)
+                      .setBlurIntensity(val),
                   tokens: tokens,
                 ),
                 const Divider(height: 1),
@@ -97,7 +109,8 @@ class ImageThemeStudioScreen extends ConsumerWidget {
                   value: imageTheme.tintOpacity,
                   min: 0.0,
                   max: 0.9,
-                  onChanged: (val) => ref.read(imageThemeProvider.notifier).setTintOpacity(val),
+                  onChanged: (val) =>
+                      ref.read(imageThemeProvider.notifier).setTintOpacity(val),
                   tokens: tokens,
                 ),
               ],
@@ -124,8 +137,11 @@ class ImageThemeStudioScreen extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(title, style: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.bold)),
-              Text(value.toStringAsFixed(1), style: TextStyle(color: tokens.textSecondary)),
+              Text(title,
+                  style: TextStyle(
+                      color: tokens.textPrimary, fontWeight: FontWeight.bold)),
+              Text(value.toStringAsFixed(1),
+                  style: TextStyle(color: tokens.textSecondary)),
             ],
           ),
           Slider(
@@ -172,7 +188,8 @@ class _ImagePickerBox extends StatelessWidget {
                     child: MeropeImage(
                       file: File(imagePath!),
                       fit: BoxFit.cover,
-                      borderRadius: BorderRadius.circular(MeropeTokens.radiusMd - 1.5),
+                      borderRadius:
+                          BorderRadius.circular(MeropeTokens.radiusMd - 1.5),
                       enableViewer: true,
                     ),
                   ),
@@ -181,8 +198,10 @@ class _ImagePickerBox extends StatelessWidget {
                     child: Container(
                       margin: const EdgeInsets.all(8),
                       padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
-                      child: const Icon(Icons.edit, size: 16, color: Colors.white),
+                      decoration: const BoxDecoration(
+                          color: Colors.black54, shape: BoxShape.circle),
+                      child:
+                          const Icon(Icons.edit, size: 16, color: Colors.white),
                     ),
                   ),
                 ],
@@ -190,9 +209,15 @@ class _ImagePickerBox extends StatelessWidget {
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.add_photo_alternate_rounded, size: 36, color: tokens.primary),
+                  Icon(Icons.add_photo_alternate_rounded,
+                      size: 36, color: tokens.primary),
                   const SizedBox(height: 8),
-                  Text(title, style: TextStyle(fontSize: 12, color: tokens.textSecondary, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                  Text(title,
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: tokens.textSecondary,
+                          fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center),
                 ],
               ),
       ),

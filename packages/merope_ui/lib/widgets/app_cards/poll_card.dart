@@ -34,7 +34,10 @@ class _PollCardState extends State<PollCard> {
         children: [
           Text(
             widget.question,
-            style: TextStyle(color: widget.tokens.textPrimary, fontWeight: FontWeight.bold, fontSize: 16),
+            style: TextStyle(
+                color: widget.tokens.textPrimary,
+                fontWeight: FontWeight.bold,
+                fontSize: 16),
           ),
           const SizedBox(height: 16),
           ...List.generate(widget.options.length, (index) {
@@ -44,12 +47,17 @@ class _PollCardState extends State<PollCard> {
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
-                  color: isSelected ? widget.tokens.primary.withValues(alpha: 0.1) : widget.tokens.surface,
+                  color: isSelected
+                      ? widget.tokens.primary.withValues(alpha: 0.1)
+                      : widget.tokens.surface,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: isSelected ? widget.tokens.primary : widget.tokens.border,
+                    color: isSelected
+                        ? widget.tokens.primary
+                        : widget.tokens.border,
                     width: isSelected ? 1.5 : 0.5,
                   ),
                 ),
@@ -59,13 +67,17 @@ class _PollCardState extends State<PollCard> {
                       child: Text(
                         widget.options[index],
                         style: TextStyle(
-                          color: isSelected ? widget.tokens.primary : widget.tokens.textPrimary,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          color: isSelected
+                              ? widget.tokens.primary
+                              : widget.tokens.textPrimary,
+                          fontWeight:
+                              isSelected ? FontWeight.bold : FontWeight.normal,
                         ),
                       ),
                     ),
                     if (isSelected)
-                      Icon(Icons.check_circle, color: widget.tokens.primary, size: 18),
+                      Icon(Icons.check_circle,
+                          color: widget.tokens.primary, size: 18),
                   ],
                 ),
               ),

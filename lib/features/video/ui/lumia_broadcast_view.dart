@@ -50,24 +50,34 @@ class _LumiaBroadcastViewState extends ConsumerState<LumiaBroadcastView> {
                 CircleAvatar(
                   radius: 20,
                   backgroundColor: tokens.primary,
-                  child: const Text('HB', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  child: const Text('HB',
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold)),
                 ),
-                 const SizedBox(width: 12),
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Live Stream', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                      const Text('2.4k Viewers', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                    ],
-                  ),
+                const SizedBox(width: 12),
+                const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Live Stream',
+                        style: TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold)),
+                    const Text('2.4k Viewers',
+                        style: TextStyle(color: Colors.white70, fontSize: 12)),
+                  ],
+                ),
                 const Spacer(),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: Colors.red,
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Text('LIVE', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                  child: const Text('LIVE',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12)),
                 ),
                 const SizedBox(width: 12),
                 IconButton(
@@ -133,7 +143,8 @@ class _ActionButton extends StatelessWidget {
   final Color color;
   final VoidCallback onTap;
 
-  const _ActionButton({required this.icon, required this.color, required this.onTap});
+  const _ActionButton(
+      {required this.icon, required this.color, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -143,10 +154,10 @@ class _ActionButton extends StatelessWidget {
         width: 48,
         height: 48,
         decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.2),
-        shape: BoxShape.circle,
-        border: Border.all(color: color.withValues(alpha: 0.5)),
-      ),
+          color: color.withValues(alpha: 0.2),
+          shape: BoxShape.circle,
+          border: Border.all(color: color.withValues(alpha: 0.5)),
+        ),
         child: Icon(icon, color: color),
       ),
     );

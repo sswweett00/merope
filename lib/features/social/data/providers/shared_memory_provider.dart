@@ -13,7 +13,8 @@ class SharedMemoryList extends AsyncNotifier<List<SharedMemory>> {
         id: 'mem_1',
         title: 'Merope Global Launch Event',
         description: 'The day we synchronized the world.',
-        coverUrl: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070',
+        coverUrl:
+            'https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070',
         date: DateTime(2026, 7, 15),
         participants: [
           MeropeAuthor(
@@ -44,7 +45,8 @@ class SharedMemoryList extends AsyncNotifier<List<SharedMemory>> {
             type: MemoryItemType.media,
             timestamp: DateTime(2026, 7, 15, 8, 22),
             content: 'Check out the neural visuals!',
-            mediaUrl: 'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070',
+            mediaUrl:
+                'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070',
           ),
         ],
       ),
@@ -52,4 +54,6 @@ class SharedMemoryList extends AsyncNotifier<List<SharedMemory>> {
   }
 }
 
-final sharedMemoryListProvider = AsyncNotifierProvider<SharedMemoryList, List<SharedMemory>>(SharedMemoryList.new);
+final sharedMemoryListProvider =
+    AsyncNotifierProvider<SharedMemoryList, List<SharedMemory>>(
+        SharedMemoryList.new);

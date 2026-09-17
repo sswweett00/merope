@@ -45,8 +45,8 @@ class BackgroundOrchestrator {
   void _startDesktopDaemon() {
     // Spawn a dedicated persistent isolate for Desktop
     IsolateManager().spawnDaemonIsolate(() {
-       debugPrint('UBOS: Desktop Daemon Isolate Active');
-       // This runs in a separate memory heap
+      debugPrint('UBOS: Desktop Daemon Isolate Active');
+      // This runs in a separate memory heap
     });
     _scheduleTasks();
   }
@@ -56,10 +56,12 @@ class BackgroundOrchestrator {
     _syncTimer?.cancel();
 
     // Heartbeat: Every 5 minutes
-    _heartbeatTimer = Timer.periodic(const Duration(minutes: 5), (_) => _performHeartbeat());
+    _heartbeatTimer =
+        Timer.periodic(const Duration(minutes: 5), (_) => _performHeartbeat());
 
     // Background Sync: Every 15 minutes
-    _syncTimer = Timer.periodic(const Duration(minutes: 15), (_) => _performBackgroundSync());
+    _syncTimer = Timer.periodic(
+        const Duration(minutes: 15), (_) => _performBackgroundSync());
   }
 
   Future<void> _performHeartbeat() async {
@@ -81,4 +83,5 @@ class BackgroundOrchestrator {
   }
 }
 
-final backgroundOrchestratorProvider = Provider((ref) => BackgroundOrchestrator(ref));
+final backgroundOrchestratorProvider =
+    Provider((ref) => BackgroundOrchestrator(ref));

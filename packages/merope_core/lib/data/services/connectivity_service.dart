@@ -9,6 +9,7 @@ class ConnectivityNotifier extends StateNotifier<ConnectivityStatus> {
   void simulateOnline() => state = ConnectivityStatus.online;
 }
 
-final connectivityProvider = StateNotifierProvider<ConnectivityNotifier, ConnectivityStatus>((ref) {
+final connectivityProvider =
+    StateNotifierProvider<ConnectivityNotifier, ConnectivityStatus>((ref) {
   return ConnectivityNotifier();
 });

@@ -24,7 +24,8 @@ class StickerPickerSheet extends StatelessWidget {
       padding: const EdgeInsets.all(MeropeTokens.space16),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(MeropeTokens.radiusLg)),
+        borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(MeropeTokens.radiusLg)),
       ),
       child: Column(
         children: [
@@ -37,7 +38,8 @@ class StickerPickerSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          const Text('Stickerlar', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          const Text('Stickerlar',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
           const SizedBox(height: 16),
           Expanded(
             child: GridView.builder(

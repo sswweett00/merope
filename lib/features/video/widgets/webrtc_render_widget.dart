@@ -17,8 +17,9 @@ class MeropeWebRTCRenderer extends StatelessWidget {
   Widget build(BuildContext context) {
     return RepaintBoundary(
       child: enablePrivacyBlur
-        ? _buildShadedRenderer()
-        : RTCVideoView(renderer, objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover),
+          ? _buildShadedRenderer()
+          : RTCVideoView(renderer,
+              objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover),
     );
   }
 

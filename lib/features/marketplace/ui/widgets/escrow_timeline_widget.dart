@@ -13,7 +13,12 @@ class EscrowTimelineWidget extends ConsumerWidget {
     final tokens = ref.watch(themeProvider).currentTokens;
 
     final steps = ['held', 'dispatched', 'delivered', 'released'];
-    final labels = ['Ödeme Güvencede', 'Kargoya Verildi', 'Teslim Edildi', 'Onaylandı & Aktarıldı'];
+    final labels = [
+      'Ödeme Güvencede',
+      'Kargoya Verildi',
+      'Teslim Edildi',
+      'Onaylandı & Aktarıldı'
+    ];
     final currentIndex = steps.indexOf(currentStatus.toLowerCase());
 
     return Container(
@@ -26,7 +31,11 @@ class EscrowTimelineWidget extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Emanet (Escrow) Güvence Durumu', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: tokens.textPrimary)),
+          Text('Emanet (Escrow) Güvence Durumu',
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: tokens.textPrimary)),
           const SizedBox(height: 20),
           Row(
             children: List.generate(steps.length * 2 - 1, (index) {
@@ -41,11 +50,16 @@ class EscrowTimelineWidget extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: isPassed ? tokens.primary : tokens.surfaceVariant,
                     shape: BoxShape.circle,
-                    border: Border.all(color: isCurrent ? tokens.secondary : Colors.transparent, width: 2),
+                    border: Border.all(
+                        color:
+                            isCurrent ? tokens.secondary : Colors.transparent,
+                        width: 2),
                   ),
                   child: Center(
                     child: Icon(
-                      isPassed ? Icons.check_rounded : Icons.fiber_manual_record,
+                      isPassed
+                          ? Icons.check_rounded
+                          : Icons.fiber_manual_record,
                       size: 16,
                       color: isPassed ? tokens.onPrimary : tokens.textSecondary,
                     ),

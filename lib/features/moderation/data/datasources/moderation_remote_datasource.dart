@@ -96,7 +96,8 @@ class ModerationRemoteDataSourceImpl implements IModerationRemoteDataSource {
 
       final data = response.data as Map<String, dynamic>;
       final items = (data['items'] as List<dynamic>?)
-              ?.map((e) => ModerationQueueItem.fromJson(e as Map<String, dynamic>))
+              ?.map((e) =>
+                  ModerationQueueItem.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [];
 

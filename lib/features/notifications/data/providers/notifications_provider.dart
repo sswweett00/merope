@@ -60,4 +60,6 @@ class NotificationsList extends AsyncNotifier<List<MeropeNotification>> {
   }
 }
 
-final notificationsListProvider = AsyncNotifierProvider<NotificationsList, List<MeropeNotification>>(NotificationsList.new);
+final notificationsListProvider =
+    AsyncNotifierProvider<NotificationsList, List<MeropeNotification>>(
+        NotificationsList.new);

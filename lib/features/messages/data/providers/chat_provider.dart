@@ -16,7 +16,8 @@ class ChatList extends AsyncNotifier<List<Conversation>> {
   }
 }
 
-final chatListProvider = AsyncNotifierProvider<ChatList, List<Conversation>>(ChatList.new);
+final chatListProvider =
+    AsyncNotifierProvider<ChatList, List<Conversation>>(ChatList.new);
 
 class ChatMessages extends FamilyAsyncNotifier<List<MeropeMessage>, String> {
   @override
@@ -28,7 +29,8 @@ class ChatMessages extends FamilyAsyncNotifier<List<MeropeMessage>, String> {
     return result.messages;
   }
 
-  Future<void> sendMessage(String text, {bool encrypt = true, String? effect}) async {
+  Future<void> sendMessage(String text,
+      {bool encrypt = true, String? effect}) async {
     final api = ref.read(messagingApiServiceProvider);
     final result = await api.sendMessage(arg, text, encrypt: encrypt);
 
@@ -54,9 +56,12 @@ class ChatMessages extends FamilyAsyncNotifier<List<MeropeMessage>, String> {
 
   Future<void> toggleReaction(String messageId, String emoji) async {
     final api = ref.read(messagingApiServiceProvider);
-    await api.markAsRead(arg, messageId); // Using markAsRead as a placeholder for reaction if missing
+    await api.markAsRead(arg,
+        messageId); // Using markAsRead as a placeholder for reaction if missing
     ref.invalidateSelf();
   }
 }
 
-final chatMessagesProvider = AsyncNotifierProviderFamily<ChatMessages, List<MeropeMessage>, String>(ChatMessages.new);
+final chatMessagesProvider =
+    AsyncNotifierProviderFamily<ChatMessages, List<MeropeMessage>, String>(
+        ChatMessages.new);

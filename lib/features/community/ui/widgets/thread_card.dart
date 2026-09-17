@@ -46,15 +46,18 @@ class ThreadCard extends StatelessWidget {
                           Expanded(
                             child: Text(
                               thread.authorName,
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ),
                           if (thread.isPinned)
-                            const Icon(Icons.push_pin, size: 16, color: Colors.orange),
+                            const Icon(Icons.push_pin,
+                                size: 16, color: Colors.orange),
                           if (thread.isLocked)
                             const Icon(Icons.lock, size: 16, color: Colors.red),
                           if (thread.isAnnouncement)
-                            const Icon(Icons.announcement, size: 16, color: Colors.blue),
+                            const Icon(Icons.announcement,
+                                size: 16, color: Colors.blue),
                         ],
                       ),
                       Text(
@@ -123,7 +126,9 @@ class ThreadCard extends StatelessWidget {
                 const Spacer(),
                 if (onPin != null)
                   IconButton(
-                    icon: Icon(thread.isPinned ? Icons.push_pin : Icons.push_pin_outlined),
+                    icon: Icon(thread.isPinned
+                        ? Icons.push_pin
+                        : Icons.push_pin_outlined),
                     onPressed: onPin,
                     tooltip: thread.isPinned ? 'Unpin' : 'Pin',
                   ),

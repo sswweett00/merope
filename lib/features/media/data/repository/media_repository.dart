@@ -16,38 +16,42 @@ class DriftMediaRepository implements IMediaRepository {
   @override
   Future<List<MeropeTrack>> getTracks() async {
     final rows = await _db.select(_db.audioTracks).get();
-    return rows.map((row) => MeropeTrack(
-      id: row.id,
-      title: row.title,
-      artist: row.artist,
-      audioUrl: row.audioUrl,
-      durationSeconds: row.durationSeconds,
-    )).toList();
+    return rows
+        .map((row) => MeropeTrack(
+              id: row.id,
+              title: row.title,
+              artist: row.artist,
+              audioUrl: row.audioUrl,
+              durationSeconds: row.durationSeconds,
+            ))
+        .toList();
   }
 
   @override
   Future<List<MeropePlaylist>> getPlaylists() async {
     final rows = await _db.select(_db.playlists).get();
-    return rows.map((row) => MeropePlaylist(
-      id: row.id,
-      ownerId: row.ownerId,
-      title: row.title,
-      trackIds: row.trackIds.split(','),
-      totalDurationSeconds: 0,
-    )).toList();
+    return rows
+        .map((row) => MeropePlaylist(
+              id: row.id,
+              ownerId: row.ownerId,
+              title: row.title,
+              trackIds: row.trackIds.split(','),
+              totalDurationSeconds: 0,
+            ))
+        .toList();
   }
 
   @override
   Future<void> createPlaylist(MeropePlaylist playlist) async {
     await _db.into(_db.playlists).insert(
-      db.PlaylistsCompanion.insert(
-        id: playlist.id,
-        ownerId: playlist.ownerId,
-        title: playlist.title,
-        trackIds: playlist.trackIds.join(','),
-        createdAt: DateTime.now(),
-      ),
-    );
+          db.PlaylistsCompanion.insert(
+            id: playlist.id,
+            ownerId: playlist.ownerId,
+            title: playlist.title,
+            trackIds: playlist.trackIds.join(','),
+            createdAt: DateTime.now(),
+          ),
+        );
   }
 
   @override

@@ -34,7 +34,8 @@ class OrbitFeedNotifier extends AsyncNotifier<List<OrbitVideo>> {
 }
 
 final orbitFeedProvider =
-    AsyncNotifierProvider<OrbitFeedNotifier, List<OrbitVideo>>(OrbitFeedNotifier.new);
+    AsyncNotifierProvider<OrbitFeedNotifier, List<OrbitVideo>>(
+        OrbitFeedNotifier.new);
 
 class MiniPlayerState {
   final OrbitVideo? activeVideo;

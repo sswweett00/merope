@@ -42,7 +42,8 @@ class _VideoMiniPlayerState extends ConsumerState<VideoMiniPlayer> {
             width: 160,
             height: 240,
             decoration: BoxDecoration(
-              border: Border.all(color: tokens.primary.withValues(alpha: 0.5), width: 2),
+              border: Border.all(
+                  color: tokens.primary.withValues(alpha: 0.5), width: 2),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Stack(
@@ -59,7 +60,11 @@ class _VideoMiniPlayerState extends ConsumerState<VideoMiniPlayer> {
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Colors.black54, Colors.transparent, Colors.black87],
+                      colors: [
+                        Colors.black54,
+                        Colors.transparent,
+                        Colors.black87
+                      ],
                     ),
                   ),
                 ),
@@ -67,8 +72,10 @@ class _VideoMiniPlayerState extends ConsumerState<VideoMiniPlayer> {
                   top: 4,
                   right: 4,
                   child: IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white, size: 20),
-                    onPressed: () => ref.read(miniPlayerProvider.notifier).dismiss(),
+                    icon:
+                        const Icon(Icons.close, color: Colors.white, size: 20),
+                    onPressed: () =>
+                        ref.read(miniPlayerProvider.notifier).dismiss(),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                   ),
@@ -83,13 +90,17 @@ class _VideoMiniPlayerState extends ConsumerState<VideoMiniPlayer> {
                     children: [
                       Text(
                         video.title,
-                        style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
                         '@${video.authorName}',
-                        style: const TextStyle(color: Colors.white70, fontSize: 9),
+                        style:
+                            const TextStyle(color: Colors.white70, fontSize: 9),
                       ),
                     ],
                   ),

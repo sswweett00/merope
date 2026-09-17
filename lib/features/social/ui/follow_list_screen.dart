@@ -29,30 +29,39 @@ class FollowListScreen extends ConsumerWidget {
             : ListView.builder(
                 itemCount: users.length,
                 itemBuilder: (context, index) {
-            final user = users[index];
-            final isSyncing = user['isSyncing'] as bool;
-            return ListTile(
-              leading: CircleAvatar(
-                backgroundColor: tokens.primary.withValues(alpha: 0.1),
-                child: Text(user['username'][0].toUpperCase(), style: TextStyle(color: tokens.primary)),
+                  final user = users[index];
+                  final isSyncing = user['isSyncing'] as bool;
+                  return ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: tokens.primary.withValues(alpha: 0.1),
+                      child: Text(user['username'][0].toUpperCase(),
+                          style: TextStyle(color: tokens.primary)),
+                    ),
+                    title: Text(user['displayName'],
+                        style: TextStyle(color: tokens.textPrimary)),
+                    subtitle: Text('@${user['username']}',
+                        style: TextStyle(color: tokens.textSecondary)),
+                    trailing: OutlinedButton(
+                      onPressed: () => ref
+                          .read(followListProvider(title).notifier)
+                          .toggleSync(user['id']),
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor:
+                            isSyncing ? tokens.primary : Colors.transparent,
+                        side: BorderSide(color: tokens.primary),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: Text(
+                        isSyncing ? 'Following' : 'Follow',
+                        style: TextStyle(
+                            color:
+                                isSyncing ? tokens.onPrimary : tokens.primary),
+                      ),
+                    ),
+                  );
+                },
               ),
-              title: Text(user['displayName'], style: TextStyle(color: tokens.textPrimary)),
-              subtitle: Text('@${user['username']}', style: TextStyle(color: tokens.textSecondary)),
-              trailing: OutlinedButton(
-                onPressed: () => ref.read(followListProvider(title).notifier).toggleSync(user['id']),
-                style: OutlinedButton.styleFrom(
-                  backgroundColor: isSyncing ? tokens.primary : Colors.transparent,
-                  side: BorderSide(color: tokens.primary),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: Text(
-                  isSyncing ? 'Following' : 'Follow',
-                  style: TextStyle(color: isSyncing ? tokens.onPrimary : tokens.primary),
-                ),
-              ),
-            );
-          },
-        ),
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, _) => Center(child: Text('Error: $err')),
       ),
@@ -70,7 +79,8 @@ class _EmptyFollowState extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.people_outline, size: 64, color: tokens.textSecondary.withValues(alpha: 0.2)),
+          Icon(Icons.people_outline,
+              size: 64, color: tokens.textSecondary.withValues(alpha: 0.2)),
           const SizedBox(height: 16),
           Text(
             'Henüz kimse yok',
@@ -79,7 +89,9 @@ class _EmptyFollowState extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             'Bağlantı kurmak için keşfetmeye başlayın.',
-            style: TextStyle(color: tokens.textSecondary.withValues(alpha: 0.6), fontSize: 13),
+            style: TextStyle(
+                color: tokens.textSecondary.withValues(alpha: 0.6),
+                fontSize: 13),
           ),
         ],
       ),

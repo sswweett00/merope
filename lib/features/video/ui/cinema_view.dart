@@ -45,7 +45,8 @@ class OrbitStreamView extends ConsumerWidget {
                   Positioned.fill(
                     child: Container(
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(MeropeTokens.radiusLg),
+                        borderRadius:
+                            BorderRadius.circular(MeropeTokens.radiusLg),
                         color: Colors.black.withValues(alpha: 0.35),
                       ),
                     ),
@@ -58,14 +59,18 @@ class OrbitStreamView extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
                             color: tokens.primary,
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: const Text(
                             'MEROPE ORBIT EXCLUSIVE',
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 11),
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -80,7 +85,8 @@ class OrbitStreamView extends ConsumerWidget {
                         const SizedBox(height: 6),
                         Text(
                           'Merope Orbit ağı üzerinde çalışan hibrit video mimarisi.',
-                          style: TextStyle(color: tokens.onPrimary.withValues(alpha: 0.85)),
+                          style: TextStyle(
+                              color: tokens.onPrimary.withValues(alpha: 0.85)),
                         ),
                         const SizedBox(height: 16),
                         Row(
@@ -106,7 +112,8 @@ class OrbitStreamView extends ConsumerWidget {
                               style: MeropeButtonStyle.secondary,
                               onPressed: () {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Yörüngemize eklendi!')),
+                                  const SnackBar(
+                                      content: Text('Yörüngemize eklendi!')),
                                 );
                               },
                             ),
@@ -120,93 +127,102 @@ class OrbitStreamView extends ConsumerWidget {
             ),
             const SizedBox(height: MeropeTokens.space32),
             // Video Rows by Category
-            ...categories.map((cat) => Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            ...categories.map(
+              (cat) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      cat['title'] as String,
-                      style: TextStyle(
-                        fontSize: MeropeTokens.fontSizeLg,
-                        fontWeight: FontWeight.bold,
-                        color: tokens.textPrimary,
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {},
-                      child: Text('Tümünü Gör', style: TextStyle(color: tokens.primary)),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: MeropeTokens.space12),
-                SizedBox(
-                  height: 160,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: cat['count'] as int,
-                    itemBuilder: (context, idx) {
-                      final videoTitle = '${cat['title']} - Bölüm ${idx + 1}';
-                      return Container(
-                        width: 220,
-                        margin: const EdgeInsets.only(right: MeropeTokens.space16),
-                        child: GestureDetector(
-                          onTap: () {
-                            showDialog(
-                              context: context,
-                              builder: (_) => VideoPlayerModal(
-                                title: videoTitle,
-                                videoId: '',
-                                videoUrl: '',
-                                category: cat['title'] as String,
-                              ),
-                            );
-                          },
-                          child: MeropeCard(
-                            color: tokens.surface,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: tokens.primary.withValues(alpha: 0.15),
-                                      borderRadius: BorderRadius.circular(MeropeTokens.radiusSm),
-                                    ),
-                                    child: Center(
-                                      child: CircleAvatar(
-                                        backgroundColor: tokens.primary,
-                                        child: const Icon(Icons.play_arrow, color: Colors.white),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  videoTitle,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13,
-                                    color: tokens.textPrimary,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                Text(
-                                  '4K UltraHD • 12.4K İzlenme',
-                                  style: TextStyle(fontSize: 11, color: tokens.textSecondary),
-                                ),
-                              ],
-                            ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          cat['title'] as String,
+                          style: TextStyle(
+                            fontSize: MeropeTokens.fontSizeLg,
+                            fontWeight: FontWeight.bold,
+                            color: tokens.textPrimary,
                           ),
                         ),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: MeropeTokens.space24),
-              ]),
+                        TextButton(
+                          onPressed: () {},
+                          child: Text('Tümünü Gör',
+                              style: TextStyle(color: tokens.primary)),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: MeropeTokens.space12),
+                    SizedBox(
+                      height: 160,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: cat['count'] as int,
+                        itemBuilder: (context, idx) {
+                          final videoTitle =
+                              '${cat['title']} - Bölüm ${idx + 1}';
+                          return Container(
+                            width: 220,
+                            margin: const EdgeInsets.only(
+                                right: MeropeTokens.space16),
+                            child: GestureDetector(
+                              onTap: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (_) => VideoPlayerModal(
+                                    title: videoTitle,
+                                    videoId: '',
+                                    videoUrl: '',
+                                    category: cat['title'] as String,
+                                  ),
+                                );
+                              },
+                              child: MeropeCard(
+                                color: tokens.surface,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: tokens.primary
+                                              .withValues(alpha: 0.15),
+                                          borderRadius: BorderRadius.circular(
+                                              MeropeTokens.radiusSm),
+                                        ),
+                                        child: Center(
+                                          child: CircleAvatar(
+                                            backgroundColor: tokens.primary,
+                                            child: const Icon(Icons.play_arrow,
+                                                color: Colors.white),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      videoTitle,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13,
+                                        color: tokens.textPrimary,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    Text(
+                                      '4K UltraHD • 12.4K İzlenme',
+                                      style: TextStyle(
+                                          fontSize: 11,
+                                          color: tokens.textSecondary),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: MeropeTokens.space24),
+                  ]),
             ),
           ],
         ),

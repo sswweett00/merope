@@ -49,7 +49,8 @@ class CollectiveCard extends StatelessWidget {
                               ),
                             ),
                             if (collective.isOfficial)
-                              const Icon(Icons.verified, size: 16, color: Colors.blue),
+                              const Icon(Icons.verified,
+                                  size: 16, color: Colors.blue),
                           ],
                         ),
                         Text(

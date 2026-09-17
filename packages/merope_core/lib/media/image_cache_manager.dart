@@ -8,7 +8,8 @@ import 'package:dio/dio.dart';
 /// Offline-first Image Cache Manager for Merope.
 /// Handles high-speed disk caching, memory caching, prefetching, and eviction.
 class MeropeImageCacheManager {
-  static final MeropeImageCacheManager _instance = MeropeImageCacheManager._internal();
+  static final MeropeImageCacheManager _instance =
+      MeropeImageCacheManager._internal();
   factory MeropeImageCacheManager() => _instance;
   MeropeImageCacheManager._internal();
 
@@ -32,7 +33,8 @@ class MeropeImageCacheManager {
   }
 
   /// Get image bytes from memory cache, local disk cache, or download via HTTP.
-  Future<Uint8List?> getImageBytes(String url, {Map<String, String>? headers}) async {
+  Future<Uint8List?> getImageBytes(String url,
+      {Map<String, String>? headers}) async {
     final key = _hashKey(url);
 
     // 1. Memory Cache

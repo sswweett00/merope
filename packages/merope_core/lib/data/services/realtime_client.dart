@@ -55,9 +55,12 @@ class RealtimeClient {
   })  : _roomId = roomId,
         _eventController = eventController {
     events = _eventController.stream.asBroadcastStream();
-    onMessage = events.where((msg) => msg.type == 'MESSAGE_SENT' || msg.type == 'E2EE_MESSAGE_SENT');
+    onMessage = events.where(
+        (msg) => msg.type == 'MESSAGE_SENT' || msg.type == 'E2EE_MESSAGE_SENT');
     onTyping = events.where((msg) => msg.type == 'TYPING');
-    onPresence = events.where((msg) => msg.type == 'PRESENCE').map((msg) => Map<String, String>.from(msg.payload));
+    onPresence = events
+        .where((msg) => msg.type == 'PRESENCE')
+        .map((msg) => Map<String, String>.from(msg.payload));
     onConnected = Stream.fromFuture(Future.value(null));
     onDisconnected = Stream.fromFuture(Future.value(null));
 
@@ -98,7 +101,10 @@ class RealtimeClient {
   Map<String, String> get presence => Map.unmodifiable(_presence);
   Set<String> get typingUsers {
     final now = DateTime.now();
-    return _typingUsers.entries.where((e) => now.difference(e.value).inSeconds < 4).map((e) => e.key).toSet();
+    return _typingUsers.entries
+        .where((e) => now.difference(e.value).inSeconds < 4)
+        .map((e) => e.key)
+        .toSet();
   }
 
   void connect() {
@@ -129,7 +135,8 @@ class RealtimeClient {
   String _buildWsUrl() {
     final uri = Uri.parse(baseUrl);
     final wsScheme = uri.scheme == 'https' ? 'wss' : 'ws';
-    final wsUri = Uri.parse('$wsScheme://${uri.host}:${uri.port}/ws?token=$token');
+    final wsUri =
+        Uri.parse('$wsScheme://${uri.host}:${uri.port}/ws?token=$token');
     return wsUri.toString();
   }
 
@@ -138,7 +145,8 @@ class RealtimeClient {
       final json = jsonDecode(data as String) as Map<String, dynamic>;
       final msg = RealtimeMessage.fromJson(json);
 
-      if (msg.payload['room_id'] != null && msg.payload['room_id'] != _roomId) return;
+      if (msg.payload['room_id'] != null && msg.payload['room_id'] != _roomId)
+        return;
 
       switch (msg.type) {
         case 'MESSAGE_SENT':
@@ -204,8 +212,8 @@ class RealtimeClient {
 
   void sendTypingIndicator(String roomId, bool isTyping) {
     _send('TYPING', {
-      'room_id': roomId, 
-      'user_id': '', 
+      'room_id': roomId,
+      'user_id': '',
       'is_typing': isTyping,
       'timestamp': DateTime.now().millisecondsSinceEpoch,
     });

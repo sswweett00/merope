@@ -18,7 +18,8 @@ class VideoPlayerResource {
 }
 
 class VideoPoolManager extends Notifier<void> {
-  static const int poolSize = 4; // Increased for prefetching (prev, current, next, next+1)
+  static const int poolSize =
+      4; // Increased for prefetching (prev, current, next, next+1)
   late final List<VideoPlayerResource> _resources;
 
   @override
@@ -82,7 +83,8 @@ class VideoPoolManager extends Notifier<void> {
   /// Releases all resources that are not in the provided [keepVideoIds] list.
   void managePool(List<String> keepVideoIds) {
     for (final resource in _resources) {
-      if (resource.currentVideoId != null && !keepVideoIds.contains(resource.currentVideoId)) {
+      if (resource.currentVideoId != null &&
+          !keepVideoIds.contains(resource.currentVideoId)) {
         resource.player.stop();
         resource.currentVideoId = null;
       }
@@ -90,4 +92,5 @@ class VideoPoolManager extends Notifier<void> {
   }
 }
 
-final videoPoolProvider = NotifierProvider<VideoPoolManager, void>(VideoPoolManager.new);
+final videoPoolProvider =
+    NotifierProvider<VideoPoolManager, void>(VideoPoolManager.new);

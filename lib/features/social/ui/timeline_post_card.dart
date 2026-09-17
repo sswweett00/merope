@@ -55,7 +55,9 @@ class _TimelinePostCardState extends ConsumerState<TimelinePostCard> {
               children: [
                 CircleAvatar(
                   backgroundColor: tokens.primary,
-                  child: Text(widget.author[0], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  child: Text(widget.author[0],
+                      style: const TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold)),
                 ),
                 const SizedBox(width: MeropeTokens.space12),
                 Column(
@@ -63,12 +65,17 @@ class _TimelinePostCardState extends ConsumerState<TimelinePostCard> {
                   children: [
                     Row(
                       children: [
-                        Text(widget.author, style: TextStyle(fontWeight: FontWeight.bold, color: tokens.textPrimary)),
+                        Text(widget.author,
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: tokens.textPrimary)),
                         const SizedBox(width: 6),
                         Icon(Icons.verified, color: tokens.primary, size: 16),
                       ],
                     ),
-                    Text('${widget.handle} • ${widget.time}', style: TextStyle(color: tokens.textSecondary, fontSize: 12)),
+                    Text('${widget.handle} • ${widget.time}',
+                        style: TextStyle(
+                            color: tokens.textSecondary, fontSize: 12)),
                   ],
                 ),
                 const Spacer(),
@@ -82,7 +89,8 @@ class _TimelinePostCardState extends ConsumerState<TimelinePostCard> {
             // Text Content
             Text(
               widget.content,
-              style: TextStyle(color: tokens.textPrimary, fontSize: 15, height: 1.4),
+              style: TextStyle(
+                  color: tokens.textPrimary, fontSize: 15, height: 1.4),
             ),
             const SizedBox(height: MeropeTokens.space16),
             const Divider(),
@@ -95,9 +103,12 @@ class _TimelinePostCardState extends ConsumerState<TimelinePostCard> {
                   tooltip: 'Tepki Ver',
                   icon: Row(
                     children: [
-                      Text(_selectedReaction ?? '👍', style: const TextStyle(fontSize: 18)),
+                      Text(_selectedReaction ?? '👍',
+                          style: const TextStyle(fontSize: 18)),
                       const SizedBox(width: 4),
-                      Text('$_likes', style: TextStyle(color: tokens.textSecondary, fontSize: 12)),
+                      Text('$_likes',
+                          style: TextStyle(
+                              color: tokens.textSecondary, fontSize: 12)),
                     ],
                   ),
                   onSelected: (reaction) {
@@ -115,7 +126,8 @@ class _TimelinePostCardState extends ConsumerState<TimelinePostCard> {
                     const PopupMenuItem(value: '👍', child: Text('👍 Beğen')),
                     const PopupMenuItem(value: '❤️', child: Text('❤️ Sevdim')),
                     const PopupMenuItem(value: '😂', child: Text('😂 Gülünç')),
-                    const PopupMenuItem(value: '😲', child: Text('😲 Vay Canına')),
+                    const PopupMenuItem(
+                        value: '😲', child: Text('😲 Vay Canına')),
                     const PopupMenuItem(value: '😢', child: Text('😢 Üzücü')),
                     const PopupMenuItem(value: '🔥', child: Text('🔥 Ateş')),
                   ],
@@ -123,22 +135,30 @@ class _TimelinePostCardState extends ConsumerState<TimelinePostCard> {
                 // Comment Action
                 TextButton.icon(
                   onPressed: () {},
-                  icon: Icon(Icons.chat_bubble_outline, size: 18, color: tokens.textSecondary),
-                  label: Text('${widget.commentsCount}', style: TextStyle(color: tokens.textSecondary, fontSize: 12)),
+                  icon: Icon(Icons.chat_bubble_outline,
+                      size: 18, color: tokens.textSecondary),
+                  label: Text('${widget.commentsCount}',
+                      style:
+                          TextStyle(color: tokens.textSecondary, fontSize: 12)),
                 ),
                 // Re-pulse Action
                 TextButton.icon(
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Profilinizde Yeniden Paylaşıldı!')),
+                      const SnackBar(
+                          content: Text('Profilinizde Yeniden Paylaşıldı!')),
                     );
                   },
-                  icon: Icon(Icons.repeat, size: 18, color: tokens.textSecondary),
-                  label: Text('${widget.retweetsCount}', style: TextStyle(color: tokens.textSecondary, fontSize: 12)),
+                  icon:
+                      Icon(Icons.repeat, size: 18, color: tokens.textSecondary),
+                  label: Text('${widget.retweetsCount}',
+                      style:
+                          TextStyle(color: tokens.textSecondary, fontSize: 12)),
                 ),
                 // Share Action
                 IconButton(
-                  icon: Icon(Icons.share_outlined, size: 18, color: tokens.textSecondary),
+                  icon: Icon(Icons.share_outlined,
+                      size: 18, color: tokens.textSecondary),
                   onPressed: () {},
                 ),
               ],

@@ -19,7 +19,8 @@ class ModerationScreen extends ConsumerStatefulWidget {
   ConsumerState<ModerationScreen> createState() => _ModerationScreenState();
 }
 
-class _ModerationScreenState extends ConsumerState<ModerationScreen> with AutomaticKeepAliveClientMixin {
+class _ModerationScreenState extends ConsumerState<ModerationScreen>
+    with AutomaticKeepAliveClientMixin {
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounceTimer;
   bool _isBulkMode = false;
@@ -45,7 +46,8 @@ class _ModerationScreenState extends ConsumerState<ModerationScreen> with Automa
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       ref.read(moderationQueueProvider.notifier).loadMore();
     }
   }
@@ -53,7 +55,9 @@ class _ModerationScreenState extends ConsumerState<ModerationScreen> with Automa
   void _onSearchChanged(String query) {
     _debounceTimer?.cancel();
     _debounceTimer = Timer(const Duration(milliseconds: 300), () {
-      ref.read(moderationFiltersProvider.notifier).state = ref.read(moderationFiltersProvider).copyWith(searchQuery: query.isEmpty ? null : query);
+      ref.read(moderationFiltersProvider.notifier).state = ref
+          .read(moderationFiltersProvider)
+          .copyWith(searchQuery: query.isEmpty ? null : query);
     });
   }
 
@@ -82,7 +86,9 @@ class _ModerationScreenState extends ConsumerState<ModerationScreen> with Automa
 
   Future<void> _performBulkAction(ModerationActionType type) async {
     MeropeHaptics.trigger(MeropeTokens.hapticHeavy);
-    await ref.read(moderationActionsControllerProvider.notifier).bulkAction(type, _selectedIds.toList(), moderatorNote: 'Bulk action');
+    await ref
+        .read(moderationActionsControllerProvider.notifier)
+        .bulkAction(type, _selectedIds.toList(), moderatorNote: 'Bulk action');
     setState(() {
       _isBulkMode = false;
       _selectedIds.clear();
@@ -124,21 +130,27 @@ class _ModerationScreenState extends ConsumerState<ModerationScreen> with Automa
                       if (_isBulkMode)
                         TextButton(
                           onPressed: _toggleBulkMode,
-                          child: Text('İptal', style: TextStyle(color: tokens.textSecondary)),
+                          child: Text('İptal',
+                              style: TextStyle(color: tokens.textSecondary)),
                         )
                       else
                         IconButton(
                           onPressed: _toggleBulkMode,
-                          icon: Icon(Icons.checklist_rounded, color: tokens.textSecondary),
+                          icon: Icon(Icons.checklist_rounded,
+                              color: tokens.textSecondary),
                         ),
                     ],
                   ),
                   const SizedBox(height: MeropeTokens.space16),
-                  _ModerationMetricsRow(metrics: queueAsync.valueOrNull?.metrics ?? const {}),
+                  _ModerationMetricsRow(
+                      metrics: queueAsync.valueOrNull?.metrics ?? const {}),
                   const SizedBox(height: MeropeTokens.space16),
                   _CategoryTabBar(filters: filters, tokens: tokens),
                   const SizedBox(height: MeropeTokens.space12),
-                  _SearchBar(controller: _searchController, onChanged: _onSearchChanged, tokens: tokens),
+                  _SearchBar(
+                      controller: _searchController,
+                      onChanged: _onSearchChanged,
+                      tokens: tokens),
                 ],
               ),
             ),
@@ -148,21 +160,28 @@ class _ModerationScreenState extends ConsumerState<ModerationScreen> with Automa
                 color: tokens.primary,
                 child: queueAsync.when(
                   loading: () => _buildSkeleton(tokens),
-                  error: (error, _) => _buildErrorState(tokens, error.toString()),
+                  error: (error, _) =>
+                      _buildErrorState(tokens, error.toString()),
                   data: (state) {
                     if (state.items.isEmpty && !state.isLoading) {
                       return _buildEmptyState(tokens);
                     }
                     return ListView.builder(
                       controller: _scrollController,
-                      padding: const EdgeInsets.symmetric(horizontal: MeropeTokens.space24),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: MeropeTokens.space24),
                       itemCount: state.items.length + (state.hasMore ? 1 : 0),
                       itemExtent: _itemExtent.toDouble(),
                       itemBuilder: (context, index) {
                         if (index >= state.items.length) {
                           return const Padding(
                             padding: EdgeInsets.symmetric(vertical: 16),
-                            child: Center(child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))),
+                            child: Center(
+                                child: SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2))),
                           );
                         }
                         final item = state.items[index];
@@ -178,12 +197,19 @@ class _ModerationScreenState extends ConsumerState<ModerationScreen> with Automa
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => ModerationDetailScreen(item: item),
+                                builder: (_) =>
+                                    ModerationDetailScreen(item: item),
                               ),
                             );
                           },
-                          onDismissedLeft: () => ref.read(moderationActionsControllerProvider.notifier).markSafe(item.userId),
-                          onDismissedRight: () => ref.read(moderationActionsControllerProvider.notifier).banUser(item.userId),
+                          onDismissedLeft: () => ref
+                              .read(
+                                  moderationActionsControllerProvider.notifier)
+                              .markSafe(item.userId),
+                          onDismissedRight: () => ref
+                              .read(
+                                  moderationActionsControllerProvider.notifier)
+                              .banUser(item.userId),
                         );
                       },
                     );
@@ -196,23 +222,33 @@ class _ModerationScreenState extends ConsumerState<ModerationScreen> with Automa
                 selectedCount: _selectedIds.length,
                 onBan: () => _performBulkAction(ModerationActionType.ban),
                 onSafe: () => _performBulkAction(ModerationActionType.markSafe),
-                onEscalate: () => _performBulkAction(ModerationActionType.escalate),
+                onEscalate: () =>
+                    _performBulkAction(ModerationActionType.escalate),
                 tokens: tokens,
               ),
             if (actionState.errorMessage != null)
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: MeropeTokens.space24, vertical: MeropeTokens.space12),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: MeropeTokens.space24,
+                    vertical: MeropeTokens.space12),
                 color: tokens.error.withValues(alpha: 0.1),
                 child: Row(
                   children: [
-                    Icon(Icons.error_outline_rounded, color: tokens.error, size: 20),
+                    Icon(Icons.error_outline_rounded,
+                        color: tokens.error, size: 20),
                     const SizedBox(width: MeropeTokens.space8),
-                    Expanded(child: Text(actionState.errorMessage!, style: TextStyle(color: tokens.error, fontSize: MeropeTokens.fontSizeSm)),
+                    Expanded(
+                      child: Text(actionState.errorMessage!,
+                          style: TextStyle(
+                              color: tokens.error,
+                              fontSize: MeropeTokens.fontSizeSm)),
                     ),
                     TextButton(
-                      onPressed: () => ref.read(moderationActionsControllerProvider.notifier),
-                      child: Text('Dismiss', style: TextStyle(color: tokens.primary)),
+                      onPressed: () => ref
+                          .read(moderationActionsControllerProvider.notifier),
+                      child: Text('Dismiss',
+                          style: TextStyle(color: tokens.primary)),
                     ),
                   ],
                 ),
@@ -242,14 +278,19 @@ class _ModerationScreenState extends ConsumerState<ModerationScreen> with Automa
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(children: [
-                Container(width: 40, height: 40, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                Container(
+                    width: 40,
+                    height: 40,
+                    decoration: const BoxDecoration(
+                        color: Colors.white, shape: BoxShape.circle)),
                 const SizedBox(width: 12),
                 Expanded(child: Container(height: 12, color: Colors.white)),
               ]),
               const SizedBox(height: 12),
-              Container(width: double.infinity, height: 10, color: Colors.white),
+              Container(
+                  width: double.infinity, height: 10, color: Colors.white),
               const SizedBox(height: 8),
-                Container(width: 200, height: 10, color: Colors.white),
+              Container(width: 200, height: 10, color: Colors.white),
             ],
           ),
         ),
@@ -264,11 +305,18 @@ class _ModerationScreenState extends ConsumerState<ModerationScreen> with Automa
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.wifi_off_rounded, size: 48, color: tokens.textSecondary.withValues(alpha: 0.5)),
+            Icon(Icons.wifi_off_rounded,
+                size: 48, color: tokens.textSecondary.withValues(alpha: 0.5)),
             const SizedBox(height: MeropeTokens.space16),
-            Text('Bağlantı Hatası', style: TextStyle(color: tokens.textPrimary, fontSize: MeropeTokens.fontSizeLg, fontWeight: FontWeight.bold)),
+            Text('Bağlantı Hatası',
+                style: TextStyle(
+                    color: tokens.textPrimary,
+                    fontSize: MeropeTokens.fontSizeLg,
+                    fontWeight: FontWeight.bold)),
             const SizedBox(height: MeropeTokens.space8),
-            Text(error, textAlign: TextAlign.center, style: TextStyle(color: tokens.textSecondary)),
+            Text(error,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: tokens.textSecondary)),
             const SizedBox(height: MeropeTokens.space24),
             MeropeButton(
               text: 'Tekrar Dene',
@@ -288,11 +336,18 @@ class _ModerationScreenState extends ConsumerState<ModerationScreen> with Automa
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.inbox_rounded, size: 48, color: tokens.textSecondary.withValues(alpha: 0.5)),
+            Icon(Icons.inbox_rounded,
+                size: 48, color: tokens.textSecondary.withValues(alpha: 0.5)),
             const SizedBox(height: MeropeTokens.space16),
-            Text('Kuyruk Boş', style: TextStyle(color: tokens.textPrimary, fontSize: MeropeTokens.fontSizeLg, fontWeight: FontWeight.bold)),
+            Text('Kuyruk Boş',
+                style: TextStyle(
+                    color: tokens.textPrimary,
+                    fontSize: MeropeTokens.fontSizeLg,
+                    fontWeight: FontWeight.bold)),
             const SizedBox(height: MeropeTokens.space8),
-            Text('Şu anda moderasyon bekleyen içerik yok.', textAlign: TextAlign.center, style: TextStyle(color: tokens.textSecondary)),
+            Text('Şu anda moderasyon bekleyen içerik yok.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: tokens.textSecondary)),
           ],
         ),
       ),
@@ -351,12 +406,17 @@ class _MetricChip extends StatelessWidget {
   final IconData icon;
   final MeropeColorTokens tokens;
 
-  const _MetricChip({required this.label, required this.value, required this.icon, required this.tokens});
+  const _MetricChip(
+      {required this.label,
+      required this.value,
+      required this.icon,
+      required this.tokens});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: MeropeTokens.space12, vertical: MeropeTokens.space8),
+      padding: const EdgeInsets.symmetric(
+          horizontal: MeropeTokens.space12, vertical: MeropeTokens.space8),
       decoration: BoxDecoration(
         color: tokens.surfaceVariant,
         borderRadius: BorderRadius.circular(MeropeTokens.radiusSm),
@@ -371,8 +431,14 @@ class _MetricChip extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(value, style: TextStyle(color: tokens.textPrimary, fontSize: MeropeTokens.fontSizeSm, fontWeight: FontWeight.bold)),
-                Text(label, style: TextStyle(color: tokens.textSecondary, fontSize: 10)),
+                Text(value,
+                    style: TextStyle(
+                        color: tokens.textPrimary,
+                        fontSize: MeropeTokens.fontSizeSm,
+                        fontWeight: FontWeight.bold)),
+                Text(label,
+                    style:
+                        TextStyle(color: tokens.textSecondary, fontSize: 10)),
               ],
             ),
           ),
@@ -419,14 +485,17 @@ class _CategoryTabBar extends ConsumerWidget {
           _CategoryChip(
             label: 'Taciz',
             isActive: filters.category == ModerationCategoryFilter.harassment,
-            onTap: () => _updateFilter(ref, ModerationCategoryFilter.harassment),
+            onTap: () =>
+                _updateFilter(ref, ModerationCategoryFilter.harassment),
             tokens: tokens,
           ),
           const SizedBox(width: MeropeTokens.space8),
           _CategoryChip(
             label: 'Sahtecilik',
-            isActive: filters.category == ModerationCategoryFilter.impersonation,
-            onTap: () => _updateFilter(ref, ModerationCategoryFilter.impersonation),
+            isActive:
+                filters.category == ModerationCategoryFilter.impersonation,
+            onTap: () =>
+                _updateFilter(ref, ModerationCategoryFilter.impersonation),
             tokens: tokens,
           ),
         ],
@@ -436,7 +505,8 @@ class _CategoryTabBar extends ConsumerWidget {
 
   void _updateFilter(WidgetRef ref, ModerationCategoryFilter category) {
     MeropeHaptics.trigger(MeropeTokens.hapticSoft);
-    ref.read(moderationFiltersProvider.notifier).state = ref.read(moderationFiltersProvider).copyWith(category: category);
+    ref.read(moderationFiltersProvider.notifier).state =
+        ref.read(moderationFiltersProvider).copyWith(category: category);
   }
 }
 
@@ -446,7 +516,11 @@ class _CategoryChip extends StatelessWidget {
   final VoidCallback onTap;
   final MeropeColorTokens tokens;
 
-  const _CategoryChip({required this.label, required this.isActive, required this.onTap, required this.tokens});
+  const _CategoryChip(
+      {required this.label,
+      required this.isActive,
+      required this.onTap,
+      required this.tokens});
 
   @override
   Widget build(BuildContext context) {
@@ -454,7 +528,8 @@ class _CategoryChip extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(MeropeTokens.radiusFull),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: MeropeTokens.space12, vertical: MeropeTokens.space6),
+        padding: const EdgeInsets.symmetric(
+            horizontal: MeropeTokens.space12, vertical: MeropeTokens.space6),
         decoration: BoxDecoration(
           color: isActive ? tokens.primary : tokens.surfaceVariant,
           borderRadius: BorderRadius.circular(MeropeTokens.radiusFull),
@@ -478,33 +553,48 @@ class _SearchBar extends StatelessWidget {
   final ValueChanged<String> onChanged;
   final MeropeColorTokens tokens;
 
-  const _SearchBar({required this.controller, required this.onChanged, required this.tokens});
+  const _SearchBar(
+      {required this.controller,
+      required this.onChanged,
+      required this.tokens});
 
   @override
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
       onChanged: onChanged,
-      style: TextStyle(color: tokens.textPrimary, fontSize: MeropeTokens.fontSizeSm),
+      style: TextStyle(
+          color: tokens.textPrimary, fontSize: MeropeTokens.fontSizeSm),
       decoration: InputDecoration(
         hintText: 'Kullanıcı ara...',
-        hintStyle: TextStyle(color: tokens.textSecondary.withValues(alpha: 0.5), fontSize: MeropeTokens.fontSizeSm),
-        prefixIcon: Icon(Icons.search_rounded, color: tokens.textSecondary, size: 20),
+        hintStyle: TextStyle(
+            color: tokens.textSecondary.withValues(alpha: 0.5),
+            fontSize: MeropeTokens.fontSizeSm),
+        prefixIcon:
+            Icon(Icons.search_rounded, color: tokens.textSecondary, size: 20),
         suffixIcon: controller.text.isNotEmpty
             ? IconButton(
                 onPressed: () {
                   controller.clear();
                   onChanged('');
                 },
-                icon: Icon(Icons.clear_rounded, color: tokens.textSecondary, size: 18),
+                icon: Icon(Icons.clear_rounded,
+                    color: tokens.textSecondary, size: 18),
               )
             : null,
         filled: true,
         fillColor: tokens.surfaceVariant,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(MeropeTokens.radiusFull), borderSide: BorderSide.none),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(MeropeTokens.radiusFull), borderSide: BorderSide.none),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(MeropeTokens.radiusFull), borderSide: BorderSide(color: tokens.primary, width: 1)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: MeropeTokens.space16, vertical: MeropeTokens.space10),
+        border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(MeropeTokens.radiusFull),
+            borderSide: BorderSide.none),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(MeropeTokens.radiusFull),
+            borderSide: BorderSide.none),
+        focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(MeropeTokens.radiusFull),
+            borderSide: BorderSide(color: tokens.primary, width: 1)),
+        contentPadding: const EdgeInsets.symmetric(
+            horizontal: MeropeTokens.space16, vertical: MeropeTokens.space10),
       ),
     );
   }
@@ -560,7 +650,8 @@ class _ModerationQueueCard extends StatelessWidget {
             color: tokens.secondary,
             borderRadius: BorderRadius.circular(MeropeTokens.radiusMd),
           ),
-          child: Icon(Icons.check_circle_rounded, color: tokens.onSecondary, size: 28),
+          child: Icon(Icons.check_circle_rounded,
+              color: tokens.onSecondary, size: 28),
         ),
         secondaryBackground: Container(
           alignment: Alignment.centerRight,
@@ -572,7 +663,9 @@ class _ModerationQueueCard extends StatelessWidget {
           child: Icon(Icons.block_rounded, color: tokens.onError, size: 28),
         ),
         child: MeropeCard(
-          color: isSelected ? tokens.primary.withValues(alpha: 0.08) : tokens.surface,
+          color: isSelected
+              ? tokens.primary.withValues(alpha: 0.08)
+              : tokens.surface,
           padding: const EdgeInsets.all(MeropeTokens.space16),
           borderRadius: MeropeTokens.radiusMd,
           hasAtmosphere: item.riskLevel == RiskLevel.critical,
@@ -598,8 +691,13 @@ class _ModerationQueueCard extends StatelessWidget {
                 ),
                 child: Center(
                   child: Text(
-                    item.username.isNotEmpty ? item.username[0].toUpperCase() : '?',
-                    style: TextStyle(color: riskColor, fontWeight: FontWeight.bold, fontSize: 16),
+                    item.username.isNotEmpty
+                        ? item.username[0].toUpperCase()
+                        : '?',
+                    style: TextStyle(
+                        color: riskColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16),
                   ),
                 ),
               ),
@@ -614,39 +712,63 @@ class _ModerationQueueCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             item.displayName,
-                            style: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.w600, fontSize: MeropeTokens.fontSizeSm),
+                            style: TextStyle(
+                                color: tokens.textPrimary,
+                                fontWeight: FontWeight.w600,
+                                fontSize: MeropeTokens.fontSizeSm),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         const SizedBox(width: MeropeTokens.space8),
-                        _SeverityBadge(riskLevel: item.riskLevel, tokens: tokens),
+                        _SeverityBadge(
+                            riskLevel: item.riskLevel, tokens: tokens),
                       ],
                     ),
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Text('@${item.username}', style: TextStyle(color: tokens.textSecondary, fontSize: 12)),
+                        Text('@${item.username}',
+                            style: TextStyle(
+                                color: tokens.textSecondary, fontSize: 12)),
                         const SizedBox(width: MeropeTokens.space8),
-                        Container(width: 4, height: 4, decoration: BoxDecoration(color: tokens.textSecondary, shape: BoxShape.circle)),
+                        Container(
+                            width: 4,
+                            height: 4,
+                            decoration: BoxDecoration(
+                                color: tokens.textSecondary,
+                                shape: BoxShape.circle)),
                         const SizedBox(width: MeropeTokens.space8),
-                        Text(reasonLabel, style: TextStyle(color: tokens.primary, fontSize: 12, fontWeight: FontWeight.w500)),
+                        Text(reasonLabel,
+                            style: TextStyle(
+                                color: tokens.primary,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500)),
                       ],
                     ),
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Text('Güven: ${(item.trustScore * 100).toInt()}%', style: TextStyle(color: tokens.textSecondary, fontSize: 11)),
+                        Text('Güven: ${(item.trustScore * 100).toInt()}%',
+                            style: TextStyle(
+                                color: tokens.textSecondary, fontSize: 11)),
                         const SizedBox(width: MeropeTokens.space8),
-                        Text('Bot: ${(item.botProbability * 100).toInt()}%', style: TextStyle(color: tokens.textSecondary, fontSize: 11)),
+                        Text('Bot: ${(item.botProbability * 100).toInt()}%',
+                            style: TextStyle(
+                                color: tokens.textSecondary, fontSize: 11)),
                         if (item.isAppealed) ...[
                           const SizedBox(width: MeropeTokens.space8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
                               color: tokens.secondary.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(4),
                             ),
-                            child: Text('İtiraz', style: TextStyle(color: tokens.secondary, fontSize: 10, fontWeight: FontWeight.w600)),
+                            child: Text('İtiraz',
+                                style: TextStyle(
+                                    color: tokens.secondary,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600)),
                           ),
                         ],
                       ],
@@ -660,9 +782,14 @@ class _ModerationQueueCard extends StatelessWidget {
                 children: [
                   Text(
                     '${item.reportCount}',
-                    style: TextStyle(color: tokens.error, fontSize: MeropeTokens.fontSizeLg, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        color: tokens.error,
+                        fontSize: MeropeTokens.fontSizeLg,
+                        fontWeight: FontWeight.bold),
                   ),
-                  Text('Rapor', style: TextStyle(color: tokens.textSecondary, fontSize: 10)),
+                  Text('Rapor',
+                      style:
+                          TextStyle(color: tokens.textSecondary, fontSize: 10)),
                 ],
               ),
             ],
@@ -671,7 +798,9 @@ class _ModerationQueueCard extends StatelessWidget {
       ),
     );
 
-    return Padding(padding: const EdgeInsets.only(bottom: MeropeTokens.space12), child: card);
+    return Padding(
+        padding: const EdgeInsets.only(bottom: MeropeTokens.space12),
+        child: card);
   }
 
   Color _riskColor(RiskLevel level) {
@@ -721,7 +850,11 @@ class _SeverityBadge extends StatelessWidget {
       ),
       child: Text(
         riskLevel.name.toUpperCase(),
-        style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.5),
+        style: TextStyle(
+            color: color,
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.5),
       ),
     );
   }
@@ -734,12 +867,18 @@ class _BulkActionBar extends StatelessWidget {
   final VoidCallback onEscalate;
   final MeropeColorTokens tokens;
 
-  const _BulkActionBar({required this.selectedCount, required this.onBan, required this.onSafe, required this.onEscalate, required this.tokens});
+  const _BulkActionBar(
+      {required this.selectedCount,
+      required this.onBan,
+      required this.onSafe,
+      required this.onEscalate,
+      required this.tokens});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: MeropeTokens.space24, vertical: MeropeTokens.space12),
+      padding: const EdgeInsets.symmetric(
+          horizontal: MeropeTokens.space24, vertical: MeropeTokens.space12),
       decoration: BoxDecoration(
         color: tokens.surface,
         border: Border(top: BorderSide(color: tokens.border)),
@@ -748,7 +887,9 @@ class _BulkActionBar extends StatelessWidget {
       child: SafeArea(
         child: Row(
           children: [
-            Text('$selectedCount seçili', style: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.w600)),
+            Text('$selectedCount seçili',
+                style: TextStyle(
+                    color: tokens.textPrimary, fontWeight: FontWeight.w600)),
             const Spacer(),
             MeropeButton(
               text: 'Güvenli',

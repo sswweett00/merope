@@ -13,7 +13,8 @@ class _ZeroKnowledgeToggle extends StatelessWidget {
   final ValueChanged<bool> onChanged;
   final MeropeColorTokens tokens;
 
-  const _ZeroKnowledgeToggle({required this.isActive, required this.onChanged, required this.tokens});
+  const _ZeroKnowledgeToggle(
+      {required this.isActive, required this.onChanged, required this.tokens});
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +31,11 @@ class _ZeroKnowledgeToggle extends StatelessWidget {
             children: [
               Icon(Icons.enhanced_encryption, color: tokens.primary, size: 18),
               const SizedBox(width: 12),
-              Text('Zero-Knowledge Mode', style: TextStyle(color: tokens.textPrimary, fontSize: 13, fontWeight: FontWeight.bold)),
+              Text('Zero-Knowledge Mode',
+                  style: TextStyle(
+                      color: tokens.textPrimary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold)),
             ],
           ),
           Switch(
@@ -43,6 +48,7 @@ class _ZeroKnowledgeToggle extends StatelessWidget {
     );
   }
 }
+
 class VaultScreen extends ConsumerStatefulWidget {
   const VaultScreen({super.key});
 
@@ -90,25 +96,33 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
                       onTap: () => setState(() => _currentPath = null),
                       child: Row(
                         children: [
-                          Icon(Icons.chevron_left, size: 14, color: tokens.primary),
-                          Text('Back to Root', style: TextStyle(color: tokens.primary, fontSize: 11, fontWeight: FontWeight.bold)),
+                          Icon(Icons.chevron_left,
+                              size: 14, color: tokens.primary),
+                          Text('Back to Root',
+                              style: TextStyle(
+                                  color: tokens.primary,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold)),
                         ],
                       ),
                     ),
                 ],
               ),
               IconButton(
-                icon: Icon(_isZeroKnowledge ? Icons.security : Icons.lock_reset, color: _isZeroKnowledge ? tokens.secondary : tokens.textSecondary),
+                icon: Icon(_isZeroKnowledge ? Icons.security : Icons.lock_reset,
+                    color: _isZeroKnowledge
+                        ? tokens.secondary
+                        : tokens.textSecondary),
                 onPressed: () {
-                   MeropeHaptics.trigger(MeropeTokens.hapticSelection);
-                   setState(() {
-                     if (_isZeroKnowledge) {
-                       _isZeroKnowledge = false;
-                     } else {
-                        _isUnlocked = false;
-                        _currentPath = null;
-                     }
-                   });
+                  MeropeHaptics.trigger(MeropeTokens.hapticSelection);
+                  setState(() {
+                    if (_isZeroKnowledge) {
+                      _isZeroKnowledge = false;
+                    } else {
+                      _isUnlocked = false;
+                      _currentPath = null;
+                    }
+                  });
                 },
               ),
             ],
@@ -127,8 +141,10 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
             child: vaultAsync.when(
               data: (items) {
                 final displayItems = _currentPath == null
-                  ? items
-                  : items.where((i) => i.type != VaultItemType.folder).toList();
+                    ? items
+                    : items
+                        .where((i) => i.type != VaultItemType.folder)
+                        .toList();
 
                 return GridView.builder(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -142,10 +158,18 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
                     final item = displayItems[index];
                     IconData icon;
                     switch (item.type) {
-                      case VaultItemType.folder: icon = Icons.folder_outlined; break;
-                      case VaultItemType.key: icon = Icons.vpn_key_outlined; break;
-                      case VaultItemType.secret: icon = Icons.visibility_off_outlined; break;
-                      case VaultItemType.file: icon = Icons.insert_drive_file_outlined; break;
+                      case VaultItemType.folder:
+                        icon = Icons.folder_outlined;
+                        break;
+                      case VaultItemType.key:
+                        icon = Icons.vpn_key_outlined;
+                        break;
+                      case VaultItemType.secret:
+                        icon = Icons.visibility_off_outlined;
+                        break;
+                      case VaultItemType.file:
+                        icon = Icons.insert_drive_file_outlined;
+                        break;
                     }
 
                     return MeropeCard(
@@ -155,7 +179,8 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
                         if (item.type == VaultItemType.folder) {
                           setState(() => _currentPath = item.title);
                         } else {
-                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Decrypting ${item.title}...')));
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text('Decrypting ${item.title}...')));
                         }
                       },
                       child: Column(
@@ -165,12 +190,16 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
                           const SizedBox(height: 12),
                           Text(
                             item.title,
-                            style: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.bold, fontSize: 13),
-                             textAlign: TextAlign.center,
+                            style: TextStyle(
+                                color: tokens.textPrimary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13),
+                            textAlign: TextAlign.center,
                           ),
                           Text(
                             item.protection,
-                            style: TextStyle(color: tokens.textSecondary, fontSize: 10),
+                            style: TextStyle(
+                                color: tokens.textSecondary, fontSize: 10),
                           ),
                         ],
                       ),

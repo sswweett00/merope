@@ -21,19 +21,24 @@ class MeropeCoreSecurityFabric {
   MeropeCoreSecurityFabric(this._ref);
 
   /// Accessor for Messaging Security
-  AegisMessageCryptNotifier get messaging => _ref.read(aegisMessageCryptProvider.notifier);
+  AegisMessageCryptNotifier get messaging =>
+      _ref.read(aegisMessageCryptProvider.notifier);
 
   /// Accessor for Vault Security
-  QuantumVaultSentinelNotifier get vault => _ref.read(quantumVaultSentinelProvider.notifier);
+  QuantumVaultSentinelNotifier get vault =>
+      _ref.read(quantumVaultSentinelProvider.notifier);
 
   /// Accessor for Stream Security
-  AetherGuardStreamNotifier get streaming => _ref.read(aetherGuardStreamProvider.notifier);
+  AetherGuardStreamNotifier get streaming =>
+      _ref.read(aetherGuardStreamProvider.notifier);
 
   /// Accessor for Identity Security
-  AetherAuthShieldNotifier get identity => _ref.read(aetherAuthShieldProvider.notifier);
+  AetherAuthShieldNotifier get identity =>
+      _ref.read(aetherAuthShieldProvider.notifier);
 
   /// Accessor for Content Integrity
-  VeritasIntegrityNotifier get content => _ref.read(veritasIntegrityProvider.notifier);
+  VeritasIntegrityNotifier get content =>
+      _ref.read(veritasIntegrityProvider.notifier);
 
   /// Performs a full system security health check across all domains.
   Future<Map<String, bool>> performFullHealthCheck() async {

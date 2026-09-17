@@ -23,7 +23,8 @@ class SharedMemoryScreen extends ConsumerWidget {
       body: memoriesAsync.when(
         data: (memories) {
           final memory = memories.firstWhereOrNull((m) => m.id == memoryId);
-          if (memory == null) return const Center(child: Text("Memory not found"));
+          if (memory == null)
+            return const Center(child: Text("Memory not found"));
 
           return CustomScrollView(
             slivers: [
@@ -32,7 +33,8 @@ class SharedMemoryScreen extends ConsumerWidget {
                 child: _ContributorList(tokens: tokens),
               ),
               SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
@@ -107,7 +109,11 @@ class _ContributorList extends StatelessWidget {
           child: CircleAvatar(
             radius: 20,
             backgroundColor: tokens.primary.withValues(alpha: 0.1),
-            child: Text('${index + 1}', style: TextStyle(color: tokens.primary, fontSize: 12, fontWeight: FontWeight.bold)),
+            child: Text('${index + 1}',
+                style: TextStyle(
+                    color: tokens.primary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold)),
           ),
         ),
       ),
@@ -147,11 +153,13 @@ class _TimelineItem extends StatelessWidget {
                     children: [
                       Text(
                         item.authorName,
-                        style: TextStyle(color: tokens.primary, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            color: tokens.primary, fontWeight: FontWeight.bold),
                       ),
                       Text(
                         timeStr,
-                        style: TextStyle(color: tokens.textSecondary, fontSize: 12),
+                        style: TextStyle(
+                            color: tokens.textSecondary, fontSize: 12),
                       ),
                     ],
                   ),

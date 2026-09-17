@@ -34,29 +34,53 @@ class _ForgeStudioScreenState extends ConsumerState<ForgeStudioScreen> {
             pinned: true,
             expandedHeight: 220,
             flexibleSpace: FlexibleSpaceBar(
-              title: Text('Merope Forge Studio', style: TextStyle(color: tokens.textPrimary)),
+              title: Text('Merope Forge Studio',
+                  style: TextStyle(color: tokens.textPrimary)),
               background: _buildHero(tokens, appsAsync, ownerId),
             ),
             actions: [
-              IconButton(icon: Icon(Icons.api, color: tokens.textPrimary), tooltip: 'API Testing', onPressed: () => _openApiTesting(context, ownerId, ref)),
-              IconButton(icon: Icon(Icons.code, color: tokens.textPrimary), tooltip: 'SDK Generator', onPressed: () => _openSdkGenerator(context, ownerId)),
-              IconButton(icon: Icon(Icons.terminal, color: tokens.textPrimary), tooltip: 'Logs', onPressed: () => _openLogs(context)),
+              IconButton(
+                  icon: Icon(Icons.api, color: tokens.textPrimary),
+                  tooltip: 'API Testing',
+                  onPressed: () => _openApiTesting(context, ownerId, ref)),
+              IconButton(
+                  icon: Icon(Icons.code, color: tokens.textPrimary),
+                  tooltip: 'SDK Generator',
+                  onPressed: () => _openSdkGenerator(context, ownerId)),
+              IconButton(
+                  icon: Icon(Icons.terminal, color: tokens.textPrimary),
+                  tooltip: 'Logs',
+                  onPressed: () => _openLogs(context)),
             ],
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: MeropeTokens.space24, vertical: MeropeTokens.space12),
-              child: Text('Content Crafting', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: tokens.textPrimary)),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: MeropeTokens.space24,
+                  vertical: MeropeTokens.space12),
+              child: Text('Content Crafting',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      color: tokens.textPrimary)),
             ),
           ),
           SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: MeropeTokens.space24),
+            padding:
+                const EdgeInsets.symmetric(horizontal: MeropeTokens.space24),
             sliver: SliverGrid(
-              delegate: SliverChildBuilderDelegate((context, i) => _buildToolCard(i, tokens), childCount: 4),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 3),
+              delegate: SliverChildBuilderDelegate(
+                  (context, i) => _buildToolCard(i, tokens),
+                  childCount: 4),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 3),
             ),
           ),
-          const SliverToBoxAdapter(child: SizedBox(height: MeropeTokens.space24)),
+          const SliverToBoxAdapter(
+              child: SizedBox(height: MeropeTokens.space24)),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -68,22 +92,32 @@ class _ForgeStudioScreenState extends ConsumerState<ForgeStudioScreen> {
     );
   }
 
-  Widget _buildHero(MeropeColorTokens tokens, AsyncValue<List<dynamic>> appsAsync, String ownerId) {
+  Widget _buildHero(MeropeColorTokens tokens,
+      AsyncValue<List<dynamic>> appsAsync, String ownerId) {
     return Padding(
       padding: const EdgeInsets.all(MeropeTokens.space24),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         const SizedBox(height: MeropeTokens.space16),
-        Text('Analytics Pulse', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: tokens.textPrimary)),
+        Text('Analytics Pulse',
+            style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: tokens.textPrimary)),
         const SizedBox(height: MeropeTokens.space12),
         _buildMetricsHeader(tokens),
         const SizedBox(height: MeropeTokens.space16),
         StreamBuilder<DeveloperMetrics>(
           stream: ref.watch(developerMetricsProvider(ownerId).stream),
           builder: (context, snapshot) {
-            final metrics = snapshot.data ?? DeveloperMetrics(appId: ownerId, dataPoints: _samplePoints());
+            final metrics = snapshot.data ??
+                DeveloperMetrics(appId: ownerId, dataPoints: _samplePoints());
             return SizedBox(
               height: 120,
-              child: MetricLineChart(data: metrics.dataPoints, lineColor: tokens.primary, height: 120, emptyLabel: 'Live traffic telemetry'),
+              child: MetricLineChart(
+                  data: metrics.dataPoints,
+                  lineColor: tokens.primary,
+                  height: 120,
+                  emptyLabel: 'Live traffic telemetry'),
             );
           },
         ),
@@ -101,15 +135,27 @@ class _ForgeStudioScreenState extends ConsumerState<ForgeStudioScreen> {
 
   Widget _buildMetric(String label, String value, MeropeColorTokens tokens) {
     return Column(children: [
-      Text(label, style: TextStyle(color: tokens.textSecondary, fontSize: 10, fontWeight: FontWeight.bold)),
+      Text(label,
+          style: TextStyle(
+              color: tokens.textSecondary,
+              fontSize: 10,
+              fontWeight: FontWeight.bold)),
       const SizedBox(height: 4),
-      Text(value, style: TextStyle(color: tokens.primary, fontSize: 20, fontWeight: FontWeight.w900)),
+      Text(value,
+          style: TextStyle(
+              color: tokens.primary,
+              fontSize: 20,
+              fontWeight: FontWeight.w900)),
     ]);
   }
 
   List<MetricDataPoint> _samplePoints() {
     final now = DateTime.now();
-    return List.generate(20, (i) => MetricDataPoint(timestamp: now.subtract(Duration(seconds: 19 - i * 2)), value: 10 + i * 2.3));
+    return List.generate(
+        20,
+        (i) => MetricDataPoint(
+            timestamp: now.subtract(Duration(seconds: 19 - i * 2)),
+            value: 10 + i * 2.3));
   }
 
   Widget _buildToolCard(int index, MeropeColorTokens tokens) {
@@ -125,25 +171,34 @@ class _ForgeStudioScreenState extends ConsumerState<ForgeStudioScreen> {
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         Icon(icon, color: tokens.primary, size: 32),
         const SizedBox(height: 8),
-        Text(label, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: tokens.textPrimary)),
+        Text(label,
+            style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                color: tokens.textPrimary)),
       ]),
     );
   }
 
   void _openApiTesting(BuildContext context, String ownerId, WidgetRef ref) {
-    final app = ref.read(developerAppsProvider(ownerId).future).then((list) => list.isNotEmpty ? list.first : null);
+    final app = ref
+        .read(developerAppsProvider(ownerId).future)
+        .then((list) => list.isNotEmpty ? list.first : null);
     app.then((a) {
       if (a != null) {
-        Navigator.of(context).push(MaterialPageRoute(builder: (_) => ApiTestingScreen(appId: a.id)));
+        Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => ApiTestingScreen(appId: a.id)));
       }
     });
   }
 
   void _openSdkGenerator(BuildContext context, String ownerId) {
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => SdkGeneratorScreen(ownerId: ownerId)));
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => SdkGeneratorScreen(ownerId: ownerId)));
   }
 
   void _openLogs(BuildContext context) {
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LogsViewerScreen()));
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (_) => const LogsViewerScreen()));
   }
 }

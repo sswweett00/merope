@@ -68,15 +68,19 @@ class MessageRenderer extends ConsumerWidget {
           ),
         );
       case MessageBlockType.image:
-        return _ImageBlock(url: block.metadata?['url'] ?? block.content, tokens: colors);
+        return _ImageBlock(
+            url: block.metadata?['url'] ?? block.content, tokens: colors);
       case MessageBlockType.gif:
-        return _GifBlock(url: block.metadata?['url'] ?? block.content, tokens: colors);
+        return _GifBlock(
+            url: block.metadata?['url'] ?? block.content, tokens: colors);
       case MessageBlockType.sticker:
         return _StickerBlock(url: block.metadata?['url'] ?? block.content);
       case MessageBlockType.video:
-        return _VideoBlock(url: block.metadata?['url'] ?? block.content, tokens: colors);
+        return _VideoBlock(
+            url: block.metadata?['url'] ?? block.content, tokens: colors);
       case MessageBlockType.audio:
-        return _AudioBlock(url: block.metadata?['url'] ?? block.content, tokens: colors);
+        return _AudioBlock(
+            url: block.metadata?['url'] ?? block.content, tokens: colors);
       case MessageBlockType.code:
         return _CodeBlock(content: block.content, colors: colors);
       case MessageBlockType.quote:
@@ -106,13 +110,16 @@ class _EncryptedContainer extends ConsumerWidget {
   final String content;
   final MeropeColorTokens colors;
 
-  const _EncryptedContainer({required this.channelId, required this.content, required this.colors});
+  const _EncryptedContainer(
+      {required this.channelId, required this.content, required this.colors});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return FutureBuilder<String>(
       // ignore: discarded_futures
-      future: ref.read(e2EEControllerProvider.notifier).decryptMessage(channelId, content),
+      future: ref
+          .read(e2EEControllerProvider.notifier)
+          .decryptMessage(channelId, content),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           return Row(
@@ -123,13 +130,18 @@ class _EncryptedContainer extends ConsumerWidget {
               Expanded(
                 child: Text(
                   snapshot.data!,
-                  style: TextStyle(fontSize: MeropeTokens.fontSizeMd, color: colors.textPrimary),
+                  style: TextStyle(
+                      fontSize: MeropeTokens.fontSizeMd,
+                      color: colors.textPrimary),
                 ),
               ),
             ],
           );
         }
-        return const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2));
+        return const SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(strokeWidth: 2));
       },
     );
   }
@@ -145,7 +157,8 @@ class _SparkContainer extends StatefulWidget {
   State<_SparkContainer> createState() => _SparkContainerState();
 }
 
-class _SparkContainerState extends State<_SparkContainer> with SingleTickerProviderStateMixin {
+class _SparkContainerState extends State<_SparkContainer>
+    with SingleTickerProviderStateMixin {
   late AnimationController _shredController;
   late int _remainingSeconds;
   Timer? _timer;
@@ -153,10 +166,12 @@ class _SparkContainerState extends State<_SparkContainer> with SingleTickerProvi
   @override
   void initState() {
     super.initState();
-    _shredController = AnimationController(vsync: this, duration: const Duration(milliseconds: 800));
+    _shredController = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 800));
     final expiresAt = widget.message.metadata?['expires_at'] as int?;
     if (expiresAt != null) {
-      _remainingSeconds = (expiresAt - DateTime.now().millisecondsSinceEpoch) ~/ 1000;
+      _remainingSeconds =
+          (expiresAt - DateTime.now().millisecondsSinceEpoch) ~/ 1000;
       _startTimer();
     } else {
       _remainingSeconds = 0;
@@ -201,18 +216,23 @@ class _SparkContainerState extends State<_SparkContainer> with SingleTickerProvi
                 decoration: BoxDecoration(
                   color: widget.colors.error.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(MeropeTokens.radiusMd),
-                  border: Border.all(color: widget.colors.error.withValues(alpha: 0.3)),
+                  border: Border.all(
+                      color: widget.colors.error.withValues(alpha: 0.3)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.local_fire_department_rounded, size: 16, color: widget.colors.error),
+                        Icon(Icons.local_fire_department_rounded,
+                            size: 16, color: widget.colors.error),
                         const SizedBox(width: 8),
                         Text(
                           'SPARK - Expiring in ${_remainingSeconds}s',
-                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: widget.colors.error),
+                          style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: widget.colors.error),
                         ),
                       ],
                     ),
@@ -240,13 +260,16 @@ class _EncryptionPulse extends StatefulWidget {
   State<_EncryptionPulse> createState() => _EncryptionPulseState();
 }
 
-class _EncryptionPulseState extends State<_EncryptionPulse> with SingleTickerProviderStateMixin {
+class _EncryptionPulseState extends State<_EncryptionPulse>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat(reverse: true);
+    _controller =
+        AnimationController(vsync: this, duration: const Duration(seconds: 2))
+          ..repeat(reverse: true);
   }
 
   @override
@@ -264,9 +287,12 @@ class _EncryptionPulseState extends State<_EncryptionPulse> with SingleTickerPro
         height: 8,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: widget.color.withValues(alpha: 0.3 + (_controller.value * 0.7)),
+          color:
+              widget.color.withValues(alpha: 0.3 + (_controller.value * 0.7)),
           boxShadow: [
-            BoxShadow(color: widget.color.withValues(alpha: _controller.value * 0.5), blurRadius: 8 * _controller.value),
+            BoxShadow(
+                color: widget.color.withValues(alpha: _controller.value * 0.5),
+                blurRadius: 8 * _controller.value),
           ],
         ),
       ),
@@ -317,15 +343,20 @@ class _VideoBlock extends StatelessWidget {
         child: Stack(
           alignment: Alignment.center,
           children: [
-            AspectRatio(aspectRatio: 16 / 9, child: Container(color: tokens.surfaceVariant)),
+            AspectRatio(
+                aspectRatio: 16 / 9,
+                child: Container(color: tokens.surfaceVariant)),
             const Icon(Icons.play_circle_fill, size: 48, color: Colors.white70),
             Positioned(
               bottom: 8,
               right: 8,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(4)),
-                child: const Text("0:45", style: TextStyle(color: Colors.white, fontSize: 10)),
+                decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(4)),
+                child: const Text("0:45",
+                    style: TextStyle(color: Colors.white, fontSize: 10)),
               ),
             ),
           ],
@@ -355,7 +386,8 @@ class _AudioBlockState extends State<_AudioBlock> {
     await Future.delayed(const Duration(seconds: 1));
     if (!mounted) return;
     setState(() {
-      _transcription = "This is a high-performance voice message handled on-device for maximum privacy.";
+      _transcription =
+          "This is a high-performance voice message handled on-device for maximum privacy.";
       _isTranscribing = false;
     });
   }
@@ -376,8 +408,10 @@ class _AudioBlockState extends State<_AudioBlock> {
             child: Row(
               children: [
                 Container(
-                  decoration: BoxDecoration(color: widget.tokens.primary, shape: BoxShape.circle),
-                  child: const Icon(Icons.play_arrow_rounded, color: Colors.white),
+                  decoration: BoxDecoration(
+                      color: widget.tokens.primary, shape: BoxShape.circle),
+                  child:
+                      const Icon(Icons.play_arrow_rounded, color: Colors.white),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -390,7 +424,9 @@ class _AudioBlockState extends State<_AudioBlock> {
                 GestureDetector(
                   onTap: _toggleTranscription,
                   child: Icon(
-                    _transcription != null ? Icons.closed_caption_rounded : Icons.closed_caption_disabled_rounded,
+                    _transcription != null
+                        ? Icons.closed_caption_rounded
+                        : Icons.closed_caption_disabled_rounded,
                     color: widget.tokens.primary,
                     size: 20,
                   ),
@@ -404,7 +440,8 @@ class _AudioBlockState extends State<_AudioBlock> {
               child: SizedBox(
                 width: 12,
                 height: 12,
-                child: CircularProgressIndicator(strokeWidth: 2, color: widget.tokens.textSecondary),
+                child: CircularProgressIndicator(
+                    strokeWidth: 2, color: widget.tokens.textSecondary),
               ),
             ),
           if (_transcription != null)
@@ -414,11 +451,15 @@ class _AudioBlockState extends State<_AudioBlock> {
               decoration: BoxDecoration(
                 color: widget.tokens.background.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(MeropeTokens.radiusSm),
-                border: Border.all(color: widget.tokens.border.withValues(alpha: 0.3)),
+                border: Border.all(
+                    color: widget.tokens.border.withValues(alpha: 0.3)),
               ),
               child: Text(
                 _transcription!,
-                style: TextStyle(fontSize: MeropeTokens.fontSizeSm, color: widget.tokens.textSecondary, fontStyle: FontStyle.italic),
+                style: TextStyle(
+                    fontSize: MeropeTokens.fontSizeSm,
+                    color: widget.tokens.textSecondary,
+                    fontStyle: FontStyle.italic),
               ),
             ),
         ],
@@ -433,10 +474,14 @@ class _WaveformPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = color..strokeCap = StrokeCap.round..strokeWidth = 2;
+    final paint = Paint()
+      ..color = color
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 2;
     for (var i = 0; i < size.width; i += 4) {
       final height = 4 + (i % 12).toDouble() + (i % 7).toDouble();
-      canvas.drawLine(Offset(i.toDouble(), size.height / 2 - height / 2), Offset(i.toDouble(), size.height / 2 + height / 2), paint);
+      canvas.drawLine(Offset(i.toDouble(), size.height / 2 - height / 2),
+          Offset(i.toDouble(), size.height / 2 + height / 2), paint);
     }
   }
 
@@ -466,14 +511,19 @@ class _CodeBlock extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("KOD", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: colors.textSecondary.withValues(alpha: 0.5))),
+              Text("KOD",
+                  style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: colors.textSecondary.withValues(alpha: 0.5))),
               Icon(Icons.copy_rounded, size: 14, color: colors.textSecondary),
             ],
           ),
           const Divider(height: 12),
           Text(
             content,
-            style: const TextStyle(fontFamily: 'monospace', fontSize: MeropeTokens.fontSizeSm),
+            style: const TextStyle(
+                fontFamily: 'monospace', fontSize: MeropeTokens.fontSizeSm),
           ),
         ],
       ),

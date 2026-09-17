@@ -31,22 +31,25 @@ class PrivacyScreen extends StatelessWidget {
                   child: Column(
                     children: [
                       SwitchListTile(
-                        title: Text('Profilimi Arama Sonuçlarında Gizle', style: TextStyle(color: darkTokens.textPrimary)),
+                        title: Text('Profilimi Arama Sonuçlarında Gizle',
+                            style: TextStyle(color: darkTokens.textPrimary)),
                         value: false,
                         onChanged: (val) {},
-                         activeThumbColor: darkTokens.primary,
+                        activeThumbColor: darkTokens.primary,
                       ),
                       SwitchListTile(
-                        title: Text('Okundu Bilgisini Gönder', style: TextStyle(color: darkTokens.textPrimary)),
+                        title: Text('Okundu Bilgisini Gönder',
+                            style: TextStyle(color: darkTokens.textPrimary)),
                         value: true,
                         onChanged: (val) {},
-                         activeThumbColor: darkTokens.primary,
+                        activeThumbColor: darkTokens.primary,
                       ),
                       SwitchListTile(
-                        title: Text('Reklam Kişiselleştirme', style: TextStyle(color: darkTokens.textPrimary)),
+                        title: Text('Reklam Kişiselleştirme',
+                            style: TextStyle(color: darkTokens.textPrimary)),
                         value: false,
                         onChanged: (val) {},
-                         activeThumbColor: darkTokens.primary,
+                        activeThumbColor: darkTokens.primary,
                       ),
                     ],
                   ),

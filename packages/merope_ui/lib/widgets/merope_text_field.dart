@@ -40,11 +40,15 @@ class MeropeTextField extends StatelessWidget {
           controller: controller,
           obscureText: isPassword,
           textAlign: textAlign ?? TextAlign.start,
-          style: TextStyle(color: tokens.textPrimary, fontSize: MeropeTokens.fontSizeMd),
+          style: TextStyle(
+              color: tokens.textPrimary, fontSize: MeropeTokens.fontSizeMd),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: tokens.textSecondary.withValues(alpha: 0.5)),
-            prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: tokens.textSecondary, size: 20) : null,
+            hintStyle:
+                TextStyle(color: tokens.textSecondary.withValues(alpha: 0.5)),
+            prefixIcon: prefixIcon != null
+                ? Icon(prefixIcon, color: tokens.textSecondary, size: 20)
+                : null,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: MeropeTokens.space12,
               vertical: MeropeTokens.space12,

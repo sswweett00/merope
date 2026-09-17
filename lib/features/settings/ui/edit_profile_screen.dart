@@ -19,7 +19,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   void initState() {
     super.initState();
     _usernameController = TextEditingController(text: 'merope_user');
-    _bioController = TextEditingController(text: 'Architect of digital waves. Exploring the intersection of neural networks and social synergy. 🌊⚡🌀');
+    _bioController = TextEditingController(
+        text:
+            'Architect of digital waves. Exploring the intersection of neural networks and social synergy. 🌊⚡🌀');
   }
 
   @override
@@ -41,7 +43,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Kaydet', style: TextStyle(color: tokens.primary, fontWeight: FontWeight.bold)),
+            child: Text('Kaydet',
+                style: TextStyle(
+                    color: tokens.primary, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -55,15 +59,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   CircleAvatar(
                     radius: 50,
                     backgroundColor: tokens.primary,
-                    child: const Text('M', style: TextStyle(fontSize: 40, color: Colors.white)),
+                    child: const Text('M',
+                        style: TextStyle(fontSize: 40, color: Colors.white)),
                   ),
                   Positioned(
                     bottom: 0,
                     right: 0,
                     child: Container(
                       padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(color: tokens.surface, shape: BoxShape.circle),
-                      child: Icon(Icons.camera_alt, color: tokens.primary, size: 20),
+                      decoration: BoxDecoration(
+                          color: tokens.surface, shape: BoxShape.circle),
+                      child: Icon(Icons.camera_alt,
+                          color: tokens.primary, size: 20),
                     ),
                   ),
                 ],
@@ -78,13 +85,16 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   children: [
                     TextField(
                       controller: _usernameController,
-                      decoration: const InputDecoration(labelText: 'Kullanıcı Adı', border: OutlineInputBorder()),
+                      decoration: const InputDecoration(
+                          labelText: 'Kullanıcı Adı',
+                          border: OutlineInputBorder()),
                     ),
                     const SizedBox(height: 16),
                     TextField(
                       controller: _bioController,
                       maxLines: 3,
-                      decoration: const InputDecoration(labelText: 'Biyografi', border: OutlineInputBorder()),
+                      decoration: const InputDecoration(
+                          labelText: 'Biyografi', border: OutlineInputBorder()),
                     ),
                   ],
                 ),

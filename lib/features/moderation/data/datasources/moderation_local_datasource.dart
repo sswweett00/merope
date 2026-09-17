@@ -9,9 +9,12 @@ abstract class IModerationLocalDataSource {
   Future<void> cacheQueue(List<ModerationQueueItem> items);
   Future<void> updateCachedItem(ModerationQueueItem item);
   Future<void> clearCache();
-  Future<void> logAction(String userId, String actionType, String moderatorId, {String? note, Map<String, dynamic>? metadata});
+  Future<void> logAction(String userId, String actionType, String moderatorId,
+      {String? note, Map<String, dynamic>? metadata});
   Future<List<ModerationActionLogEntry>> getActionLog({int limit = 50});
-  Future<void> saveFilter(String name, List<RiskLevel> riskLevels, List<ModerationReason> reasons, {String? dateRange, String? searchQuery});
+  Future<void> saveFilter(
+      String name, List<RiskLevel> riskLevels, List<ModerationReason> reasons,
+      {String? dateRange, String? searchQuery});
   Future<List<ModerationSavedFilter>> getSavedFilters();
 }
 
@@ -89,7 +92,8 @@ class ModerationLocalDataSourceImpl implements IModerationLocalDataSource {
   Future<void> cacheQueue(List<ModerationQueueItem> items) async {
     await db.delete(db.moderationQueueCache).go();
     await db.batch((batch) {
-      batch.insertAllOnConflictUpdate(db.moderationQueueCache, items.map(_mapItemToRow));
+      batch.insertAllOnConflictUpdate(
+          db.moderationQueueCache, items.map(_mapItemToRow));
     });
   }
 
@@ -104,18 +108,21 @@ class ModerationLocalDataSourceImpl implements IModerationLocalDataSource {
   }
 
   @override
-  Future<void> logAction(String userId, String actionType, String moderatorId, {String? note, Map<String, dynamic>? metadata}) async {
+  Future<void> logAction(String userId, String actionType, String moderatorId,
+      {String? note, Map<String, dynamic>? metadata}) async {
     await db.into(db.moderationActionLog).insert(
-      ModerationActionLogCompanion.insert(
-        id: '${DateTime.now().millisecondsSinceEpoch}_$userId',
-        userId: userId,
-        actionType: actionType,
-        moderatorId: moderatorId,
-        moderatorNote: Value(note),
-        metadata: Value(metadata != null ? const JsonEncoder().convert(metadata) : null),
-        performedAt: DateTime.now(),
-      ),
-    );
+          ModerationActionLogCompanion.insert(
+            id: '${DateTime.now().millisecondsSinceEpoch}_$userId',
+            userId: userId,
+            actionType: actionType,
+            moderatorId: moderatorId,
+            moderatorNote: Value(note),
+            metadata: Value(metadata != null
+                ? const JsonEncoder().convert(metadata)
+                : null),
+            performedAt: DateTime.now(),
+          ),
+        );
   }
 
   @override
@@ -128,18 +135,20 @@ class ModerationLocalDataSourceImpl implements IModerationLocalDataSource {
   }
 
   @override
-  Future<void> saveFilter(String name, List<RiskLevel> riskLevels, List<ModerationReason> reasons, {String? dateRange, String? searchQuery}) async {
+  Future<void> saveFilter(
+      String name, List<RiskLevel> riskLevels, List<ModerationReason> reasons,
+      {String? dateRange, String? searchQuery}) async {
     await db.into(db.moderationSavedFilter).insert(
-      ModerationSavedFilterCompanion.insert(
-        id: name.toLowerCase().replaceAll(' ', '_'),
-        name: name,
-        riskLevels: riskLevels.map((r) => r.name).join(','),
-        reasons: reasons.map((r) => r.name).join(','),
-        dateRange: Value(dateRange),
-        searchQuery: Value(searchQuery),
-        createdAt: DateTime.now(),
-      ),
-    );
+          ModerationSavedFilterCompanion.insert(
+            id: name.toLowerCase().replaceAll(' ', '_'),
+            name: name,
+            riskLevels: riskLevels.map((r) => r.name).join(','),
+            reasons: reasons.map((r) => r.name).join(','),
+            dateRange: Value(dateRange),
+            searchQuery: Value(searchQuery),
+            createdAt: DateTime.now(),
+          ),
+        );
   }
 
   @override
@@ -184,18 +193,24 @@ class ModerationLocalDataSourceImpl implements IModerationLocalDataSource {
       username: row.username,
       displayName: row.displayName,
       avatarUrl: row.avatarUrl,
-      reason: ModerationReason.values.firstWhere((r) => r.name == row.reason, orElse: () => ModerationReason.bot),
-      riskLevel: RiskLevel.values.firstWhere((r) => r.name == row.riskLevel, orElse: () => RiskLevel.low),
+      reason: ModerationReason.values.firstWhere((r) => r.name == row.reason,
+          orElse: () => ModerationReason.bot),
+      riskLevel: RiskLevel.values.firstWhere((r) => r.name == row.riskLevel,
+          orElse: () => RiskLevel.low),
       botProbability: row.botProbability,
       trustScore: row.trustScore,
       reportCount: row.reportCount,
       reporterIds: _decodeJsonList(row.reporterIds),
       contentSampleIds: _decodeJsonList(row.contentSampleIds),
       evidenceUrls: _decodeJsonList(row.evidenceUrls),
-      lastAction: row.lastAction != null ? LastAction.values.firstWhere((a) => a.name == row.lastAction) : null,
+      lastAction: row.lastAction != null
+          ? LastAction.values.firstWhere((a) => a.name == row.lastAction)
+          : null,
       moderatorNote: row.moderatorNote,
       isAppealed: row.isAppealed,
-      appealStatus: row.appealStatus != null ? AppealStatus.values.firstWhere((a) => a.name == row.appealStatus) : null,
+      appealStatus: row.appealStatus != null
+          ? AppealStatus.values.firstWhere((a) => a.name == row.appealStatus)
+          : null,
       appealReason: row.appealReason,
       behavioralScore: row.behavioralScore,
       networkScore: row.networkScore,
@@ -213,22 +228,26 @@ class ModerationLocalDataSourceImpl implements IModerationLocalDataSource {
       actionType: row.actionType,
       moderatorId: row.moderatorId,
       moderatorNote: row.moderatorNote,
-      metadata: row.metadata != null ? Map<String, dynamic>.from(jsonDecode(row.metadata!)) : null,
+      metadata: row.metadata != null
+          ? Map<String, dynamic>.from(jsonDecode(row.metadata!))
+          : null,
       performedAt: row.performedAt,
     );
   }
 
   ModerationSavedFilter _mapFilterRowToFilter(ModerationSavedFilterData row) {
     final riskLevels = (row.riskLevels)
-            .split(',')
-            .where((s) => s.isNotEmpty)
-            .map((s) => RiskLevel.values.firstWhere((r) => r.name == s, orElse: () => RiskLevel.low))
-            .toList();
+        .split(',')
+        .where((s) => s.isNotEmpty)
+        .map((s) => RiskLevel.values
+            .firstWhere((r) => r.name == s, orElse: () => RiskLevel.low))
+        .toList();
     final reasons = (row.reasons)
-            .split(',')
-            .where((s) => s.isNotEmpty)
-            .map((s) => ModerationReason.values.firstWhere((r) => r.name == s, orElse: () => ModerationReason.bot))
-            .toList();
+        .split(',')
+        .where((s) => s.isNotEmpty)
+        .map((s) => ModerationReason.values
+            .firstWhere((r) => r.name == s, orElse: () => ModerationReason.bot))
+        .toList();
     return ModerationSavedFilter(
       id: row.id,
       name: row.name,

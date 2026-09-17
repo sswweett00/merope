@@ -12,13 +12,16 @@ class NearbyRadar extends ConsumerStatefulWidget {
   ConsumerState<NearbyRadar> createState() => _NearbyRadarState();
 }
 
-class _NearbyRadarState extends ConsumerState<NearbyRadar> with SingleTickerProviderStateMixin {
+class _NearbyRadarState extends ConsumerState<NearbyRadar>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 4))..repeat();
+    _controller =
+        AnimationController(vsync: this, duration: const Duration(seconds: 4))
+          ..repeat();
   }
 
   @override
@@ -47,7 +50,8 @@ class _NearbyRadarState extends ConsumerState<NearbyRadar> with SingleTickerProv
                 height: 100.0 * i,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: tokens.primary.withValues(alpha: 0.2)),
+                  border:
+                      Border.all(color: tokens.primary.withValues(alpha: 0.2)),
                 ),
               ),
 
@@ -80,7 +84,8 @@ class _NearbyRadarState extends ConsumerState<NearbyRadar> with SingleTickerProv
                 // Distribute users around the radar
                 final angle = (i * 137.5) % 360.0;
                 final distance = 40.0 + (i * 20.0) % 100.0;
-                final matchesFrequency = u.frequency == 'Distributed Systems'; // Simplified check
+                final matchesFrequency =
+                    u.frequency == 'Distributed Systems'; // Simplified check
 
                 return _RadarUser(
                   angle: angle,
@@ -102,7 +107,11 @@ class _NearbyRadarState extends ConsumerState<NearbyRadar> with SingleTickerProv
                 color: tokens.primary,
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.white, width: 2),
-                boxShadow: [BoxShadow(color: tokens.primary.withValues(alpha: 0.5), blurRadius: 10)],
+                boxShadow: [
+                  BoxShadow(
+                      color: tokens.primary.withValues(alpha: 0.5),
+                      blurRadius: 10)
+                ],
               ),
             ),
           ],
@@ -144,10 +153,19 @@ class _RadarUser extends StatelessWidget {
             decoration: BoxDecoration(
               color: isMatch ? tokens.primary : tokens.secondary,
               shape: BoxShape.circle,
-              boxShadow: isMatch ? [BoxShadow(color: tokens.primary.withValues(alpha: 0.5), blurRadius: 10)] : null,
-              border: isMatch ? Border.all(color: Colors.white, width: 2) : null,
+              boxShadow: isMatch
+                  ? [
+                      BoxShadow(
+                          color: tokens.primary.withValues(alpha: 0.5),
+                          blurRadius: 10)
+                    ]
+                  : null,
+              border:
+                  isMatch ? Border.all(color: Colors.white, width: 2) : null,
             ),
-            child: isMatch ? const Icon(Icons.flash_on, color: Colors.white, size: 10) : null,
+            child: isMatch
+                ? const Icon(Icons.flash_on, color: Colors.white, size: 10)
+                : null,
           ),
           const SizedBox(height: 4),
           Text(

@@ -18,7 +18,8 @@ class TalentScreen extends ConsumerStatefulWidget {
   ConsumerState<TalentScreen> createState() => _TalentScreenState();
 }
 
-class _TalentScreenState extends ConsumerState<TalentScreen> with SingleTickerProviderStateMixin {
+class _TalentScreenState extends ConsumerState<TalentScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -103,11 +104,14 @@ class _TalentScreenState extends ConsumerState<TalentScreen> with SingleTickerPr
             data: (jobs) {
               final filtered = jobs.where((j) {
                 if (prefs.activeFilter == 'All') return true;
-                return j.type == prefs.activeFilter || (prefs.activeFilter == 'Remote' && j.location == 'Remote');
+                return j.type == prefs.activeFilter ||
+                    (prefs.activeFilter == 'Remote' && j.location == 'Remote');
               }).toList();
 
               if (filtered.isEmpty) {
-                return Center(child: Text('No opportunities found', style: TextStyle(color: tokens.textSecondary)));
+                return Center(
+                    child: Text('No opportunities found',
+                        style: TextStyle(color: tokens.textSecondary)));
               }
 
               return DynamicLayoutEngine(
@@ -117,9 +121,16 @@ class _TalentScreenState extends ConsumerState<TalentScreen> with SingleTickerPr
                 itemBuilder: (context, index, job) {
                   if (prefs.mode == ViewMode.compact) {
                     return ListTile(
-                      title: Text(job.title, style: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.bold)),
-                      subtitle: Text('${job.company} • ${job.location}', style: TextStyle(color: tokens.textSecondary)),
-                      trailing: Text(job.compensation, style: TextStyle(color: tokens.primary, fontWeight: FontWeight.bold)),
+                      title: Text(job.title,
+                          style: TextStyle(
+                              color: tokens.textPrimary,
+                              fontWeight: FontWeight.bold)),
+                      subtitle: Text('${job.company} • ${job.location}',
+                          style: TextStyle(color: tokens.textSecondary)),
+                      trailing: Text(job.compensation,
+                          style: TextStyle(
+                              color: tokens.primary,
+                              fontWeight: FontWeight.bold)),
                     );
                   }
                   return Padding(
@@ -134,7 +145,8 @@ class _TalentScreenState extends ConsumerState<TalentScreen> with SingleTickerPr
                       tokens: tokens,
                       onTap: () {
                         Navigator.of(context).push(
-                          MaterialPageRoute(builder: (context) => JobDetailScreen(job: job)),
+                          MaterialPageRoute(
+                              builder: (context) => JobDetailScreen(job: job)),
                         );
                       },
                     ),
@@ -160,7 +172,10 @@ class _TalentScreenState extends ConsumerState<TalentScreen> with SingleTickerPr
           const SizedBox(height: 32),
           Text(
             'Your Profile is Trending',
-            style: TextStyle(color: tokens.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(
+                color: tokens.textPrimary,
+                fontSize: 18,
+                fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
@@ -191,31 +206,40 @@ class _TalentScreenState extends ConsumerState<TalentScreen> with SingleTickerPr
     ];
 
     return Column(
-      children: factors.map((f) => Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: Row(
-          children: [
-            Expanded(
-              flex: 2,
-              child: Text(f['label'] as String, style: TextStyle(color: tokens.textSecondary, fontSize: 13)),
-            ),
-            Expanded(
-              flex: 3,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: f['value'] as double,
-                  backgroundColor: tokens.surfaceVariant,
-                  valueColor: AlwaysStoppedAnimation(f['color'] as Color),
-                  minHeight: 6,
+      children: factors
+          .map((f) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: Text(f['label'] as String,
+                          style: TextStyle(
+                              color: tokens.textSecondary, fontSize: 13)),
+                    ),
+                    Expanded(
+                      flex: 3,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: f['value'] as double,
+                          backgroundColor: tokens.surfaceVariant,
+                          valueColor:
+                              AlwaysStoppedAnimation(f['color'] as Color),
+                          minHeight: 6,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text('${((f['value'] as double) * 100).toInt()}%',
+                        style: TextStyle(
+                            color: tokens.textPrimary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13)),
+                  ],
                 ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Text('${((f['value'] as double) * 100).toInt()}%', style: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.bold, fontSize: 13)),
-          ],
-        ),
-      )).toList(),
+              ))
+          .toList(),
     );
   }
 
@@ -320,11 +344,17 @@ class _ResonanceRadialChart extends StatelessWidget {
             children: [
               Text(
                 '85%',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: tokens.primary),
+                style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w900,
+                    color: tokens.primary),
               ),
               Text(
                 'Match',
-                style: TextStyle(fontSize: 12, color: tokens.textSecondary, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    fontSize: 12,
+                    color: tokens.textSecondary,
+                    fontWeight: FontWeight.bold),
               ),
             ],
           ),

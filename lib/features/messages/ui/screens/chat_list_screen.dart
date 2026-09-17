@@ -88,7 +88,8 @@ class _ConversationTile extends StatelessWidget {
         onTap: () {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => ChatDetailScreen(conversationId: conv.id, title: conv.title),
+              builder: (context) =>
+                  ChatDetailScreen(conversationId: conv.id, title: conv.title),
             ),
           );
         },
@@ -105,8 +106,12 @@ class _ConversationTile extends StatelessWidget {
               Stack(
                 alignment: Alignment.bottomRight,
                 children: [
-                  _Avatar(tokens: tokens, avatarUrl: conv.avatarUrl, name: conv.title),
-                  PresenceIndicator(status: PresenceStatus.online, tokens: tokens),
+                  _Avatar(
+                      tokens: tokens,
+                      avatarUrl: conv.avatarUrl,
+                      name: conv.title),
+                  PresenceIndicator(
+                      status: PresenceStatus.online, tokens: tokens),
                 ],
               ),
               const SizedBox(width: MeropeTokens.space16),
@@ -131,10 +136,14 @@ class _ConversationTile extends StatelessWidget {
 // ... existing unread badge ...
                 Container(
                   padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(color: tokens.primary, shape: BoxShape.circle),
+                  decoration: BoxDecoration(
+                      color: tokens.primary, shape: BoxShape.circle),
                   child: Text(
                     '${conv.unreadCount}',
-                    style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold),
                   ),
                 ),
             ],
@@ -160,12 +169,17 @@ class _NeuralStatusRow extends StatelessWidget {
           SizedBox(
             width: 14,
             height: 14,
-            child: CircularProgressIndicator(strokeWidth: 1.5, color: tokens.primary),
+            child: CircularProgressIndicator(
+                strokeWidth: 1.5, color: tokens.primary),
           ),
           const SizedBox(width: 8),
           Text(
             'Typing...',
-            style: TextStyle(color: tokens.primary, fontSize: 13, fontWeight: FontWeight.bold, fontStyle: FontStyle.italic),
+            style: TextStyle(
+                color: tokens.primary,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                fontStyle: FontStyle.italic),
           ),
         ],
       );

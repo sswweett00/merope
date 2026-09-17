@@ -9,16 +9,23 @@ class AppSettings with _$AppSettings {
     @JsonKey(name: 'enable_webhooks') @Default(true) bool enableWebhooks,
     @JsonKey(name: 'enable_realtime') @Default(true) bool enableRealtime,
     @JsonKey(name: 'enable_batch_api') @Default(false) bool enableBatchApi,
-    @JsonKey(name: 'rate_limit_per_minute') @Default(100) int rateLimitPerMinute,
+    @JsonKey(name: 'rate_limit_per_minute')
+    @Default(100)
+    int rateLimitPerMinute,
     @JsonKey(name: 'rate_limit_per_hour') @Default(1000) int rateLimitPerHour,
     @JsonKey(name: 'max_concurrent_calls') @Default(10) int maxConcurrentCalls,
-    @JsonKey(name: 'require_user_approval') @Default(false) bool requireUserApproval,
+    @JsonKey(name: 'require_user_approval')
+    @Default(false)
+    bool requireUserApproval,
     @JsonKey(name: 'auto_approve_tokens') @Default(true) bool autoApproveTokens,
     @JsonKey(name: 'token_expiry') @Default(3600) int tokenExpiry,
-    @JsonKey(name: 'refresh_token_expiry') @Default(86400) int refreshTokenExpiry,
+    @JsonKey(name: 'refresh_token_expiry')
+    @Default(86400)
+    int refreshTokenExpiry,
   }) = _AppSettings;
 
-  factory AppSettings.fromJson(Map<String, dynamic> json) => _$AppSettingsFromJson(json);
+  factory AppSettings.fromJson(Map<String, dynamic> json) =>
+      _$AppSettingsFromJson(json);
 }
 
 @freezed
@@ -33,7 +40,8 @@ class AppStats with _$AppStats {
     @JsonKey(name: 'last_used_at') DateTime? lastUsedAt,
   }) = _AppStats;
 
-  factory AppStats.fromJson(Map<String, dynamic> json) => _$AppStatsFromJson(json);
+  factory AppStats.fromJson(Map<String, dynamic> json) =>
+      _$AppStatsFromJson(json);
 }
 
 @freezed
@@ -62,5 +70,6 @@ class DeveloperApp with _$DeveloperApp {
     AppSettings? settings,
   }) = _DeveloperApp;
 
-  factory DeveloperApp.fromJson(Map<String, dynamic> json) => _$DeveloperAppFromJson(json);
+  factory DeveloperApp.fromJson(Map<String, dynamic> json) =>
+      _$DeveloperAppFromJson(json);
 }

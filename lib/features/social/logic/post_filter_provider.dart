@@ -7,7 +7,8 @@ enum PostFilter { all, media, interactive, stories }
 
 final postFilterProvider = StateProvider<PostFilter>((ref) => PostFilter.all);
 
-final filteredTimelineProvider = Provider<AsyncValue<List<MeropeSignal>>>((ref) {
+final filteredTimelineProvider =
+    Provider<AsyncValue<List<MeropeSignal>>>((ref) {
   final prefs = ref.watch(viewPreferencesProvider)['feed'] ??
       const ViewPreferences(mode: ViewMode.list, activeFilter: 'All');
 
@@ -26,14 +27,17 @@ final filteredTimelineProvider = Provider<AsyncValue<List<MeropeSignal>>>((ref) 
   });
 });
 
-final filteredProfilePostsProvider = Provider.family<AsyncValue<List<MeropeSignal>>, String>((ref, userId) {
+final filteredProfilePostsProvider =
+    Provider.family<AsyncValue<List<MeropeSignal>>, String>((ref, userId) {
   final prefs = ref.watch(viewPreferencesProvider)['profile'] ??
       const ViewPreferences(mode: ViewMode.list, activeFilter: 'All');
 
   final timelineAsync = ref.watch(nexusTimelineProvider);
 
   return timelineAsync.whenData((state) {
-    final userSignals = state.items.where((s) => s.author.id == userId || userId == 'me').toList();
+    final userSignals = state.items
+        .where((s) => s.author.id == userId || userId == 'me')
+        .toList();
     if (prefs.activeFilter == 'All') return userSignals;
 
     return userSignals.where((s) {

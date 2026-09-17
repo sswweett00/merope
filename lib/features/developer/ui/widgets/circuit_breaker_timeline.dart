@@ -27,7 +27,8 @@ class CircuitBreakerTimeline extends StatelessWidget {
   final List<CircuitBreakerEvent> events;
   final double height;
 
-  const CircuitBreakerTimeline({super.key, required this.events, this.height = 120});
+  const CircuitBreakerTimeline(
+      {super.key, required this.events, this.height = 120});
 
   @override
   Widget build(BuildContext context) {
@@ -88,25 +89,39 @@ class _CircuitBreakerTimelinePainter extends CustomPainter {
     final totalMs = now.difference(windowStart).inMilliseconds;
     if (totalMs <= 0) return;
 
-    final gridPaint = Paint()..color = gridColor..strokeWidth = 0.5;
-    canvas.drawLine(Offset(padding.left, padding.top), Offset(size.width - padding.right, padding.top), gridPaint);
-    canvas.drawLine(Offset(padding.left, padding.top + chartH), Offset(size.width - padding.right, padding.top + chartH), gridPaint);
+    final gridPaint = Paint()
+      ..color = gridColor
+      ..strokeWidth = 0.5;
+    canvas.drawLine(Offset(padding.left, padding.top),
+        Offset(size.width - padding.right, padding.top), gridPaint);
+    canvas.drawLine(Offset(padding.left, padding.top + chartH),
+        Offset(size.width - padding.right, padding.top + chartH), gridPaint);
 
     for (final event in events) {
-      if (event.timestamp.isBefore(windowStart) || event.timestamp.isAfter(now)) continue;
-      final x = padding.left + (event.timestamp.difference(windowStart).inMilliseconds / totalMs) * chartW;
+      if (event.timestamp.isBefore(windowStart) || event.timestamp.isAfter(now))
+        continue;
+      final x = padding.left +
+          (event.timestamp.difference(windowStart).inMilliseconds / totalMs) *
+              chartW;
       final color = switch (event.state) {
         BreakerState.closed => closedColor,
         BreakerState.open => openColor,
         BreakerState.halfOpen => halfOpenColor,
       };
-      canvas.drawCircle(Offset(x, padding.top + chartH / 2), 4, Paint()..color = color);
+      canvas.drawCircle(
+          Offset(x, padding.top + chartH / 2), 4, Paint()..color = color);
       if (event.state == BreakerState.open) {
-        canvas.drawLine(Offset(x, padding.top), Offset(x, padding.top + chartH), Paint()..color = openColor.withValues(alpha: 0.4)..strokeWidth = 1);
+        canvas.drawLine(
+            Offset(x, padding.top),
+            Offset(x, padding.top + chartH),
+            Paint()
+              ..color = openColor.withValues(alpha: 0.4)
+              ..strokeWidth = 1);
       }
     }
   }
 
   @override
-  bool shouldRepaint(covariant _CircuitBreakerTimelinePainter old) => old.events != events;
+  bool shouldRepaint(covariant _CircuitBreakerTimelinePainter old) =>
+      old.events != events;
 }

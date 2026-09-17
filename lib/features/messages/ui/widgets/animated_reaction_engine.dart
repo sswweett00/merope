@@ -16,7 +16,8 @@ class AnimatedReactionEngine extends StatefulWidget {
   State<AnimatedReactionEngine> createState() => _AnimatedReactionEngineState();
 }
 
-class _AnimatedReactionEngineState extends State<AnimatedReactionEngine> with SingleTickerProviderStateMixin {
+class _AnimatedReactionEngineState extends State<AnimatedReactionEngine>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   late Animation<double> _opacityAnimation;

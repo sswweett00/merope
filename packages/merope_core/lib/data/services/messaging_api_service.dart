@@ -147,7 +147,8 @@ class MessagingApiService {
 
       final data = response.data;
       if (data == null) {
-        return SendMessageResult(success: false, error: 'No response from server');
+        return SendMessageResult(
+            success: false, error: 'No response from server');
       }
 
       final message = _parseMessage(data);
@@ -255,7 +256,8 @@ class MessagingApiService {
 
     return MeropeMessage(
       id: json['id'] as String? ?? '',
-      channelId: json['room_id'] as String? ?? json['channel_id'] as String? ?? '',
+      channelId:
+          json['room_id'] as String? ?? json['channel_id'] as String? ?? '',
       authorId: json['author_id'] as String? ?? '',
       authorName: json['author_name'] as String? ?? 'Explorer',
       authorAvatar: json['author_avatar'] as String? ?? '',

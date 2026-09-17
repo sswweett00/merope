@@ -20,8 +20,14 @@ class SynergyHubScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Synergy Hub', style: TextStyle(color: tokens.textPrimary, fontSize: 28, fontWeight: FontWeight.bold)),
-                  Text('Global trending topics and synchronized nodes', style: TextStyle(color: tokens.textSecondary, fontSize: 14)),
+                  Text('Synergy Hub',
+                      style: TextStyle(
+                          color: tokens.textPrimary,
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold)),
+                  Text('Global trending topics and synchronized nodes',
+                      style:
+                          TextStyle(color: tokens.textSecondary, fontSize: 14)),
                 ],
               ),
             ),
@@ -41,11 +47,28 @@ class SynergyHubScreen extends ConsumerWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon([Icons.bolt, Icons.language, Icons.palette, Icons.radar][index % 4], color: tokens.primary),
+                      Icon(
+                          [
+                            Icons.bolt,
+                            Icons.language,
+                            Icons.palette,
+                            Icons.radar
+                          ][index % 4],
+                          color: tokens.primary),
                       const SizedBox(height: 8),
-                      Text(['#nirvana', '#distributed', '#merope', '#zenith'][index % 4],
-                        style: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.bold)),
-                      Text('${(index + 1) * 12}k signals', style: TextStyle(color: tokens.textSecondary, fontSize: 10)),
+                      Text(
+                          [
+                            '#nirvana',
+                            '#distributed',
+                            '#merope',
+                            '#zenith'
+                          ][index % 4],
+                          style: TextStyle(
+                              color: tokens.textPrimary,
+                              fontWeight: FontWeight.bold)),
+                      Text('${(index + 1) * 12}k signals',
+                          style: TextStyle(
+                              color: tokens.textSecondary, fontSize: 10)),
                     ],
                   ),
                 ),

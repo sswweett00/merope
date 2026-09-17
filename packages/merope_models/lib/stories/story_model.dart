@@ -21,7 +21,8 @@ class StoryUser with _$StoryUser {
     @Default(false) bool isViewed,
   }) = _StoryUser;
 
-  factory StoryUser.fromJson(Map<String, dynamic> json) => _$StoryUserFromJson(json);
+  factory StoryUser.fromJson(Map<String, dynamic> json) =>
+      _$StoryUserFromJson(json);
 }
 
 @freezed
@@ -37,7 +38,8 @@ class StorySegment with _$StorySegment {
     @JsonKey(name: 'created_at') required DateTime createdAt,
   }) = _StorySegment;
 
-  factory StorySegment.fromJson(Map<String, dynamic> json) => _$StorySegmentFromJson(json);
+  factory StorySegment.fromJson(Map<String, dynamic> json) =>
+      _$StorySegmentFromJson(json);
 }
 
 @freezed
@@ -66,7 +68,8 @@ class StoryReaction with _$StoryReaction {
     @JsonKey(name: 'created_at') required DateTime createdAt,
   }) = _StoryReaction;
 
-  factory StoryReaction.fromJson(Map<String, dynamic> json) => _$StoryReactionFromJson(json);
+  factory StoryReaction.fromJson(Map<String, dynamic> json) =>
+      _$StoryReactionFromJson(json);
 }
 
 @Freezed(unionKey: 'type')
@@ -100,5 +103,6 @@ class StoryInteractiveElement with _$StoryInteractiveElement {
     @Default(1.0) double scale,
   }) = _StoryStickerElement;
 
-  factory StoryInteractiveElement.fromJson(Map<String, dynamic> json) => _$StoryInteractiveElementFromJson(json);
+  factory StoryInteractiveElement.fromJson(Map<String, dynamic> json) =>
+      _$StoryInteractiveElementFromJson(json);
 }

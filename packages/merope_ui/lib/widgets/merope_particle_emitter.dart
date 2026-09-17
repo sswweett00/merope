@@ -42,7 +42,8 @@ class MeropeParticleEmitter extends StatefulWidget {
   State<MeropeParticleEmitter> createState() => _MeropeParticleEmitterState();
 }
 
-class _MeropeParticleEmitterState extends State<MeropeParticleEmitter> with SingleTickerProviderStateMixin {
+class _MeropeParticleEmitterState extends State<MeropeParticleEmitter>
+    with SingleTickerProviderStateMixin {
   final List<Particle> _particles = [];
   late final dynamic _ticker;
   final _random = math.Random();

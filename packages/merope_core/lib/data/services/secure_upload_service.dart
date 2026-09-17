@@ -6,7 +6,6 @@ import '../../utils/enterprise_logger.dart';
 
 /// SecureUploadService V5 - Decentralized Encrypted Mesh Storage (DEMS).
 class SecureUploadService {
-
   /// Instead of a central server, media is sharded and distributed across the Merope Mesh.
   Future<void> uploadToPhantomMesh(String filePath) async {
     final file = File(filePath);
@@ -42,8 +41,10 @@ class SecureUploadService {
     final last = gatheredShards.entries.last;
 
     final base64String = QuantumVaultSentinel.reconstructVSS(
-      first.value, first.key,
-      last.value, last.key,
+      first.value,
+      first.key,
+      last.value,
+      last.key,
     );
 
     return base64Decode(base64String);

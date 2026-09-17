@@ -26,7 +26,8 @@ class MetricLineChart extends StatelessWidget {
         ? MeropeColorTokens.darkDefault()
         : MeropeColorTokens.lightDefault();
     final resolvedLineColor = lineColor ?? tokens.primary;
-    final resolvedAreaColor = areaColor ?? resolvedLineColor.withValues(alpha: 0.15);
+    final resolvedAreaColor =
+        areaColor ?? resolvedLineColor.withValues(alpha: 0.15);
 
     return SizedBox(
       height: height,
@@ -44,7 +45,10 @@ class MetricLineChart extends StatelessWidget {
             textColor: tokens.textSecondary,
           ),
           child: data.isEmpty
-              ? Center(child: Text(emptyLabel ?? 'No data', style: TextStyle(color: tokens.textSecondary, fontSize: 12)))
+              ? Center(
+                  child: Text(emptyLabel ?? 'No data',
+                      style:
+                          TextStyle(color: tokens.textSecondary, fontSize: 12)))
               : null,
         ),
       ),
@@ -86,7 +90,9 @@ class _MetricLineChartPainter extends CustomPainter {
     final values = data.map((d) => d.value).toList();
     final maxVal = values.reduce((a, b) => a > b ? a : b);
     final minVal = values.reduce((a, b) => a < b ? a : b);
-    final range = (maxVal - minVal).isFinite && (maxVal - minVal) > 0 ? maxVal - minVal : 1.0;
+    final range = (maxVal - minVal).isFinite && (maxVal - minVal) > 0
+        ? maxVal - minVal
+        : 1.0;
 
     final stepX = chartWidth / (count - 1);
     final scale = chartHeight / range;
@@ -130,27 +136,37 @@ class _MetricLineChartPainter extends CustomPainter {
     final gridPaint = Paint()
       ..color = gridColor
       ..strokeWidth = 0.5;
-    final textStyle = TextStyle(color: textColor.withValues(alpha: 0.5), fontSize: 9);
+    final textStyle =
+        TextStyle(color: textColor.withValues(alpha: 0.5), fontSize: 9);
     final maxLabel = _formatValue(maxVal);
     final labelPainter = TextPainter(
       text: TextSpan(style: textStyle, text: maxLabel),
       textDirection: TextDirection.ltr,
     )..layout();
     labelPainter.paint(canvas, Offset(padding.left, padding.top));
-    canvas.drawLine(Offset(padding.left, padding.top), Offset(size.width - padding.right, padding.top), gridPaint);
-    canvas.drawLine(Offset(padding.left, padding.top + chartHeight), Offset(size.width - padding.right, padding.top + chartHeight), gridPaint);
+    canvas.drawLine(Offset(padding.left, padding.top),
+        Offset(size.width - padding.right, padding.top), gridPaint);
+    canvas.drawLine(
+        Offset(padding.left, padding.top + chartHeight),
+        Offset(size.width - padding.right, padding.top + chartHeight),
+        gridPaint);
 
-    final axisPaint = Paint()..color = axisColor..strokeWidth = 0.5;
-    canvas.drawLine(Offset(padding.left, padding.top), Offset(padding.left, padding.top + chartHeight), axisPaint);
+    final axisPaint = Paint()
+      ..color = axisColor
+      ..strokeWidth = 0.5;
+    canvas.drawLine(Offset(padding.left, padding.top),
+        Offset(padding.left, padding.top + chartHeight), axisPaint);
   }
 
   void _drawEmpty(Canvas canvas, Size size) {
-    final textStyle = TextStyle(color: textColor.withValues(alpha: 0.5), fontSize: 11);
+    final textStyle =
+        TextStyle(color: textColor.withValues(alpha: 0.5), fontSize: 11);
     final tp = TextPainter(
       text: TextSpan(style: textStyle, text: 'Awaiting data...'),
       textAlign: TextAlign.center,
     )..layout();
-    tp.paint(canvas, Offset(size.width / 2 - tp.width / 2, size.height / 2 - tp.height / 2));
+    tp.paint(canvas,
+        Offset(size.width / 2 - tp.width / 2, size.height / 2 - tp.height / 2));
   }
 
   String _formatValue(double v) {

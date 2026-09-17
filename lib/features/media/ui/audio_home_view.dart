@@ -80,10 +80,12 @@ class AudioHomeView extends ConsumerWidget {
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
               children: [
-                _buildPlaylistTile('Haftalık Keşif', Icons.auto_awesome, tokens),
+                _buildPlaylistTile(
+                    'Haftalık Keşif', Icons.auto_awesome, tokens),
                 _buildPlaylistTile('Odaklanma & Kodlama', Icons.code, tokens),
                 _buildPlaylistTile('Popüler Podcasting', Icons.mic, tokens),
-                _buildPlaylistTile('Top 50 Merope Hits', Icons.bar_chart, tokens),
+                _buildPlaylistTile(
+                    'Top 50 Merope Hits', Icons.bar_chart, tokens),
               ],
             ),
             const SizedBox(height: MeropeTokens.space24),
@@ -109,14 +111,22 @@ class AudioHomeView extends ConsumerWidget {
                     child: ListTile(
                       leading: CircleAvatar(
                         backgroundColor: tokens.primary,
-                        child: const Icon(Icons.music_note, color: Colors.white),
+                        child:
+                            const Icon(Icons.music_note, color: Colors.white),
                       ),
-                      title: Text(track.title, style: TextStyle(fontWeight: FontWeight.bold, color: tokens.textPrimary)),
-                      subtitle: Text('${track.artist} • ${track.album}', style: TextStyle(color: tokens.textSecondary)),
+                      title: Text(track.title,
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: tokens.textPrimary)),
+                      subtitle: Text('${track.artist} • ${track.album}',
+                          style: TextStyle(color: tokens.textSecondary)),
                       trailing: IconButton(
-                        icon: Icon(Icons.play_circle_fill, color: tokens.primary, size: 32),
+                        icon: Icon(Icons.play_circle_fill,
+                            color: tokens.primary, size: 32),
                         onPressed: () {
-                          ref.read(audioPlayerProvider.notifier).playTrack(track);
+                          ref
+                              .read(audioPlayerProvider.notifier)
+                              .playTrack(track);
                         },
                       ),
                     ),
@@ -130,7 +140,8 @@ class AudioHomeView extends ConsumerWidget {
     );
   }
 
-  Widget _buildPlaylistTile(String title, IconData icon, MeropeColorTokens tokens) {
+  Widget _buildPlaylistTile(
+      String title, IconData icon, MeropeColorTokens tokens) {
     return Container(
       decoration: BoxDecoration(
         color: tokens.surface,
@@ -143,7 +154,8 @@ class AudioHomeView extends ConsumerWidget {
             width: 50,
             decoration: BoxDecoration(
               color: tokens.primary.withValues(alpha: 0.2),
-              borderRadius: const BorderRadius.horizontal(left: Radius.circular(MeropeTokens.radiusSm)),
+              borderRadius: const BorderRadius.horizontal(
+                  left: Radius.circular(MeropeTokens.radiusSm)),
             ),
             child: Icon(icon, color: tokens.primary),
           ),
@@ -151,7 +163,10 @@ class AudioHomeView extends ConsumerWidget {
           Expanded(
             child: Text(
               title,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: tokens.textPrimary),
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  color: tokens.textPrimary),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

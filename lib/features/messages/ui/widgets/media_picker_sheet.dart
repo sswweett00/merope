@@ -25,7 +25,8 @@ class MediaPickerSheet extends StatelessWidget {
       padding: const EdgeInsets.all(MeropeTokens.space24),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(MeropeTokens.radiusLg)),
+        borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(MeropeTokens.radiusLg)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,

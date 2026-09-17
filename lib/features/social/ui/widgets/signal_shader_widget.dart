@@ -18,7 +18,8 @@ class SignalShaderWidget extends StatefulWidget {
   State<SignalShaderWidget> createState() => _SignalShaderWidgetState();
 }
 
-class _SignalShaderWidgetState extends State<SignalShaderWidget> with SingleTickerProviderStateMixin {
+class _SignalShaderWidgetState extends State<SignalShaderWidget>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
@@ -100,7 +101,8 @@ class _AuraPainter extends CustomPainter {
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4.0);
 
     final path = Path()
-      ..addRRect(RRect.fromRectAndRadius(rect, const Radius.circular(MeropeTokens.radiusMd)));
+      ..addRRect(RRect.fromRectAndRadius(
+          rect, const Radius.circular(MeropeTokens.radiusMd)));
 
     canvas.drawPath(path, paint);
   }

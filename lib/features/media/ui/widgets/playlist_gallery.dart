@@ -23,7 +23,8 @@ class PlaylistGallery extends ConsumerWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.playlist_play, size: 64, color: Colors.white.withValues(alpha: 0.2)),
+                Icon(Icons.playlist_play,
+                    size: 64, color: Colors.white.withValues(alpha: 0.2)),
                 const SizedBox(height: 16),
                 const Text(
                   'No playlists found',
@@ -67,8 +68,11 @@ class _PlaylistCard extends StatelessWidget {
           fit: BoxFit.cover,
           borderRadius: BorderRadius.circular(4),
         ),
-        title: Text(playlist.title, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-        subtitle: const Text('Curated by Merope', style: TextStyle(color: Colors.grey, fontSize: 12)),
+        title: Text(playlist.title,
+            style: const TextStyle(
+                fontWeight: FontWeight.bold, color: Colors.white)),
+        subtitle: const Text('Curated by Merope',
+            style: TextStyle(color: Colors.grey, fontSize: 12)),
         onTap: () {},
       );
     }
@@ -86,7 +90,8 @@ class _PlaylistCard extends StatelessWidget {
               imageUrl: playlist.coverUrl,
               fit: BoxFit.cover,
               width: double.infinity,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(MeropeTokens.radiusMd)),
+              borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(MeropeTokens.radiusMd)),
             ),
           ),
           Padding(
@@ -96,7 +101,10 @@ class _PlaylistCard extends StatelessWidget {
               children: [
                 Text(
                   playlist.title,
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 14),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontSize: 14),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

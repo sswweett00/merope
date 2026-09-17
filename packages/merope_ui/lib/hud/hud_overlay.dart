@@ -15,7 +15,8 @@ class HUDOverlay extends ConsumerStatefulWidget {
   ConsumerState<HUDOverlay> createState() => _HUDOverlayState();
 }
 
-class _HUDOverlayState extends ConsumerState<HUDOverlay> with SingleTickerProviderStateMixin {
+class _HUDOverlayState extends ConsumerState<HUDOverlay>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
@@ -29,9 +30,11 @@ class _HUDOverlayState extends ConsumerState<HUDOverlay> with SingleTickerProvid
       vsync: this,
       duration: MeropeTokens.durationNormal,
     );
-    _fadeAnimation = CurvedAnimation(parent: _controller, curve: MeropeTokens.curveMeropeEntrance);
+    _fadeAnimation = CurvedAnimation(
+        parent: _controller, curve: MeropeTokens.curveMeropeEntrance);
     _scaleAnimation = Tween<double>(begin: 0.95, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: MeropeTokens.curveMeropeEntrance),
+      CurvedAnimation(
+          parent: _controller, curve: MeropeTokens.curveMeropeEntrance),
     );
   }
 
@@ -45,7 +48,8 @@ class _HUDOverlayState extends ConsumerState<HUDOverlay> with SingleTickerProvid
 
   void _handleKey(KeyEvent event) {
     if (event is KeyDownEvent) {
-      final isControl = HardwareKeyboard.instance.isControlPressed || HardwareKeyboard.instance.isMetaPressed;
+      final isControl = HardwareKeyboard.instance.isControlPressed ||
+          HardwareKeyboard.instance.isMetaPressed;
       if (isControl && event.logicalKey == LogicalKeyboardKey.keyK) {
         ref.read(hUDControllerProvider.notifier).toggle();
       } else if (event.logicalKey == LogicalKeyboardKey.escape) {
@@ -83,13 +87,17 @@ class _HUDOverlayState extends ConsumerState<HUDOverlay> with SingleTickerProvid
                   child: Stack(
                     children: [
                       GestureDetector(
-                        onTap: () => ref.read(hUDControllerProvider.notifier).hide(),
+                        onTap: () =>
+                            ref.read(hUDControllerProvider.notifier).hide(),
                         child: Container(
-                          color: Colors.black.withValues(alpha: 0.4 * _fadeAnimation.value),
+                          color: Colors.black
+                              .withValues(alpha: 0.4 * _fadeAnimation.value),
                           child: BackdropFilter(
                             filter: ImageFilter.blur(
-                              sigmaX: MeropeTokens.blurMedium * _fadeAnimation.value,
-                              sigmaY: MeropeTokens.blurMedium * _fadeAnimation.value,
+                              sigmaX: MeropeTokens.blurMedium *
+                                  _fadeAnimation.value,
+                              sigmaY: MeropeTokens.blurMedium *
+                                  _fadeAnimation.value,
                             ),
                             child: const SizedBox.expand(),
                           ),
@@ -104,8 +112,10 @@ class _HUDOverlayState extends ConsumerState<HUDOverlay> with SingleTickerProvid
                             margin: const EdgeInsets.all(MeropeTokens.space24),
                             decoration: BoxDecoration(
                               color: tokens.surface.withValues(alpha: 0.8),
-                              borderRadius: BorderRadius.circular(MeropeTokens.radiusLg),
-                              border: Border.all(color: tokens.border.withValues(alpha: 0.5)),
+                              borderRadius:
+                                  BorderRadius.circular(MeropeTokens.radiusLg),
+                              border: Border.all(
+                                  color: tokens.border.withValues(alpha: 0.5)),
                               boxShadow: [MeropeTokens.shadowLg],
                             ),
                             child: Column(
@@ -140,11 +150,14 @@ class _HUDOverlayState extends ConsumerState<HUDOverlay> with SingleTickerProvid
             child: TextField(
               controller: _textController,
               focusNode: _focusNode,
-              onChanged: (val) => ref.read(hUDSearchProvider.notifier).update(val),
-              style: TextStyle(color: tokens.textPrimary, fontSize: MeropeTokens.fontSizeMd),
+              onChanged: (val) =>
+                  ref.read(hUDSearchProvider.notifier).update(val),
+              style: TextStyle(
+                  color: tokens.textPrimary, fontSize: MeropeTokens.fontSizeMd),
               decoration: InputDecoration(
                 hintText: 'Search commands or features...',
-                hintStyle: TextStyle(color: tokens.textSecondary.withValues(alpha: 0.5)),
+                hintStyle: TextStyle(
+                    color: tokens.textSecondary.withValues(alpha: 0.5)),
                 border: InputBorder.none,
                 isDense: true,
               ),
@@ -157,7 +170,8 @@ class _HUDOverlayState extends ConsumerState<HUDOverlay> with SingleTickerProvid
               borderRadius: BorderRadius.circular(4),
               border: Border.all(color: tokens.border),
             ),
-            child: Text('ESC', style: TextStyle(fontSize: 10, color: tokens.textSecondary)),
+            child: Text('ESC',
+                style: TextStyle(fontSize: 10, color: tokens.textSecondary)),
           ),
         ],
       ),
@@ -170,7 +184,8 @@ class _HUDOverlayState extends ConsumerState<HUDOverlay> with SingleTickerProvid
 
     if (actions.isEmpty) {
       return Center(
-        child: Text('No matching commands', style: TextStyle(color: tokens.textSecondary)),
+        child: Text('No matching commands',
+            style: TextStyle(color: tokens.textSecondary)),
       );
     }
 
@@ -194,11 +209,20 @@ class _HUDOverlayState extends ConsumerState<HUDOverlay> with SingleTickerProvid
               color: tokens.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.flash_on_rounded, size: 18, color: tokens.primary),
+            child:
+                Icon(Icons.flash_on_rounded, size: 18, color: tokens.primary),
           ),
-          title: Text(action.label, style: TextStyle(color: tokens.textPrimary, fontWeight: FontWeight.bold)),
-          subtitle: Text(action.description, style: TextStyle(color: tokens.textSecondary, fontSize: MeropeTokens.fontSizeSm)),
-          trailing: Text(action.category ?? '', style: TextStyle(color: tokens.textSecondary.withValues(alpha: 0.5), fontSize: 10)),
+          title: Text(action.label,
+              style: TextStyle(
+                  color: tokens.textPrimary, fontWeight: FontWeight.bold)),
+          subtitle: Text(action.description,
+              style: TextStyle(
+                  color: tokens.textSecondary,
+                  fontSize: MeropeTokens.fontSizeSm)),
+          trailing: Text(action.category ?? '',
+              style: TextStyle(
+                  color: tokens.textSecondary.withValues(alpha: 0.5),
+                  fontSize: 10)),
         );
       },
     );
@@ -212,11 +236,16 @@ class _HUDOverlayState extends ConsumerState<HUDOverlay> with SingleTickerProvid
         children: [
           Row(
             children: [
-              Icon(Icons.auto_awesome_rounded, size: 14, color: tokens.secondary),
+              Icon(Icons.auto_awesome_rounded,
+                  size: 14, color: tokens.secondary),
               const SizedBox(width: 8),
               Text(
                 'NEURAL SUGGESTIONS',
-                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: tokens.textSecondary, letterSpacing: 1),
+                style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: tokens.textSecondary,
+                    letterSpacing: 1),
               ),
             ],
           ),
@@ -240,7 +269,8 @@ class _HUDOverlayState extends ConsumerState<HUDOverlay> with SingleTickerProvid
 
   Widget _buildFooter(MeropeColorTokens tokens) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: MeropeTokens.space16, vertical: MeropeTokens.space12),
+      padding: const EdgeInsets.symmetric(
+          horizontal: MeropeTokens.space16, vertical: MeropeTokens.space12),
       decoration: BoxDecoration(
         color: tokens.background.withValues(alpha: 0.5),
         borderRadius: const BorderRadius.only(
@@ -258,13 +288,17 @@ class _HUDOverlayState extends ConsumerState<HUDOverlay> with SingleTickerProvid
               _buildShortcutHint('↵', 'Execute', tokens),
             ],
           ),
-          Text('Merope Nerve Center v1.0', style: TextStyle(fontSize: 10, color: tokens.textSecondary.withValues(alpha: 0.3))),
+          Text('Merope Nerve Center v1.0',
+              style: TextStyle(
+                  fontSize: 10,
+                  color: tokens.textSecondary.withValues(alpha: 0.3))),
         ],
       ),
     );
   }
 
-  Widget _buildShortcutHint(String key, String label, MeropeColorTokens tokens) {
+  Widget _buildShortcutHint(
+      String key, String label, MeropeColorTokens tokens) {
     return Row(
       children: [
         Container(
@@ -273,10 +307,15 @@ class _HUDOverlayState extends ConsumerState<HUDOverlay> with SingleTickerProvid
             color: tokens.surfaceVariant,
             borderRadius: BorderRadius.circular(4),
           ),
-          child: Text(key, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: tokens.textSecondary)),
+          child: Text(key,
+              style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: tokens.textSecondary)),
         ),
         const SizedBox(width: 4),
-        Text(label, style: TextStyle(fontSize: 10, color: tokens.textSecondary)),
+        Text(label,
+            style: TextStyle(fontSize: 10, color: tokens.textSecondary)),
       ],
     );
   }
@@ -297,7 +336,11 @@ class _SuggestionChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(MeropeTokens.radiusFull),
         border: Border.all(color: tokens.primary.withValues(alpha: 0.2)),
       ),
-      child: Text(label, style: TextStyle(fontSize: 12, color: tokens.primary, fontWeight: FontWeight.w500)),
+      child: Text(label,
+          style: TextStyle(
+              fontSize: 12,
+              color: tokens.primary,
+              fontWeight: FontWeight.w500)),
     );
   }
 }

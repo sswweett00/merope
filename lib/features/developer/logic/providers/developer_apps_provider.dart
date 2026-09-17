@@ -45,4 +45,6 @@ class DeveloperApps extends FamilyAsyncNotifier<List<DeveloperApp>, String> {
   Future<void> refresh() => future.then((_) => null);
 }
 
-final developerAppsProvider = AsyncNotifierProviderFamily<DeveloperApps, List<DeveloperApp>, String>(DeveloperApps.new);
+final developerAppsProvider =
+    AsyncNotifierProviderFamily<DeveloperApps, List<DeveloperApp>, String>(
+        DeveloperApps.new);

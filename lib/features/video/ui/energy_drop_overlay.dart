@@ -9,7 +9,8 @@ class EnergyDropOverlay extends StatefulWidget {
   State<EnergyDropOverlay> createState() => _EnergyDropOverlayState();
 }
 
-class _EnergyDropOverlayState extends State<EnergyDropOverlay> with TickerProviderStateMixin {
+class _EnergyDropOverlayState extends State<EnergyDropOverlay>
+    with TickerProviderStateMixin {
   final List<_EnergyParticle> _particles = [];
   late AnimationController _cleanupController;
 
@@ -17,7 +18,9 @@ class _EnergyDropOverlayState extends State<EnergyDropOverlay> with TickerProvid
   void initState() {
     super.initState();
     widget.dropStream?.listen(_addParticles);
-    _cleanupController = AnimationController(vsync: this, duration: const Duration(seconds: 1))..repeat();
+    _cleanupController =
+        AnimationController(vsync: this, duration: const Duration(seconds: 1))
+          ..repeat();
     _cleanupController.addListener(_cleanup);
   }
 
@@ -74,7 +77,13 @@ class _EnergyDropOverlayState extends State<EnergyDropOverlay> with TickerProvid
 class _EnergyParticle {
   double x, y, vx, vy, life;
   final Color color;
-  _EnergyParticle({required this.x, required this.y, required this.vx, required this.vy, required this.color, required this.life});
+  _EnergyParticle(
+      {required this.x,
+      required this.y,
+      required this.vx,
+      required this.vy,
+      required this.color,
+      required this.life});
 }
 
 class _ParticlePainter extends CustomPainter {
@@ -86,11 +95,13 @@ class _ParticlePainter extends CustomPainter {
     final paint = Paint()..style = PaintingStyle.fill;
     for (final p in particles) {
       paint.color = p.color.withValues(alpha: p.life);
-      canvas.drawCircle(Offset(p.x * size.width, p.y * size.height), 6 * p.life, paint);
+      canvas.drawCircle(
+          Offset(p.x * size.width, p.y * size.height), 6 * p.life, paint);
 
       // Secondary glow
       paint.color = p.color.withValues(alpha: p.life * 0.3);
-      canvas.drawCircle(Offset(p.x * size.width, p.y * size.height), 12 * p.life, paint);
+      canvas.drawCircle(
+          Offset(p.x * size.width, p.y * size.height), 12 * p.life, paint);
     }
   }
 

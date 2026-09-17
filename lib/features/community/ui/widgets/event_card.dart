@@ -83,7 +83,8 @@ class EventCard extends StatelessWidget {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Icon(Icons.confirmation_number, size: 16, color: Colors.grey[600]),
+                  Icon(Icons.confirmation_number,
+                      size: 16, color: Colors.grey[600]),
                   const SizedBox(width: 4),
                   Text(
                     '${event.ticketInfo.currency} ${event.ticketInfo.price.toStringAsFixed(2)}',
@@ -102,7 +103,8 @@ class EventCard extends StatelessWidget {
               children: [
                 Icon(Icons.people, size: 16, color: Colors.grey[600]),
                 const SizedBox(width: 4),
-                Text('${event.currentAttendees}/${event.maxAttendees} attending'),
+                Text(
+                    '${event.currentAttendees}/${event.maxAttendees} attending'),
                 const Spacer(),
                 if (onRsvp != null)
                   OutlinedButton(

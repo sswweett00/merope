@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class FollowList extends FamilyAsyncNotifier<List<Map<String, dynamic>>, String> {
+class FollowList
+    extends FamilyAsyncNotifier<List<Map<String, dynamic>>, String> {
   @override
   FutureOr<List<Map<String, dynamic>>> build(String arg) async {
     // Simulated API fetch
@@ -30,4 +31,6 @@ class FollowList extends FamilyAsyncNotifier<List<Map<String, dynamic>>, String>
   }
 }
 
-final followListProvider = AsyncNotifierProviderFamily<FollowList, List<Map<String, dynamic>>, String>(FollowList.new);
+final followListProvider =
+    AsyncNotifierProviderFamily<FollowList, List<Map<String, dynamic>>, String>(
+        FollowList.new);

@@ -52,7 +52,9 @@ class _VscoEditorScreenState extends ConsumerState<VscoEditorScreen> {
                 text: 'Yayınla',
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Fotoğraf $_selectedPreset filtresi ile galerinize yayınlandı!')),
+                    SnackBar(
+                        content: Text(
+                            'Fotoğraf $_selectedPreset filtresi ile galerinize yayınlandı!')),
                   );
                 },
               ),
@@ -76,18 +78,24 @@ class _VscoEditorScreenState extends ConsumerState<VscoEditorScreen> {
                       height: 340,
                       decoration: BoxDecoration(
                         color: tokens.primary.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(MeropeTokens.radiusMd),
+                        borderRadius:
+                            BorderRadius.circular(MeropeTokens.radiusMd),
                       ),
                       child: Stack(
                         children: [
                           Center(
-                            child: Icon(Icons.image, size: 100, color: tokens.textSecondary.withValues(alpha: 0.4)),
+                            child: Icon(Icons.image,
+                                size: 100,
+                                color: tokens.textSecondary
+                                    .withValues(alpha: 0.4)),
                           ),
                           // Filter Tint Overlay
                           Container(
                             decoration: BoxDecoration(
-                              color: filterColor.withValues(alpha: 0.25 + (_exposure * 0.1)),
-                              borderRadius: BorderRadius.circular(MeropeTokens.radiusMd),
+                              color: filterColor.withValues(
+                                  alpha: 0.25 + (_exposure * 0.1)),
+                              borderRadius:
+                                  BorderRadius.circular(MeropeTokens.radiusMd),
                             ),
                           ),
                         ],
@@ -98,14 +106,19 @@ class _VscoEditorScreenState extends ConsumerState<VscoEditorScreen> {
                     top: 12,
                     right: 12,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         color: Colors.black87,
-                        borderRadius: BorderRadius.circular(MeropeTokens.radiusSm),
+                        borderRadius:
+                            BorderRadius.circular(MeropeTokens.radiusSm),
                       ),
                       child: Text(
                         _selectedPreset,
-                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
@@ -129,7 +142,8 @@ class _VscoEditorScreenState extends ConsumerState<VscoEditorScreen> {
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: isSelected ? tokens.primary : tokens.surface,
-                      borderRadius: BorderRadius.circular(MeropeTokens.radiusSm),
+                      borderRadius:
+                          BorderRadius.circular(MeropeTokens.radiusSm),
                       border: Border.all(color: tokens.border),
                     ),
                     child: Column(
@@ -138,14 +152,17 @@ class _VscoEditorScreenState extends ConsumerState<VscoEditorScreen> {
                         Text(
                           preset.split('/')[0].trim(),
                           style: TextStyle(
-                            color: isSelected ? Colors.white : tokens.textPrimary,
+                            color:
+                                isSelected ? Colors.white : tokens.textPrimary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
                           preset.split('/')[1].trim(),
                           style: TextStyle(
-                            color: isSelected ? Colors.white70 : tokens.textSecondary,
+                            color: isSelected
+                                ? Colors.white70
+                                : tokens.textSecondary,
                             fontSize: 10,
                           ),
                           maxLines: 1,
@@ -162,10 +179,14 @@ class _VscoEditorScreenState extends ConsumerState<VscoEditorScreen> {
           // Sliders Panel (Exposure, Grain, Contrast)
           Column(
             children: [
-              _buildSliderRow('Pozlama (Exposure)', _exposure, -1.0, 1.0, (v) => setState(() => _exposure = v), tokens),
-              _buildSliderRow('Film Kumlanması (Grain)', _grain, 0.0, 1.0, (v) => setState(() => _grain = v), tokens),
-              _buildSliderRow('Kontrast (Contrast)', _contrast, -1.0, 1.0, (v) => setState(() => _contrast = v), tokens),
-              _buildSliderRow('Doygunluk (Saturation)', _saturation, -1.0, 1.0, (v) => setState(() => _saturation = v), tokens),
+              _buildSliderRow('Pozlama (Exposure)', _exposure, -1.0, 1.0,
+                  (v) => setState(() => _exposure = v), tokens),
+              _buildSliderRow('Film Kumlanması (Grain)', _grain, 0.0, 1.0,
+                  (v) => setState(() => _grain = v), tokens),
+              _buildSliderRow('Kontrast (Contrast)', _contrast, -1.0, 1.0,
+                  (v) => setState(() => _contrast = v), tokens),
+              _buildSliderRow('Doygunluk (Saturation)', _saturation, -1.0, 1.0,
+                  (v) => setState(() => _saturation = v), tokens),
             ],
           ),
         ],
@@ -173,12 +194,14 @@ class _VscoEditorScreenState extends ConsumerState<VscoEditorScreen> {
     );
   }
 
-  Widget _buildSliderRow(String label, double val, double min, double max, ValueChanged<double> onChange, MeropeColorTokens tokens) {
+  Widget _buildSliderRow(String label, double val, double min, double max,
+      ValueChanged<double> onChange, MeropeColorTokens tokens) {
     return Row(
       children: [
         SizedBox(
           width: 150,
-          child: Text(label, style: TextStyle(color: tokens.textSecondary, fontSize: 12)),
+          child: Text(label,
+              style: TextStyle(color: tokens.textSecondary, fontSize: 12)),
         ),
         Expanded(
           child: Slider(

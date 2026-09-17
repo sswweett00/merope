@@ -41,7 +41,8 @@ class MediaCompressionResult {
 /// High-Performance Isolate Worker for Image & Media Compression.
 class MediaCompressionIsolate {
   /// Offloads heavy image scaling and compression to a separate Isolate.
-  static Future<MediaCompressionResult> compressImage(MediaCompressionRequest request) async {
+  static Future<MediaCompressionResult> compressImage(
+      MediaCompressionRequest request) async {
     return await Isolate.run(() async {
       try {
         final sourceFile = File(request.sourcePath);

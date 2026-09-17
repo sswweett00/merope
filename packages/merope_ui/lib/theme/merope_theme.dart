@@ -43,8 +43,10 @@ class MeropeTheme {
     return MeropeTheme(
       id: json['id'] as String? ?? 'custom',
       name: json['name'] as String? ?? 'Custom Theme',
-      borderRadius: (json['borderRadius'] as num?)?.toDouble() ?? MeropeTokens.radiusMd,
-      blurAmount: (json['blurAmount'] as num?)?.toDouble() ?? MeropeTokens.blurMedium,
+      borderRadius:
+          (json['borderRadius'] as num?)?.toDouble() ?? MeropeTokens.radiusMd,
+      blurAmount:
+          (json['blurAmount'] as num?)?.toDouble() ?? MeropeTokens.blurMedium,
       fontFamily: json['fontFamily'] as String? ?? 'Inter',
       colors: MeropeColorTokens(
         background: Color(colorsMap['background'] as int? ?? 0xFF0F1117),

@@ -30,12 +30,16 @@ class OrderConfirmationScreen extends ConsumerWidget {
                   color: tokens.secondary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.check_circle_outline, color: tokens.secondary, size: 48),
+                child: Icon(Icons.check_circle_outline,
+                    color: tokens.secondary, size: 48),
               ),
               const SizedBox(height: 32),
               Text(
                 'Funds Locked in Escrow',
-                style: TextStyle(color: tokens.textPrimary, fontSize: 24, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    color: tokens.textPrimary,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
@@ -53,8 +57,9 @@ class OrderConfirmationScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               TextButton.icon(
                 onPressed: () {
-                   MeropeHaptics.trigger(MeropeTokens.hapticHeavy);
-                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Funds released from Escrow.')));
+                  MeropeHaptics.trigger(MeropeTokens.hapticHeavy);
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      content: Text('Funds released from Escrow.')));
                 },
                 icon: const Icon(Icons.verified_user_outlined),
                 label: const Text('Confirm Delivery & Release Funds'),

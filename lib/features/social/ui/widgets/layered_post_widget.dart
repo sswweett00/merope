@@ -9,7 +9,8 @@ class LayeredPostWidget extends StatefulWidget {
   final MeropeSignal signal;
   final MeropeColorTokens tokens;
 
-  const LayeredPostWidget({super.key, required this.signal, required this.tokens});
+  const LayeredPostWidget(
+      {super.key, required this.signal, required this.tokens});
 
   @override
   State<LayeredPostWidget> createState() => _LayeredPostWidgetState();
@@ -63,7 +64,8 @@ class _LayeredPostWidgetState extends State<LayeredPostWidget> {
                     ),
                     Text(
                       'LAYER ${_currentLayerIndex + 1}/${widget.signal.layers.length}',
-                      style: TextStyle(color: widget.tokens.textSecondary, fontSize: 10),
+                      style: TextStyle(
+                          color: widget.tokens.textSecondary, fontSize: 10),
                     ),
                   ],
                 ),
@@ -77,7 +79,8 @@ class _LayeredPostWidgetState extends State<LayeredPostWidget> {
                       children: [
                         Text(
                           layer.content,
-                          style: TextStyle(color: widget.tokens.textPrimary, fontSize: 15),
+                          style: TextStyle(
+                              color: widget.tokens.textPrimary, fontSize: 15),
                         ),
                         if (layer.media.isNotEmpty) ...[
                           const SizedBox(height: 16),
@@ -111,7 +114,10 @@ class _LayeredPostWidgetState extends State<LayeredPostWidget> {
                     else
                       Text(
                         'End of Resonance',
-                        style: TextStyle(color: widget.tokens.textSecondary, fontSize: 12, fontStyle: FontStyle.italic),
+                        style: TextStyle(
+                            color: widget.tokens.textSecondary,
+                            fontSize: 12,
+                            fontStyle: FontStyle.italic),
                       ),
                   ],
                 ),
@@ -144,6 +150,7 @@ class _LayeredPostWidgetState extends State<LayeredPostWidget> {
   }
 
   Widget _buildSimplePost() {
-    return Text(widget.signal.content, style: TextStyle(color: widget.tokens.textPrimary));
+    return Text(widget.signal.content,
+        style: TextStyle(color: widget.tokens.textPrimary));
   }
 }

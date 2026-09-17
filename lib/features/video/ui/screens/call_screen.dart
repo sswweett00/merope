@@ -29,7 +29,9 @@ class _CallScreenState extends ConsumerState<CallScreen> {
     super.initState();
     initRenderers();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(webRTCControllerProvider.notifier).startCall(widget.remoteUserId);
+      ref
+          .read(webRTCControllerProvider.notifier)
+          .startCall(widget.remoteUserId);
     });
   }
 
@@ -62,7 +64,8 @@ class _CallScreenState extends ConsumerState<CallScreen> {
         children: [
           // Remote Video
           Positioned.fill(
-            child: RTCVideoView(_remoteRenderer, objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover),
+            child: RTCVideoView(_remoteRenderer,
+                objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover),
           ),
 
           // Local Video (Small Overlay)
@@ -73,7 +76,9 @@ class _CallScreenState extends ConsumerState<CallScreen> {
             height: 180,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: RTCVideoView(_localRenderer, mirror: true, objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover),
+              child: RTCVideoView(_localRenderer,
+                  mirror: true,
+                  objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover),
             ),
           ),
 
@@ -86,7 +91,10 @@ class _CallScreenState extends ConsumerState<CallScreen> {
               children: [
                 Text(
                   widget.remoteUserName,
-                  style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold),
                 ),
                 const Text(
                   "Ongoing Call",
@@ -107,10 +115,12 @@ class _CallScreenState extends ConsumerState<CallScreen> {
                 _ControlButton(
                   icon: Icons.flip_camera_ios_outlined,
                   color: Colors.white24,
-                  onTap: () => MeropeHaptics.trigger(MeropeTokens.hapticSelection),
+                  onTap: () =>
+                      MeropeHaptics.trigger(MeropeTokens.hapticSelection),
                 ),
                 const SizedBox(width: 16),
-                _ControlButton(icon: Icons.mic_off, color: Colors.white24, onTap: () {}),
+                _ControlButton(
+                    icon: Icons.mic_off, color: Colors.white24, onTap: () {}),
                 const SizedBox(width: 24),
                 _ControlButton(
                   icon: Icons.call_end,
@@ -123,12 +133,17 @@ class _CallScreenState extends ConsumerState<CallScreen> {
                   },
                 ),
                 const SizedBox(width: 24),
-                _ControlButton(icon: Icons.videocam_off, color: Colors.white24, onTap: () {}),
+                _ControlButton(
+                    icon: Icons.videocam_off,
+                    color: Colors.white24,
+                    onTap: () {}),
                 const SizedBox(width: 16),
                 _ControlButton(
                   icon: Icons.screen_share_outlined,
                   color: Colors.white24,
-                  onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Starting encrypted screenshare...'))),
+                  onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Starting encrypted screenshare...'))),
                 ),
               ],
             ),

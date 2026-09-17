@@ -10,9 +10,11 @@ class DeveloperApiKeys extends FamilyAsyncNotifier<List<ApiKey>, String> {
     return repo.getApiKeys(appId);
   }
 
-  Future<ApiKey> createApiKey(String appId, String name, String? description, List<String> scopes, int ttlDays) async {
+  Future<ApiKey> createApiKey(String appId, String name, String? description,
+      List<String> scopes, int ttlDays) async {
     final repo = ref.read(developerRepositoryProvider);
-    final key = await repo.createApiKey(appId, name, description, scopes, ttlDays);
+    final key =
+        await repo.createApiKey(appId, name, description, scopes, ttlDays);
     ref.invalidateSelf();
     state = AsyncData(await future);
     return key;
@@ -36,4 +38,6 @@ class DeveloperApiKeys extends FamilyAsyncNotifier<List<ApiKey>, String> {
   Future<void> refresh() => future.then((_) => null);
 }
 
-final developerApiKeysProvider = AsyncNotifierProviderFamily<DeveloperApiKeys, List<ApiKey>, String>(DeveloperApiKeys.new);
+final developerApiKeysProvider =
+    AsyncNotifierProviderFamily<DeveloperApiKeys, List<ApiKey>, String>(
+        DeveloperApiKeys.new);

@@ -28,10 +28,10 @@ class MemberListItem extends StatelessWidget {
           if (member.badges.isNotEmpty) ...[
             const SizedBox(width: 8),
             ...member.badges.map((badge) => Chip(
-              label: Text(badge),
-              labelStyle: const TextStyle(fontSize: 10),
-              backgroundColor: Colors.blue.withValues(alpha: 0.1),
-            )),
+                  label: Text(badge),
+                  labelStyle: const TextStyle(fontSize: 10),
+                  backgroundColor: Colors.blue.withValues(alpha: 0.1),
+                )),
           ],
         ],
       ),

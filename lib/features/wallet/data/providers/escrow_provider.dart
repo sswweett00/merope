@@ -10,7 +10,11 @@ class EscrowParty {
   final String name;
   final String role;
   final String? avatarUrl;
-  EscrowParty({required this.id, required this.name, required this.role, this.avatarUrl});
+  EscrowParty(
+      {required this.id,
+      required this.name,
+      required this.role,
+      this.avatarUrl});
 }
 
 class EscrowItem {
@@ -18,7 +22,11 @@ class EscrowItem {
   final String title;
   final double price;
   final String? imageUrl;
-  EscrowItem({required this.id, required this.title, required this.price, this.imageUrl});
+  EscrowItem(
+      {required this.id,
+      required this.title,
+      required this.price,
+      this.imageUrl});
 }
 
 class EscrowHistoryEntry {
@@ -27,7 +35,12 @@ class EscrowHistoryEntry {
   final String performedBy;
   final DateTime timestamp;
   final Map<String, dynamic>? metadata;
-  EscrowHistoryEntry({required this.id, required this.action, required this.performedBy, required this.timestamp, this.metadata});
+  EscrowHistoryEntry(
+      {required this.id,
+      required this.action,
+      required this.performedBy,
+      required this.timestamp,
+      this.metadata});
 }
 
 class MeropeEscrow {
@@ -94,12 +107,24 @@ class EscrowDetails extends FamilyAsyncNotifier<MeropeEscrow, String> {
       updatedAt: now,
       parties: [
         EscrowParty(id: 'me', name: 'CurrentUser', role: 'buyer'),
-        EscrowParty(id: 'CreativeNode_X', name: 'CreativeNode_X', role: 'seller'),
+        EscrowParty(
+            id: 'CreativeNode_X', name: 'CreativeNode_X', role: 'seller'),
       ],
-      items: [EscrowItem(id: 'item_1', title: 'Nebula Bundle', price: 250.0, imageUrl: null)],
+      items: [
+        EscrowItem(
+            id: 'item_1', title: 'Nebula Bundle', price: 250.0, imageUrl: null)
+      ],
       historyLog: [
-        EscrowHistoryEntry(id: 'h1', action: 'created', performedBy: 'me', timestamp: now.subtract(const Duration(days: 2))),
-        EscrowHistoryEntry(id: 'h2', action: 'funded', performedBy: 'me', timestamp: now.subtract(const Duration(days: 1))),
+        EscrowHistoryEntry(
+            id: 'h1',
+            action: 'created',
+            performedBy: 'me',
+            timestamp: now.subtract(const Duration(days: 2))),
+        EscrowHistoryEntry(
+            id: 'h2',
+            action: 'funded',
+            performedBy: 'me',
+            timestamp: now.subtract(const Duration(days: 1))),
       ],
       autoReleaseAt: now.add(const Duration(days: 7)),
       receiptUrl: null,
@@ -107,7 +132,8 @@ class EscrowDetails extends FamilyAsyncNotifier<MeropeEscrow, String> {
   }
 
   void _listenWebSocket(String arg) {
-    final wsUrl = const String.fromEnvironment('ESCROW_WS_URL', defaultValue: 'wss://api.merope.app/ws/escrow');
+    final wsUrl = const String.fromEnvironment('ESCROW_WS_URL',
+        defaultValue: 'wss://api.merope.app/ws/escrow');
     final channel = WebSocketChannel.connect(Uri.parse('$wsUrl/$arg'));
     final controller = StreamController<MeropeEscrow>();
     _wsControllers[arg] = controller;
@@ -128,7 +154,14 @@ class EscrowDetails extends FamilyAsyncNotifier<MeropeEscrow, String> {
               updatedAt: DateTime.now(),
               parties: updated.parties,
               items: updated.items,
-              historyLog: [...updated.historyLog, EscrowHistoryEntry(id: 'ws_${DateTime.now().millisecondsSinceEpoch}', action: 'updated', performedBy: 'system', timestamp: DateTime.now())],
+              historyLog: [
+                ...updated.historyLog,
+                EscrowHistoryEntry(
+                    id: 'ws_${DateTime.now().millisecondsSinceEpoch}',
+                    action: 'updated',
+                    performedBy: 'system',
+                    timestamp: DateTime.now())
+              ],
               disputeReason: updated.disputeReason,
               autoReleaseAt: updated.autoReleaseAt,
               receiptUrl: updated.receiptUrl,
@@ -148,7 +181,8 @@ class EscrowDetails extends FamilyAsyncNotifier<MeropeEscrow, String> {
     if (current == null) return;
     state = const AsyncValue.loading();
     final biometric = ref.read(biometricAuthProvider.notifier);
-    final authenticated = await biometric.authenticate(reason: 'Confirm escrow payment release');
+    final authenticated =
+        await biometric.authenticate(reason: 'Confirm escrow payment release');
     if (!authenticated) {
       state = AsyncValue.data(current);
       return;
@@ -166,7 +200,14 @@ class EscrowDetails extends FamilyAsyncNotifier<MeropeEscrow, String> {
       updatedAt: DateTime.now(),
       parties: current.parties,
       items: current.items,
-      historyLog: [...current.historyLog, EscrowHistoryEntry(id: 'rel_${DateTime.now().millisecondsSinceEpoch}', action: 'released', performedBy: 'me', timestamp: DateTime.now())],
+      historyLog: [
+        ...current.historyLog,
+        EscrowHistoryEntry(
+            id: 'rel_${DateTime.now().millisecondsSinceEpoch}',
+            action: 'released',
+            performedBy: 'me',
+            timestamp: DateTime.now())
+      ],
       disputeReason: current.disputeReason,
       autoReleaseAt: current.autoReleaseAt,
       receiptUrl: current.receiptUrl,
@@ -191,7 +232,15 @@ class EscrowDetails extends FamilyAsyncNotifier<MeropeEscrow, String> {
       updatedAt: DateTime.now(),
       parties: current.parties,
       items: current.items,
-      historyLog: [...current.historyLog, EscrowHistoryEntry(id: 'disp_${DateTime.now().millisecondsSinceEpoch}', action: 'disputed', performedBy: 'me', timestamp: DateTime.now(), metadata: {'reason': reason, 'evidence': evidenceUrl})],
+      historyLog: [
+        ...current.historyLog,
+        EscrowHistoryEntry(
+            id: 'disp_${DateTime.now().millisecondsSinceEpoch}',
+            action: 'disputed',
+            performedBy: 'me',
+            timestamp: DateTime.now(),
+            metadata: {'reason': reason, 'evidence': evidenceUrl})
+      ],
       disputeReason: reason,
       autoReleaseAt: current.autoReleaseAt,
       receiptUrl: current.receiptUrl,
@@ -201,9 +250,13 @@ class EscrowDetails extends FamilyAsyncNotifier<MeropeEscrow, String> {
   }
 }
 
-final escrowDetailsProvider = AsyncNotifierProviderFamily<EscrowDetails, MeropeEscrow, String>(EscrowDetails.new);
+final escrowDetailsProvider =
+    AsyncNotifierProviderFamily<EscrowDetails, MeropeEscrow, String>(
+        EscrowDetails.new);
 
-final disputeFlowProvider = StateNotifierProviderFamily<DisputeFlowNotifier, String, String>((ref, arg) {
+final disputeFlowProvider =
+    StateNotifierProviderFamily<DisputeFlowNotifier, String, String>(
+        (ref, arg) {
   return DisputeFlowNotifier();
 });
 

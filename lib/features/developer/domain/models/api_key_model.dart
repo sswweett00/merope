@@ -12,7 +12,8 @@ class ApiKeyUsageStats with _$ApiKeyUsageStats {
     @JsonKey(name: 'usage_by_day') @Default({}) Map<String, dynamic> usageByDay,
   }) = _ApiKeyUsageStats;
 
-  factory ApiKeyUsageStats.fromJson(Map<String, dynamic> json) => _$ApiKeyUsageStatsFromJson(json);
+  factory ApiKeyUsageStats.fromJson(Map<String, dynamic> json) =>
+      _$ApiKeyUsageStatsFromJson(json);
 }
 
 @freezed
@@ -48,7 +49,8 @@ class ApiKey with _$ApiKey {
     return '$keyPrefix••••••••';
   }
 
-  bool get isExpired => expiresAt != null && expiresAt!.isBefore(DateTime.now());
+  bool get isExpired =>
+      expiresAt != null && expiresAt!.isBefore(DateTime.now());
 
   bool get isValid => isActive && !isExpired;
 }

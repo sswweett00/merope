@@ -206,7 +206,8 @@ class _MeropeImageState extends State<MeropeImage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.broken_image_outlined, size: 28, color: Colors.grey),
+            const Icon(Icons.broken_image_outlined,
+                size: 28, color: Colors.grey),
             if (widget.imageUrl != null)
               IconButton(
                 icon: const Icon(Icons.refresh, size: 18),
@@ -234,7 +235,8 @@ class _MeropeImageState extends State<MeropeImage> {
         fit: widget.fit,
         cacheWidth: _resolveMemCacheWidth(context),
         cacheHeight: _resolveMemCacheHeight(context),
-        errorBuilder: (context, error, stackTrace) => _buildErrorWidget(context),
+        errorBuilder: (context, error, stackTrace) =>
+            _buildErrorWidget(context),
         frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
           if (wasSynchronouslyLoaded) return child;
 
@@ -257,7 +259,8 @@ class _MeropeImageState extends State<MeropeImage> {
         fit: widget.fit,
         cacheWidth: _resolveMemCacheWidth(context),
         cacheHeight: _resolveMemCacheHeight(context),
-        errorBuilder: (context, error, stackTrace) => _buildErrorWidget(context),
+        errorBuilder: (context, error, stackTrace) =>
+            _buildErrorWidget(context),
       );
     } else if (widget.assetPath != null && widget.assetPath!.isNotEmpty) {
       imageWidget = Image.asset(
@@ -267,7 +270,8 @@ class _MeropeImageState extends State<MeropeImage> {
         fit: widget.fit,
         cacheWidth: _resolveMemCacheWidth(context),
         cacheHeight: _resolveMemCacheHeight(context),
-        errorBuilder: (context, error, stackTrace) => _buildErrorWidget(context),
+        errorBuilder: (context, error, stackTrace) =>
+            _buildErrorWidget(context),
       );
     } else {
       imageWidget = _buildErrorWidget(context);
@@ -287,7 +291,8 @@ class _MeropeImageState extends State<MeropeImage> {
             context,
             imageUrl: widget.imageUrl,
             assetPath: widget.assetPath,
-            imageWidget: _cachedBytes != null ? Image.memory(_cachedBytes!) : null,
+            imageWidget:
+                _cachedBytes != null ? Image.memory(_cachedBytes!) : null,
           );
         },
         child: imageWidget,
@@ -310,7 +315,8 @@ class _MeropeShimmerBox extends StatefulWidget {
   State<_MeropeShimmerBox> createState() => _MeropeShimmerBoxState();
 }
 
-class _MeropeShimmerBoxState extends State<_MeropeShimmerBox> with SingleTickerProviderStateMixin {
+class _MeropeShimmerBoxState extends State<_MeropeShimmerBox>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
 

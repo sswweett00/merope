@@ -12,7 +12,8 @@ class StoriesApiService {
 
   StoriesApiService(this._apiClient);
 
-  Future<ApiResult<List<Story>>> getFeed({int limit = 20, String? cursor}) async {
+  Future<ApiResult<List<Story>>> getFeed(
+      {int limit = 20, String? cursor}) async {
     try {
       final response = await _apiClient.get<Map<String, dynamic>>(
         '/stories/feed',

@@ -27,10 +27,18 @@ class LumiaBroadcastControls extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _ControlIcon(icon: Icons.face_retouching_natural, label: 'LENS', tokens: tokens),
-              _ControlIcon(icon: Icons.multiline_chart, label: 'STATS', tokens: tokens),
+              _ControlIcon(
+                  icon: Icons.face_retouching_natural,
+                  label: 'LENS',
+                  tokens: tokens),
+              _ControlIcon(
+                  icon: Icons.multiline_chart, label: 'STATS', tokens: tokens),
               _ControlIcon(icon: Icons.settings, label: 'OPS', tokens: tokens),
-              _ControlIcon(icon: Icons.stop_circle, label: 'END', color: Colors.red, tokens: tokens),
+              _ControlIcon(
+                  icon: Icons.stop_circle,
+                  label: 'END',
+                  color: Colors.red,
+                  tokens: tokens),
             ],
           ),
         ],
@@ -60,14 +68,21 @@ class _Metric extends StatelessWidget {
   final String label;
   final String value;
   final Color color;
-  const _Metric({required this.label, required this.value, required this.color});
+  const _Metric(
+      {required this.label, required this.value, required this.color});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(label, style: const TextStyle(color: Colors.white54, fontSize: 8, fontWeight: FontWeight.bold)),
-        Text(value, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w900)),
+        Text(label,
+            style: const TextStyle(
+                color: Colors.white54,
+                fontSize: 8,
+                fontWeight: FontWeight.bold)),
+        Text(value,
+            style: TextStyle(
+                color: color, fontSize: 12, fontWeight: FontWeight.w900)),
       ],
     );
   }
@@ -85,8 +100,16 @@ class _EnergyGoalProgress extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('ENERGY WAVE GOAL', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
-            Text('450 / 1000 MRO', style: TextStyle(color: tokens.primary, fontSize: 9, fontWeight: FontWeight.w900)),
+            const Text('ENERGY WAVE GOAL',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold)),
+            Text('450 / 1000 MRO',
+                style: TextStyle(
+                    color: tokens.primary,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w900)),
           ],
         ),
         const SizedBox(height: 6),
@@ -109,7 +132,11 @@ class _ControlIcon extends StatelessWidget {
   final String label;
   final Color? color;
   final MeropeColorTokens tokens;
-  const _ControlIcon({required this.icon, required this.label, this.color, required this.tokens});
+  const _ControlIcon(
+      {required this.icon,
+      required this.label,
+      this.color,
+      required this.tokens});
 
   @override
   Widget build(BuildContext context) {
@@ -117,11 +144,15 @@ class _ControlIcon extends StatelessWidget {
       children: [
         Container(
           padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(color: (color ?? tokens.primary).withValues(alpha: 0.1), shape: BoxShape.circle),
+          decoration: BoxDecoration(
+              color: (color ?? tokens.primary).withValues(alpha: 0.1),
+              shape: BoxShape.circle),
           child: Icon(icon, color: color ?? tokens.primary, size: 20),
         ),
         const SizedBox(height: 4),
-        Text(label, style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)),
+        Text(label,
+            style: const TextStyle(
+                color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)),
       ],
     );
   }

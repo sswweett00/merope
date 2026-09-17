@@ -44,7 +44,10 @@ abstract class IModerationRepository {
   Future<void> cacheQueue(List<ModerationQueueItem> items);
   Future<void> clearCache();
   Future<List<ModerationActionLogEntry>> getActionLog({int limit = 50});
-  Future<void> logAction(String userId, String actionType, String moderatorId, {String? note, Map<String, dynamic>? metadata});
+  Future<void> logAction(String userId, String actionType, String moderatorId,
+      {String? note, Map<String, dynamic>? metadata});
   Future<List<ModerationSavedFilter>> getSavedFilters();
-  Future<void> saveFilter(String name, List<RiskLevel> riskLevels, List<ModerationReason> reasons, {String? dateRange, String? searchQuery});
+  Future<void> saveFilter(
+      String name, List<RiskLevel> riskLevels, List<ModerationReason> reasons,
+      {String? dateRange, String? searchQuery});
 }

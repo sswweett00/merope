@@ -26,7 +26,8 @@ class SecureNetworkService {
       client.maxConnectionsPerHost = 10;
 
       // SSL Certificate Pinning implementation
-      client.badCertificateCallback = (X509Certificate cert, String host, int port) {
+      client.badCertificateCallback =
+          (X509Certificate cert, String host, int port) {
         // If no pin is configured, reject all certificates in production builds.
         if (_expectedSha256Pin.isEmpty) {
           if (kReleaseMode) return false;
@@ -71,7 +72,8 @@ class SecureNetworkService {
 
   // Load the expected cert SHA256 from compile-time config.
   // Never hardcode production pins in source code.
-  static const String _expectedSha256Pin = String.fromEnvironment('SSL_CERT_SHA256');
+  static const String _expectedSha256Pin =
+      String.fromEnvironment('SSL_CERT_SHA256');
 
   Future<void> saveTokens(String accessToken, String refreshToken) async {
     await _secureStorage.write(key: _accessTokenKey, value: accessToken);
@@ -88,10 +90,12 @@ class SecureNetworkService {
         baseUrl: String.fromEnvironment('API_BASE_URL',
             defaultValue: 'https://api.merope.enterprise:8443'),
       ));
-      final response = await tempDio.post('/auth/refresh', data: {'refresh_token': refreshToken});
+      final response = await tempDio
+          .post('/auth/refresh', data: {'refresh_token': refreshToken});
 
       if (response.statusCode == 200) {
-        await saveTokens(response.data['access_token'], response.data['refresh_token']);
+        await saveTokens(
+            response.data['access_token'], response.data['refresh_token']);
         return true;
       }
     } catch (_) {

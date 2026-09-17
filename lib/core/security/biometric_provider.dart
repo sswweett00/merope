@@ -54,7 +54,8 @@ class BiometricAuthNotifier extends StateNotifier<BiometricAuthState> {
   /// Attempts to unlock using FaceID/Fingerprint/Iris
   Future<bool> authenticate({required String reason}) async {
     if (!state.isEnrolled) {
-      MeropeLogger.warn('Security: Biometric auth attempted but not supported/enrolled');
+      MeropeLogger.warn(
+          'Security: Biometric auth attempted but not supported/enrolled');
       return false;
     }
 
@@ -74,7 +75,8 @@ class BiometricAuthNotifier extends StateNotifier<BiometricAuthState> {
       }
       return authenticated;
     } on PlatformException catch (e) {
-      MeropeLogger.error('Security: Biometric authentication runtime error', error: e);
+      MeropeLogger.error('Security: Biometric authentication runtime error',
+          error: e);
       return false;
     }
   }

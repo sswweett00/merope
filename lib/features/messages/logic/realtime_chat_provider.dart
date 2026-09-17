@@ -14,7 +14,8 @@ class RealtimeChat extends StateNotifier<ConnectionStatus> {
   RealtimeClient? _client;
   final List<Map<String, dynamic>> _messageBuffer = [];
 
-  RealtimeChat(this._roomId, this._token, this._baseUrl) : super(ConnectionStatus.disconnected) {
+  RealtimeChat(this._roomId, this._token, this._baseUrl)
+      : super(ConnectionStatus.disconnected) {
     _client = null;
     _messageBuffer.clear();
   }
@@ -48,7 +49,8 @@ class RealtimeChat extends StateNotifier<ConnectionStatus> {
     state = ConnectionStatus.disconnected;
   }
 
-  Future<void> sendMessage(String content, {bool encrypt = false, String? encryptedPayload}) async {
+  Future<void> sendMessage(String content,
+      {bool encrypt = false, String? encryptedPayload}) async {
     if (_client == null || !_client!.isConnected) return;
 
     if (encrypt && _roomId != null) {

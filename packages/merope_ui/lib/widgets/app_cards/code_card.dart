@@ -59,16 +59,23 @@ class CodeCard extends StatelessWidget {
         children: [
           Text(
             language.toUpperCase(),
-            style: const TextStyle(color: Colors.white54, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1),
+            style: const TextStyle(
+                color: Colors.white54,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1),
           ),
           InkWell(
             onTap: () {
               Clipboard.setData(ClipboardData(text: code));
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Code copied to clipboard'), duration: Duration(seconds: 1)),
+                const SnackBar(
+                    content: Text('Code copied to clipboard'),
+                    duration: Duration(seconds: 1)),
               );
             },
-            child: const Icon(Icons.copy_rounded, color: Colors.white54, size: 16),
+            child:
+                const Icon(Icons.copy_rounded, color: Colors.white54, size: 16),
           ),
         ],
       ),

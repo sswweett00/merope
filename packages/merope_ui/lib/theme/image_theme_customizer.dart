@@ -57,6 +57,7 @@ class ImageThemeNotifier extends StateNotifier<ImageThemeState> {
   }
 }
 
-final imageThemeProvider = StateNotifierProvider<ImageThemeNotifier, ImageThemeState>((ref) {
+final imageThemeProvider =
+    StateNotifierProvider<ImageThemeNotifier, ImageThemeState>((ref) {
   return ImageThemeNotifier();
 });

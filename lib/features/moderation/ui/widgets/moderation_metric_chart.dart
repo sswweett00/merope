@@ -73,7 +73,11 @@ class _MetricChartPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
 
     final points = dataPoints.map((value) {
-      final x = (value / (dataPoints.isEmpty ? 1 : dataPoints.reduce((a, b) => a > b ? a : b))) * size.width;
+      final x = (value /
+              (dataPoints.isEmpty
+                  ? 1
+                  : dataPoints.reduce((a, b) => a > b ? a : b))) *
+          size.width;
       final y = size.height - (value.clamp(0.0, 1.0) * size.height);
       return Offset(x, y);
     }).toList();
@@ -83,7 +87,8 @@ class _MetricChartPainter extends CustomPainter {
       final previous = points[i - 1];
       final current = points[i];
       final midX = (previous.dx + current.dx) / 2;
-      path.quadraticBezierTo(previous.dx, previous.dy, midX, (previous.dy + current.dy) / 2);
+      path.quadraticBezierTo(
+          previous.dx, previous.dy, midX, (previous.dy + current.dy) / 2);
       path.quadraticBezierTo(midX, current.dy, current.dx, current.dy);
     }
 

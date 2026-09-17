@@ -11,12 +11,14 @@ final developerDatabaseProvider = Provider<DeveloperDatabase>((ref) {
   return db;
 });
 
-final developerLocalDataSourceProvider = Provider<DeveloperLocalDataSource>((ref) {
+final developerLocalDataSourceProvider =
+    Provider<DeveloperLocalDataSource>((ref) {
   final db = ref.watch(developerDatabaseProvider);
   return DriftDeveloperLocalDataSource(db);
 });
 
-final developerRemoteDataSourceProvider = Provider<DeveloperRemoteDataSource>((ref) {
+final developerRemoteDataSourceProvider =
+    Provider<DeveloperRemoteDataSource>((ref) {
   return DeveloperRemoteDataSourceImpl();
 });
 

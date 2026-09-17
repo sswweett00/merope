@@ -13,6 +13,7 @@ class VideoPoolManagerNotifier extends StateNotifier<VideoPoolManagerState> {
 }
 
 final videoPoolProvider =
-    StateNotifierProvider<VideoPoolManagerNotifier, VideoPoolManagerState>((ref) {
+    StateNotifierProvider<VideoPoolManagerNotifier, VideoPoolManagerState>(
+        (ref) {
   return VideoPoolManagerNotifier();
 });

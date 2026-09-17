@@ -18,9 +18,11 @@ final realtimeClientProvider = Provider<RealtimeClient>((ref) {
   return RealtimeClient();
 });
 
-final typingUsersProvider = StateProvider.family<List<String>, String>((ref, conversationId) => []);
+final typingUsersProvider =
+    StateProvider.family<List<String>, String>((ref, conversationId) => []);
 
-class MessageController extends FamilyAsyncNotifier<List<MeropeMessage>, String> {
+class MessageController
+    extends FamilyAsyncNotifier<List<MeropeMessage>, String> {
   StreamSubscription? _subscription;
   Timer? _typingTimer;
   final Set<String> _typingUsers = {};
@@ -66,7 +68,8 @@ class MessageController extends FamilyAsyncNotifier<List<MeropeMessage>, String>
     });
   }
 
-  Future<void> sendTextMessage(String content, String authorId, {String? parentMessageId}) async {
+  Future<void> sendTextMessage(String content, String authorId,
+      {String? parentMessageId}) async {
     final aegis = ref.read(aegisMessageCryptProvider.notifier);
 
     // Encrypt message
@@ -82,7 +85,8 @@ class MessageController extends FamilyAsyncNotifier<List<MeropeMessage>, String>
       authorName: 'Current User',
       authorAvatar: '',
       blocks: [
-        MessageBlock(type: MessageBlockType.text, content: '[Encrypted Aegis Message]'),
+        MessageBlock(
+            type: MessageBlockType.text, content: '[Encrypted Aegis Message]'),
       ],
       encryptedPayload: jsonEncode(encryptedPayload.toJson()),
       isEncrypted: true,
@@ -98,7 +102,8 @@ class MessageController extends FamilyAsyncNotifier<List<MeropeMessage>, String>
     ref.invalidateSelf();
   }
 
-  Future<void> sendMediaMessage(String fileUrl, String messageType, String authorId) async {
+  Future<void> sendMediaMessage(
+      String fileUrl, String messageType, String authorId) async {
     final message = MeropeMessage(
       id: const Uuid().v4(),
       channelId: arg,
@@ -106,10 +111,12 @@ class MessageController extends FamilyAsyncNotifier<List<MeropeMessage>, String>
       authorName: 'Current User',
       authorAvatar: '',
       blocks: [
-        MessageBlock(type: MessageBlockType.values.firstWhere(
-          (type) => type.name == messageType,
-          orElse: () => MessageBlockType.file,
-        ), content: fileUrl),
+        MessageBlock(
+            type: MessageBlockType.values.firstWhere(
+              (type) => type.name == messageType,
+              orElse: () => MessageBlockType.file,
+            ),
+            content: fileUrl),
       ],
       createdAt: DateTime.now().millisecondsSinceEpoch,
       updatedAt: DateTime.now().millisecondsSinceEpoch,
@@ -178,7 +185,9 @@ class MessageController extends FamilyAsyncNotifier<List<MeropeMessage>, String>
   List<String> get typingUsers => _typingUsers.toList();
 }
 
-final messageControllerProvider = AsyncNotifierProviderFamily<MessageController, List<MeropeMessage>, String>(MessageController.new);
+final messageControllerProvider =
+    AsyncNotifierProviderFamily<MessageController, List<MeropeMessage>, String>(
+        MessageController.new);
 
 class ConversationController extends AsyncNotifier<List<Conversation>> {
   @override
@@ -205,14 +214,17 @@ class ConversationController extends AsyncNotifier<List<Conversation>> {
     ref.invalidateSelf();
   }
 
-  Future<void> muteConversation(String conversationId, int? durationMinutes) async {
+  Future<void> muteConversation(
+      String conversationId, int? durationMinutes) async {
     final repo = ref.read(messageRepositoryProvider);
     await repo.muteConversation(conversationId, durationMinutes);
     ref.invalidateSelf();
   }
 }
 
-final conversationControllerProvider = AsyncNotifierProvider<ConversationController, List<Conversation>>(ConversationController.new);
+final conversationControllerProvider =
+    AsyncNotifierProvider<ConversationController, List<Conversation>>(
+        ConversationController.new);
 
 class ChatFolderController extends AsyncNotifier<List<ChatFolder>> {
   @override
@@ -227,7 +239,8 @@ class ChatFolderController extends AsyncNotifier<List<ChatFolder>> {
     ref.invalidateSelf();
   }
 
-  Future<void> updateFolder(String folderId, String name, List<String> conversationIds) async {
+  Future<void> updateFolder(
+      String folderId, String name, List<String> conversationIds) async {
     final repo = ref.read(messageRepositoryProvider);
     await repo.updateFolder(folderId, name, conversationIds);
     ref.invalidateSelf();
@@ -240,4 +253,6 @@ class ChatFolderController extends AsyncNotifier<List<ChatFolder>> {
   }
 }
 
-final chatFolderControllerProvider = AsyncNotifierProvider<ChatFolderController, List<ChatFolder>>(ChatFolderController.new);
+final chatFolderControllerProvider =
+    AsyncNotifierProvider<ChatFolderController, List<ChatFolder>>(
+        ChatFolderController.new);

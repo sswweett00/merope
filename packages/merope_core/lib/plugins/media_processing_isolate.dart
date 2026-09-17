@@ -4,8 +4,8 @@ import 'dart:typed_data';
 
 /// MediaProcessingIsolate V5 - Steganographic Shield & Phantom Layer.
 class MediaProcessingIsolate {
-
-  static Future<void> processWithStego(Uint8List mediaBytes, Uint8List hiddenData) async {
+  static Future<void> processWithStego(
+      Uint8List mediaBytes, Uint8List hiddenData) async {
     // This offloads to a dedicated Isolate for pixel-level manipulation
     await Isolate.run(() => _steganographicInject(mediaBytes, hiddenData));
   }
@@ -13,7 +13,8 @@ class MediaProcessingIsolate {
   /// LSB Steganography Mechanic:
   /// Embeds [hiddenData] into the least significant bits of [mediaBytes].
   /// This makes the metadata invisible to visual inspection and standard headers.
-  static Uint8List _steganographicInject(Uint8List mediaBytes, Uint8List hiddenData) {
+  static Uint8List _steganographicInject(
+      Uint8List mediaBytes, Uint8List hiddenData) {
     // 1. Data length verification
     if (hiddenData.length * 8 > mediaBytes.length) {
       throw Exception("Steganographic capacity exceeded");

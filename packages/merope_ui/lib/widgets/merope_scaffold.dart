@@ -34,7 +34,9 @@ class MeropeScaffold extends ConsumerWidget {
           bottomNavigationBar: bottomNavigationBar,
           body: Stack(
             children: [
-              Positioned.fill(child: _AtmosphereLayer(tokens: tokens, overrideColor: auraOverride)),
+              Positioned.fill(
+                  child: _AtmosphereLayer(
+                      tokens: tokens, overrideColor: auraOverride)),
               Row(
                 children: [
                   if (isDesktop && universalRail != null) universalRail!,
@@ -42,7 +44,8 @@ class MeropeScaffold extends ConsumerWidget {
                   Expanded(child: body),
                 ],
               ),
-              const Positioned(top: 48, right: 24, child: _ServerConnectionIndicator()),
+              const Positioned(
+                  top: 48, right: 24, child: _ServerConnectionIndicator()),
             ],
           ),
         );
@@ -69,7 +72,11 @@ class _ServerConnectionIndicator extends ConsumerWidget {
       ),
       child: Text(
         'SERVER CONNECTION LOST',
-        style: TextStyle(color: color, fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+        style: TextStyle(
+            color: color,
+            fontSize: 9,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.5),
       ),
     );
   }
@@ -89,7 +96,10 @@ class _AtmosphereLayer extends StatelessWidget {
         gradient: RadialGradient(
           center: Alignment.topLeft,
           radius: 1.5,
-          colors: [primary.withValues(alpha: 0.15), tokens.auraSecondary.withValues(alpha: 0.0)],
+          colors: [
+            primary.withValues(alpha: 0.15),
+            tokens.auraSecondary.withValues(alpha: 0.0)
+          ],
         ),
       ),
     );

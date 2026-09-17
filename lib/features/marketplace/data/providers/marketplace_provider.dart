@@ -85,4 +85,6 @@ class MarketplaceList extends AsyncNotifier<List<MeropeProduct>> {
   }
 }
 
-final marketplaceListProvider = AsyncNotifierProvider<MarketplaceList, List<MeropeProduct>>(MarketplaceList.new);
+final marketplaceListProvider =
+    AsyncNotifierProvider<MarketplaceList, List<MeropeProduct>>(
+        MarketplaceList.new);

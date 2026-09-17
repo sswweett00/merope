@@ -10,7 +10,8 @@ class DeveloperWebhooks extends FamilyAsyncNotifier<List<Webhook>, String> {
     return repo.getWebhooks(appId);
   }
 
-  Future<Webhook> createWebhook(String appId, String name, String url, List<String> events) async {
+  Future<Webhook> createWebhook(
+      String appId, String name, String url, List<String> events) async {
     final repo = ref.read(developerRepositoryProvider);
     final hook = await repo.createWebhook(appId, name, url, events);
     ref.invalidateSelf();
@@ -50,10 +51,13 @@ class DeveloperWebhooks extends FamilyAsyncNotifier<List<Webhook>, String> {
   }
 
   Future<Webhook?> _findById(String webhookId) async {
-    return await future.then((list) => list.firstWhere((w) => w.id == webhookId));
+    return await future
+        .then((list) => list.firstWhere((w) => w.id == webhookId));
   }
 
   Future<void> refresh() => future.then((_) => null);
 }
 
-final developerWebhooksProvider = AsyncNotifierProviderFamily<DeveloperWebhooks, List<Webhook>, String>(DeveloperWebhooks.new);
+final developerWebhooksProvider =
+    AsyncNotifierProviderFamily<DeveloperWebhooks, List<Webhook>, String>(
+        DeveloperWebhooks.new);

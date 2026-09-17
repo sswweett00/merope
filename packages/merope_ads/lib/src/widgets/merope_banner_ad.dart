@@ -21,9 +21,9 @@ class MeropeBannerAd extends StatelessWidget {
     }
 
     return MeropeAds().provider.buildBannerAd(
-      adUnit: adUnit,
-      request: request,
-      callback: callback,
-    );
+          adUnit: adUnit,
+          request: request,
+          callback: callback,
+        );
   }
 }

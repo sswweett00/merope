@@ -46,7 +46,8 @@ class MeropeImageViewerModal extends StatefulWidget {
 }
 
 class _MeropeImageViewerModalState extends State<MeropeImageViewerModal> {
-  final TransformationController _transformationController = TransformationController();
+  final TransformationController _transformationController =
+      TransformationController();
 
   void _resetZoom() {
     _transformationController.value = Matrix4.identity();
@@ -121,14 +122,16 @@ class _MeropeImageViewerModalState extends State<MeropeImageViewerModal> {
                         if (widget.title != null)
                           Text(
                             widget.title!,
-                            style: theme.textTheme.titleMedium?.copyWith(color: Colors.white),
+                            style: theme.textTheme.titleMedium
+                                ?.copyWith(color: Colors.white),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         if (widget.subtitle != null)
                           Text(
                             widget.subtitle!,
-                            style: theme.textTheme.bodySmall?.copyWith(color: Colors.white70),
+                            style: theme.textTheme.bodySmall
+                                ?.copyWith(color: Colors.white70),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),

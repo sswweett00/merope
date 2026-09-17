@@ -96,6 +96,7 @@ class MasterThemeNotifier extends StateNotifier<MasterThemeState> {
   }
 }
 
-final masterThemeProvider = StateNotifierProvider<MasterThemeNotifier, MasterThemeState>((ref) {
+final masterThemeProvider =
+    StateNotifierProvider<MasterThemeNotifier, MasterThemeState>((ref) {
   return MasterThemeNotifier(ref);
 });

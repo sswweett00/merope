@@ -60,17 +60,21 @@ class UserProfile {
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) => UserProfile(
-    id: json['id'] as String? ?? '',
-    username: json['username'] as String? ?? '',
-    displayName: json['display_name'] as String? ?? json['username'] as String? ?? '',
-    avatarUrl: json['avatar_url'] as String?,
-    bio: json['bio'] as String?,
-    followersCount: json['followers_count'] as int? ?? 0,
-    followingCount: json['following_count'] as int? ?? 0,
-    postsCount: json['posts_count'] as int? ?? 0,
-    isFollowing: json['is_following'] as bool? ?? false,
-    isVerified: json['is_verified'] as bool? ?? false,
-    influenceScore: (json['influence_score'] as num?)?.toDouble() ?? 0.0,
-    joinedAt: json['joined_at'] != null ? DateTime.parse(json['joined_at'] as String) : null,
-  );
+        id: json['id'] as String? ?? '',
+        username: json['username'] as String? ?? '',
+        displayName: json['display_name'] as String? ??
+            json['username'] as String? ??
+            '',
+        avatarUrl: json['avatar_url'] as String?,
+        bio: json['bio'] as String?,
+        followersCount: json['followers_count'] as int? ?? 0,
+        followingCount: json['following_count'] as int? ?? 0,
+        postsCount: json['posts_count'] as int? ?? 0,
+        isFollowing: json['is_following'] as bool? ?? false,
+        isVerified: json['is_verified'] as bool? ?? false,
+        influenceScore: (json['influence_score'] as num?)?.toDouble() ?? 0.0,
+        joinedAt: json['joined_at'] != null
+            ? DateTime.parse(json['joined_at'] as String)
+            : null,
+      );
 }

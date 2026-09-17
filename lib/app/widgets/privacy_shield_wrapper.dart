@@ -11,7 +11,8 @@ class PrivacyShieldWrapper extends StatefulWidget {
   State<PrivacyShieldWrapper> createState() => _PrivacyShieldWrapperState();
 }
 
-class _PrivacyShieldWrapperState extends State<PrivacyShieldWrapper> with WidgetsBindingObserver {
+class _PrivacyShieldWrapperState extends State<PrivacyShieldWrapper>
+    with WidgetsBindingObserver {
   bool _isBackgrounded = false;
 
   @override
@@ -29,7 +30,8 @@ class _PrivacyShieldWrapperState extends State<PrivacyShieldWrapper> with Widget
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     setState(() {
-      _isBackgrounded = state == AppLifecycleState.inactive || state == AppLifecycleState.paused;
+      _isBackgrounded = state == AppLifecycleState.inactive ||
+          state == AppLifecycleState.paused;
     });
   }
 
@@ -41,14 +43,16 @@ class _PrivacyShieldWrapperState extends State<PrivacyShieldWrapper> with Widget
         if (_isBackgrounded)
           Positioned.fill(
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: MeropeTokens.blurHigh, sigmaY: MeropeTokens.blurHigh),
+              filter: ImageFilter.blur(
+                  sigmaX: MeropeTokens.blurHigh, sigmaY: MeropeTokens.blurHigh),
               child: Container(
                 color: Colors.black.withValues(alpha: 0.5),
                 child: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.lock_outline_rounded, color: Colors.white, size: 64),
+                      const Icon(Icons.lock_outline_rounded,
+                          color: Colors.white, size: 64),
                       const SizedBox(height: 16),
                       Text(
                         "MEROPE PRIVACY SHIELD",

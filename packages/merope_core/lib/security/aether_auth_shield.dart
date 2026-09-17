@@ -18,14 +18,16 @@ class AetherAuthShieldNotifier extends AsyncNotifier<void> {
   }
 
   Future<String> getSecureDeviceSignature() async {
-    final key = await const FlutterSecureStorage().read(key: 'aether_apex_root');
+    final key =
+        await const FlutterSecureStorage().read(key: 'aether_apex_root');
     if (key == null) return 'unsigned';
     return sha256.convert(utf8.encode(key)).toString().substring(0, 16);
   }
 }
 
 final aetherAuthShieldProvider =
-    AsyncNotifierProvider<AetherAuthShieldNotifier, void>(AetherAuthShieldNotifier.new);
+    AsyncNotifierProvider<AetherAuthShieldNotifier, void>(
+        AetherAuthShieldNotifier.new);
 
 /// AetherAuthShield V8 - Apex Layer (Biometric-Locked Key Rotation).
 class AetherAuthShield {
@@ -52,7 +54,8 @@ class AetherAuthShield {
           encryptedSharedPreferences: true,
         ),
       );
-      await _storage.write(key: 'aether_last_rotation', value: DateTime.now().toIso8601String());
+      await _storage.write(
+          key: 'aether_last_rotation', value: DateTime.now().toIso8601String());
     }
   }
 
@@ -66,6 +69,9 @@ class AetherAuthShield {
   }
 
   static String _generateEntropy(int length) {
-    return sha512.convert(utf8.encode(DateTime.now().microsecondsSinceEpoch.toString())).toString().substring(0, length);
+    return sha512
+        .convert(utf8.encode(DateTime.now().microsecondsSinceEpoch.toString()))
+        .toString()
+        .substring(0, length);
   }
 }

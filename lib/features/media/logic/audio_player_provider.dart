@@ -50,7 +50,8 @@ class AudioPlayerNotifier extends StateNotifier<AudioPlayerState> {
   }
 }
 
-final audioPlayerProvider = StateNotifierProvider<AudioPlayerNotifier, AudioPlayerState>((ref) {
+final audioPlayerProvider =
+    StateNotifierProvider<AudioPlayerNotifier, AudioPlayerState>((ref) {
   return AudioPlayerNotifier();
 });
 

@@ -35,7 +35,9 @@ class _MeropeVideoPlayerState extends ConsumerState<MeropeVideoPlayer> {
 
   void _initPlayer() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final resource = ref.read(videoPoolProvider.notifier).acquire(widget.videoId, widget.url);
+      final resource = ref
+          .read(videoPoolProvider.notifier)
+          .acquire(widget.videoId, widget.url);
       if (widget.loop) {
         resource.player.setPlaylistMode(PlaylistMode.loop);
       }
@@ -57,7 +59,9 @@ class _MeropeVideoPlayerState extends ConsumerState<MeropeVideoPlayer> {
   Widget build(BuildContext context) {
     // We watch the provider to rebuild when pool state changes (though resource mapping is stable until eviction)
     ref.watch(videoPoolProvider);
-    final resource = ref.read(videoPoolProvider.notifier).getResourceForVideo(widget.videoId);
+    final resource = ref
+        .read(videoPoolProvider.notifier)
+        .getResourceForVideo(widget.videoId);
 
     if (resource == null) {
       return Container(

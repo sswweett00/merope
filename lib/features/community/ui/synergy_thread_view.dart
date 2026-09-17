@@ -19,8 +19,13 @@ class SynergyThreadView extends ConsumerWidget {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(collectiveName, style: TextStyle(color: tokens.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
-            Text('Synergy collective node', style: TextStyle(color: tokens.textSecondary, fontSize: 12)),
+            Text(collectiveName,
+                style: TextStyle(
+                    color: tokens.textPrimary,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold)),
+            Text('Synergy collective node',
+                style: TextStyle(color: tokens.textSecondary, fontSize: 12)),
           ],
         ),
         leading: IconButton(
@@ -34,8 +39,9 @@ class SynergyThreadView extends ConsumerWidget {
         itemBuilder: (context, index) {
           // Reusing NexusTimelineCard for threads, simulating Reddit posts
           return const Padding(
-             padding: EdgeInsets.only(bottom: 12),
-             child: Text('Thread content placeholder - Reusing design language.'),
+            padding: EdgeInsets.only(bottom: 12),
+            child:
+                Text('Thread content placeholder - Reusing design language.'),
           );
         },
       ),

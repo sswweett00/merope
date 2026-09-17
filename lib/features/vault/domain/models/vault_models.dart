@@ -43,11 +43,14 @@ class VaultItem {
     return VaultItem(
       id: json['id'] as String,
       title: json['title'] as String,
-      type: VaultItemType.values.firstWhere((e) => e.name == json['type'] as String),
+      type: VaultItemType.values
+          .firstWhere((e) => e.name == json['type'] as String),
       protection: json['protection'] as String,
       parentId: json['parentId'] as String?,
       isFavorite: json['isFavorite'] as bool? ?? false,
-      lastAccessed: json['lastAccessed'] == null ? null : DateTime.parse(json['lastAccessed'] as String),
+      lastAccessed: json['lastAccessed'] == null
+          ? null
+          : DateTime.parse(json['lastAccessed'] as String),
     );
   }
 

@@ -46,7 +46,9 @@ class ResonanceHomeView extends ConsumerWidget {
                 const SliverToBoxAdapter(
                   child: PlaylistGallery(),
                 ),
-                const SliverToBoxAdapter(child: SizedBox(height: 100)), // Bottom padding for mini player
+                const SliverToBoxAdapter(
+                    child: SizedBox(
+                        height: 100)), // Bottom padding for mini player
               ],
             ),
           ),
@@ -63,7 +65,11 @@ class _AppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 16, left: 24, right: 24, bottom: 8),
+      padding: EdgeInsets.only(
+          top: MediaQuery.of(context).padding.top + 16,
+          left: 24,
+          right: 24,
+          bottom: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -78,8 +84,12 @@ class _AppBar extends StatelessWidget {
           ),
           Row(
             children: [
-              IconButton(icon: Icon(Icons.cast, color: tokens.textSecondary), onPressed: () {}),
-              IconButton(icon: Icon(Icons.search, color: tokens.textSecondary), onPressed: () {}),
+              IconButton(
+                  icon: Icon(Icons.cast, color: tokens.textSecondary),
+                  onPressed: () {}),
+              IconButton(
+                  icon: Icon(Icons.search, color: tokens.textSecondary),
+                  onPressed: () {}),
             ],
           ),
         ],

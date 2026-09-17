@@ -31,7 +31,9 @@ class AdsScreen extends StatelessWidget {
               children: [
                 Text(
                   'Aktif Kampanyalar',
-                  style: TextStyle(fontWeight: FontWeight.bold, color: darkTokens.textPrimary),
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: darkTokens.textPrimary),
                 ),
                 const SizedBox(height: MeropeTokens.space8),
                 Text(

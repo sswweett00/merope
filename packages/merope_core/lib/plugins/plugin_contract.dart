@@ -18,6 +18,7 @@ abstract class MeropePlugin {
   List<PluginExtensionPoint> get supportedExtensionPoints;
 
   void onInitialize();
-  Widget buildExtensionWidget(PluginExtensionPoint extensionPoint, BuildContext context, Map<String, dynamic> params);
+  Widget buildExtensionWidget(PluginExtensionPoint extensionPoint,
+      BuildContext context, Map<String, dynamic> params);
   void onDestroy();
 }

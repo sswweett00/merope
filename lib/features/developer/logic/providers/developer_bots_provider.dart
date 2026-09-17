@@ -57,4 +57,6 @@ class DeveloperBots extends FamilyAsyncNotifier<List<Bot>, String> {
   Future<void> refresh() => future.then((_) => null);
 }
 
-final developerBotsProvider = AsyncNotifierProviderFamily<DeveloperBots, List<Bot>, String>(DeveloperBots.new);
+final developerBotsProvider =
+    AsyncNotifierProviderFamily<DeveloperBots, List<Bot>, String>(
+        DeveloperBots.new);

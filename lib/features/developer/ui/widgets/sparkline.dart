@@ -43,7 +43,9 @@ class _SparklinePainter extends CustomPainter {
     if (values.isEmpty) return;
     final maxVal = values.reduce((a, b) => a > b ? a : b);
     final minVal = values.reduce((a, b) => a < b ? a : b);
-    final range = (maxVal - minVal).isFinite && (maxVal - minVal) > 0 ? maxVal - minVal : 1.0;
+    final range = (maxVal - minVal).isFinite && (maxVal - minVal) > 0
+        ? maxVal - minVal
+        : 1.0;
     final padding = 2.0;
     final chartW = size.width - padding * 2;
     final chartH = size.height - padding * 2;
@@ -59,8 +61,10 @@ class _SparklinePainter extends CustomPainter {
     for (int i = 0; i < values.length; i++) {
       final x = padding + i * stepX;
       final y = padding + chartH - ((values[i] - minVal) / range) * chartH;
-      if (i == 0) path.moveTo(x, y);
-      else path.lineTo(x, y);
+      if (i == 0)
+        path.moveTo(x, y);
+      else
+        path.lineTo(x, y);
     }
     canvas.drawPath(path, paint);
   }

@@ -2,7 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:merope_models/social/post_model.dart';
 import '../../logic/timeline_provider.dart';
 
-final signalProvider = FutureProvider.family<MeropeSignal, String>((ref, signalId) async {
+final signalProvider =
+    FutureProvider.family<MeropeSignal, String>((ref, signalId) async {
   final timeline = await ref.watch(nexusTimelineProvider.future);
 
   try {

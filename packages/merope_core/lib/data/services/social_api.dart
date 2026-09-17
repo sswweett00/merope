@@ -70,8 +70,8 @@ class SignalModel {
     var isLiked = json['is_liked'] as bool? ?? false;
     if (rawResonances != null) {
       resonanceCount = rawResonances.length;
-      isLiked = rawResonances.any((item) =>
-          item is Map && item['is_resonated'] == true);
+      isLiked = rawResonances
+          .any((item) => item is Map && item['is_resonated'] == true);
     }
 
     final createdAt = json['created_at'];
@@ -86,8 +86,7 @@ class SignalModel {
           (json['author_username'] ?? author['username'])?.toString() ?? '',
       authorAvatarUrl:
           (json['author_avatar_url'] ?? author['avatar_url'])?.toString() ?? '',
-      contentText:
-          (json['content_text'] ?? json['content'])?.toString() ?? '',
+      contentText: (json['content_text'] ?? json['content'])?.toString() ?? '',
       mediaUrls: (json['media_urls'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
@@ -96,17 +95,14 @@ class SignalModel {
               ?.map((e) => e.toString())
               .toList() ??
           const [],
-      likeCount:
-          (json['like_count'] as num?)?.toInt() ??
-              ((json['resonances'] as List<dynamic>?)?.length ?? 0),
-      commentCount:
-          (json['comment_count'] as num?)?.toInt() ??
-              (json['node_count'] as num?)?.toInt() ??
-              0,
-      repostCount:
-          (json['repost_count'] as num?)?.toInt() ??
-              (json['amplification_count'] as num?)?.toInt() ??
-              0,
+      likeCount: (json['like_count'] as num?)?.toInt() ??
+          ((json['resonances'] as List<dynamic>?)?.length ?? 0),
+      commentCount: (json['comment_count'] as num?)?.toInt() ??
+          (json['node_count'] as num?)?.toInt() ??
+          0,
+      repostCount: (json['repost_count'] as num?)?.toInt() ??
+          (json['amplification_count'] as num?)?.toInt() ??
+          0,
       resonanceCount: resonanceCount,
       isLiked: isLiked,
       isReposted: json['is_reposted'] as bool? ?? false,
@@ -425,4 +421,5 @@ class SocialApiService {
 }
 
 enum FeedType { explore, following, trending, forYou }
+
 enum PostPrivacy { public, private, friendsOnly, circle }

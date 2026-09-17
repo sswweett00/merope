@@ -20,19 +20,26 @@ class StoryInteractiveLayer extends ConsumerWidget {
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.9),
               borderRadius: BorderRadius.circular(24),
-              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10)],
+              boxShadow: [
+                BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1), blurRadius: 10)
+              ],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
                   "Next Planet to Visit?",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black),
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Colors.black),
                 ),
                 const SizedBox(height: 16),
                 _PollOption(label: "Mars 🔴", percentage: 65, tokens: tokens),
                 const SizedBox(height: 8),
-                _PollOption(label: "Jupiter 🪐", percentage: 35, tokens: tokens),
+                _PollOption(
+                    label: "Jupiter 🪐", percentage: 35, tokens: tokens),
               ],
             ),
           ),
@@ -47,7 +54,8 @@ class _PollOption extends StatelessWidget {
   final int percentage;
   final dynamic tokens;
 
-  const _PollOption({required this.label, required this.percentage, required this.tokens});
+  const _PollOption(
+      {required this.label, required this.percentage, required this.tokens});
 
   @override
   Widget build(BuildContext context) {
@@ -74,8 +82,12 @@ class _PollOption extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(label, style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.black87)),
-                Text("%$percentage", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black54)),
+                Text(label,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600, color: Colors.black87)),
+                Text("%$percentage",
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, color: Colors.black54)),
               ],
             ),
           ),

@@ -79,7 +79,8 @@ class _InternalBannerWidgetState extends State<_InternalBannerWidget> {
 
   Future<void> _loadAd() async {
     try {
-      final response = await widget.dio.get('${widget.baseUrl}/ads/serve', queryParameters: {
+      final response =
+          await widget.dio.get('${widget.baseUrl}/ads/serve', queryParameters: {
         'ad_unit_id': widget.adUnit.id,
         'interests': widget.request?.keywords?.join(','),
       });
@@ -104,7 +105,10 @@ class _InternalBannerWidgetState extends State<_InternalBannerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return const SizedBox(height: 50, child: Center(child: CircularProgressIndicator(strokeWidth: 2)));
+    if (_isLoading)
+      return const SizedBox(
+          height: 50,
+          child: Center(child: CircularProgressIndicator(strokeWidth: 2)));
     if (_error != null || _adData == null) return const SizedBox.shrink();
 
     return GestureDetector(
@@ -138,7 +142,8 @@ class _InternalBannerWidgetState extends State<_InternalBannerWidget> {
                 children: [
                   Text(
                     _adData!['ContentText'] ?? 'Sponsored',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                   const Text(
                     'Ad • Sponsored',

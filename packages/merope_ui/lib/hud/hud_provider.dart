@@ -25,7 +25,8 @@ class HUDController extends Notifier<bool> {
   void show() => state = true;
 }
 
-final hUDControllerProvider = NotifierProvider<HUDController, bool>(HUDController.new);
+final hUDControllerProvider =
+    NotifierProvider<HUDController, bool>(HUDController.new);
 
 class HUDSearch extends Notifier<String> {
   @override
@@ -77,7 +78,7 @@ final filteredHUDActionsProvider = Provider<List<HUDAction>>((ref) {
 
   return actions.where((action) {
     return action.label.toLowerCase().contains(query) ||
-           action.description.toLowerCase().contains(query) ||
-           (action.category?.toLowerCase().contains(query) ?? false);
+        action.description.toLowerCase().contains(query) ||
+        (action.category?.toLowerCase().contains(query) ?? false);
   }).toList();
 });

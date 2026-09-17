@@ -43,7 +43,8 @@ class DriftStoryRepository implements IStoryRepository {
   Future<model.Story?> getStory(String userId) async {
     final cutoff = DateTime.now().toUtc().subtract(const Duration(hours: 24));
     final query = _db.select(_db.stories)
-      ..where((t) => t.userId.equals(userId) & t.expiresAt.isBiggerOrEqualValue(cutoff))
+      ..where((t) =>
+          t.userId.equals(userId) & t.expiresAt.isBiggerOrEqualValue(cutoff))
       ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]);
     final rows = await query.get();
 
@@ -91,27 +92,29 @@ class DriftStoryRepository implements IStoryRepository {
     ));
 
     await _db.into(_db.storyViews).insert(
-      db.StoryViewsCompanion.insert(
-        storyId: storyId,
-        userId: 'current_user',
-        viewedAt: DateTime.now(),
-      ),
-    );
+          db.StoryViewsCompanion.insert(
+            storyId: storyId,
+            userId: 'current_user',
+            viewedAt: DateTime.now(),
+          ),
+        );
   }
 
   @override
   Future<void> sendReaction(String storyId, String emoji) async {
     await _db.into(_db.storyReactions).insert(
-      db.StoryReactionsCompanion.insert(
-        id: '${storyId}_$emoji',
-        storyId: storyId,
-        userId: 'current_user',
-        emoji: emoji,
-        createdAt: DateTime.now(),
-      ),
-    );
+          db.StoryReactionsCompanion.insert(
+            id: '${storyId}_$emoji',
+            storyId: storyId,
+            userId: 'current_user',
+            emoji: emoji,
+            createdAt: DateTime.now(),
+          ),
+        );
 
-    final row = await (_db.select(_db.stories)..where((t) => t.id.equals(storyId))).getSingle();
+    final row = await (_db.select(_db.stories)
+          ..where((t) => t.id.equals(storyId)))
+        .getSingle();
     await (_db.update(_db.stories)..where((t) => t.id.equals(storyId)))
         .write(db.StoriesCompanion(
       reactionCount: Value(row.reactionCount + 1),

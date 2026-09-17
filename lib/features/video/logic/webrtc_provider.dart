@@ -57,4 +57,5 @@ class WebRTCController extends AsyncNotifier<void> {
   }
 }
 
-final webRTCControllerProvider = AsyncNotifierProvider<WebRTCController, void>(WebRTCController.new);
+final webRTCControllerProvider =
+    AsyncNotifierProvider<WebRTCController, void>(WebRTCController.new);

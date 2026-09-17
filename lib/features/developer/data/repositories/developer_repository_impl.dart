@@ -39,7 +39,8 @@ class DeveloperRepositoryImpl implements IDeveloperRepository {
   }
 
   @override
-  Future<DeveloperApp> createApp(String ownerId, String name, String? description) async {
+  Future<DeveloperApp> createApp(
+      String ownerId, String name, String? description) async {
     final app = await remote.createApp(ownerId, name, description);
     await local.cacheApp(app);
     return app;
@@ -86,8 +87,10 @@ class DeveloperRepositoryImpl implements IDeveloperRepository {
   }
 
   @override
-  Future<ApiKey> createApiKey(String appId, String name, String? description, List<String> scopes, int ttlDays) async {
-    final key = await remote.createApiKey(appId, name, description, scopes, ttlDays);
+  Future<ApiKey> createApiKey(String appId, String name, String? description,
+      List<String> scopes, int ttlDays) async {
+    final key =
+        await remote.createApiKey(appId, name, description, scopes, ttlDays);
     await local.cacheApiKey(key);
     return key;
   }
@@ -130,7 +133,8 @@ class DeveloperRepositoryImpl implements IDeveloperRepository {
   }
 
   @override
-  Future<Webhook> createWebhook(String appId, String name, String url, List<String> events) async {
+  Future<Webhook> createWebhook(
+      String appId, String name, String url, List<String> events) async {
     final hook = await remote.createWebhook(appId, name, url, events);
     await local.cacheWebhook(hook);
     return hook;

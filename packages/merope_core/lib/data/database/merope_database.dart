@@ -25,7 +25,10 @@ class Users extends Table {
   DateTimeColumn get updatedAt => dateTime()();
 
   @override
-  List<Set<Column>> get uniqueKeys => [{username}, {email}];
+  List<Set<Column>> get uniqueKeys => [
+        {username},
+        {email}
+      ];
 }
 
 class Messages extends Table {
@@ -44,7 +47,9 @@ class Messages extends Table {
 
   // Apex Refinement: Composite Index for fast channel message retrieval
   @override
-  List<Set<Column>> get uniqueKeys => [{id}];
+  List<Set<Column>> get uniqueKeys => [
+        {id}
+      ];
 }
 
 class SubCommunities extends Table {
@@ -161,7 +166,9 @@ class Stories extends Table {
   BoolColumn get isArchived => boolean().withDefault(const Constant(false))();
 
   @override
-  List<Set<Column>> get uniqueKeys => [{id}];
+  List<Set<Column>> get uniqueKeys => [
+        {id}
+      ];
 }
 
 class StorySegments extends Table {
@@ -175,7 +182,9 @@ class StorySegments extends Table {
   DateTimeColumn get createdAt => dateTime()();
 
   @override
-  List<Set<Column>> get uniqueKeys => [{id}];
+  List<Set<Column>> get uniqueKeys => [
+        {id}
+      ];
 }
 
 class StoryViews extends Table {
@@ -184,7 +193,9 @@ class StoryViews extends Table {
   DateTimeColumn get viewedAt => dateTime()();
 
   @override
-  List<Set<Column>> get uniqueKeys => [{storyId, userId}];
+  List<Set<Column>> get uniqueKeys => [
+        {storyId, userId}
+      ];
 }
 
 class StoryReactions extends Table {
@@ -195,27 +206,30 @@ class StoryReactions extends Table {
   DateTimeColumn get createdAt => dateTime()();
 
   @override
-  List<Set<Column>> get uniqueKeys => [{id}];
+  List<Set<Column>> get uniqueKeys => [
+        {id}
+      ];
 }
 
-@DriftDatabase(tables: [
-  OperationLogs,
-  Users,
-  Messages,
-  SubCommunities,
-  CommunityMembers,
-  CommunityEvents,
-  Collectives,
-  CollectiveThreads,
-  ThreadReplies,
-  Transactions,
-  AudioTracks,
-  Playlists,
-  Stories,
-  StorySegments,
-  StoryViews,
-  StoryReactions,
-],
+@DriftDatabase(
+  tables: [
+    OperationLogs,
+    Users,
+    Messages,
+    SubCommunities,
+    CommunityMembers,
+    CommunityEvents,
+    Collectives,
+    CollectiveThreads,
+    ThreadReplies,
+    Transactions,
+    AudioTracks,
+    Playlists,
+    Stories,
+    StorySegments,
+    StoryViews,
+    StoryReactions,
+  ],
 )
 class MeropeDatabase extends _$MeropeDatabase {
   MeropeDatabase() : super(openConnection());
@@ -225,30 +239,46 @@ class MeropeDatabase extends _$MeropeDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-    onCreate: (m) => m.createAll(),
-    onUpgrade: (m, from, to) async {
-      if (from < 4) {
-        await customStatement('CREATE INDEX IF NOT EXISTS idx_stories_user_created ON stories (user_id, created_at DESC)');
-        await customStatement('CREATE INDEX IF NOT EXISTS idx_stories_expires ON stories (expires_at)');
-        await customStatement('CREATE INDEX IF NOT EXISTS idx_story_segments_story ON story_segments (story_id)');
-        await customStatement('CREATE INDEX IF NOT EXISTS idx_story_views_story ON story_views (story_id, viewed_at DESC)');
-        await customStatement('CREATE INDEX IF NOT EXISTS idx_story_reactions_story ON story_reactions (story_id)');
-      }
-      if (from < 3) {
-        await customStatement('CREATE INDEX IF NOT EXISTS idx_transactions_user_created ON transactions (to_account_id, created_at DESC)');
-        await customStatement('CREATE INDEX IF NOT EXISTS idx_transactions_from_account ON transactions (from_account_id)');
-        await customStatement('CREATE INDEX IF NOT EXISTS idx_transactions_status ON transactions (status)');
-        await customStatement('CREATE INDEX IF NOT EXISTS idx_transactions_currency ON transactions (currency)');
-        await customStatement('ALTER TABLE transactions ADD COLUMN fee REAL');
-        await customStatement('ALTER TABLE transactions ADD COLUMN category TEXT');
-        await customStatement('ALTER TABLE transactions ADD COLUMN receipt_url TEXT');
-        await customStatement('ALTER TABLE transactions ADD COLUMN fraud_score REAL');
-        await customStatement('ALTER TABLE transactions ADD COLUMN metadata TEXT');
-      }
-      if (from < 2) {
-        await customStatement('CREATE INDEX IF NOT EXISTS idx_messages_channel ON messages (channel_id, created_at DESC)');
-        await customStatement('CREATE INDEX IF NOT EXISTS idx_users_username ON users (username)');
-      }
-    },
-  );
+        onCreate: (m) => m.createAll(),
+        onUpgrade: (m, from, to) async {
+          if (from < 4) {
+            await customStatement(
+                'CREATE INDEX IF NOT EXISTS idx_stories_user_created ON stories (user_id, created_at DESC)');
+            await customStatement(
+                'CREATE INDEX IF NOT EXISTS idx_stories_expires ON stories (expires_at)');
+            await customStatement(
+                'CREATE INDEX IF NOT EXISTS idx_story_segments_story ON story_segments (story_id)');
+            await customStatement(
+                'CREATE INDEX IF NOT EXISTS idx_story_views_story ON story_views (story_id, viewed_at DESC)');
+            await customStatement(
+                'CREATE INDEX IF NOT EXISTS idx_story_reactions_story ON story_reactions (story_id)');
+          }
+          if (from < 3) {
+            await customStatement(
+                'CREATE INDEX IF NOT EXISTS idx_transactions_user_created ON transactions (to_account_id, created_at DESC)');
+            await customStatement(
+                'CREATE INDEX IF NOT EXISTS idx_transactions_from_account ON transactions (from_account_id)');
+            await customStatement(
+                'CREATE INDEX IF NOT EXISTS idx_transactions_status ON transactions (status)');
+            await customStatement(
+                'CREATE INDEX IF NOT EXISTS idx_transactions_currency ON transactions (currency)');
+            await customStatement(
+                'ALTER TABLE transactions ADD COLUMN fee REAL');
+            await customStatement(
+                'ALTER TABLE transactions ADD COLUMN category TEXT');
+            await customStatement(
+                'ALTER TABLE transactions ADD COLUMN receipt_url TEXT');
+            await customStatement(
+                'ALTER TABLE transactions ADD COLUMN fraud_score REAL');
+            await customStatement(
+                'ALTER TABLE transactions ADD COLUMN metadata TEXT');
+          }
+          if (from < 2) {
+            await customStatement(
+                'CREATE INDEX IF NOT EXISTS idx_messages_channel ON messages (channel_id, created_at DESC)');
+            await customStatement(
+                'CREATE INDEX IF NOT EXISTS idx_users_username ON users (username)');
+          }
+        },
+      );
 }

@@ -17,7 +17,8 @@ class _GlobalErrorBoundaryState extends State<GlobalErrorBoundary> {
   void initState() {
     super.initState();
     FlutterError.onError = (details) {
-      MeropeLogger.error('Flutter Error Caught', error: details.exception, stack: details.stack);
+      MeropeLogger.error('Flutter Error Caught',
+          error: details.exception, stack: details.stack);
       // Enterprise refinement: Automatically report to telemetry
       _reportError(details.exception, details.stack);
     };
@@ -58,7 +59,8 @@ class _GlobalErrorBoundaryState extends State<GlobalErrorBoundary> {
   void activate() {
     super.activate();
     ErrorWidget.builder = (details) {
-      MeropeLogger.error('Build Error', error: details.exception, stack: details.stack);
+      MeropeLogger.error('Build Error',
+          error: details.exception, stack: details.stack);
       return const Center(child: Text('An error occurred in the UI.'));
     };
   }

@@ -13,7 +13,10 @@ class RetryOptions {
   final int maxAttempts;
   final Duration initialDelay;
   final double backoffFactor;
-  const RetryOptions({this.maxAttempts = 3, this.initialDelay = const Duration(milliseconds: 300), this.backoffFactor = 2.0});
+  const RetryOptions(
+      {this.maxAttempts = 3,
+      this.initialDelay = const Duration(milliseconds: 300),
+      this.backoffFactor = 2.0});
 }
 
 Future<T> withRetry<T>(Future<T> Function() fn, {RetryOptions? options}) async {
@@ -27,7 +30,8 @@ Future<T> withRetry<T>(Future<T> Function() fn, {RetryOptions? options}) async {
       attempt++;
       if (attempt >= opts.maxAttempts) rethrow;
       await Future.delayed(delay);
-      delay = Duration(milliseconds: (delay.inMilliseconds * opts.backoffFactor).round());
+      delay = Duration(
+          milliseconds: (delay.inMilliseconds * opts.backoffFactor).round());
     }
   }
 }
@@ -62,9 +66,11 @@ class WalletController extends AsyncNotifier<double> {
   }
 }
 
-final walletControllerProvider = AsyncNotifierProvider<WalletController, double>(WalletController.new);
+final walletControllerProvider =
+    AsyncNotifierProvider<WalletController, double>(WalletController.new);
 
-final transactionsProvider = FutureProvider<List<MeropeTransaction>>((ref) async {
+final transactionsProvider =
+    FutureProvider<List<MeropeTransaction>>((ref) async {
   final repo = ref.watch(walletRepositoryProvider);
   return await withRetry(() => repo.getTransactions());
 });
@@ -111,10 +117,12 @@ class CircuitBreaker {
   }
 }
 
-final circuitBreakerProvider = Provider<CircuitBreaker>((ref) => CircuitBreaker());
+final circuitBreakerProvider =
+    Provider<CircuitBreaker>((ref) => CircuitBreaker());
 
 final walletWebSocketProvider = StreamProvider.autoDispose<double>((ref) {
-  final wsUrl = const String.fromEnvironment('WALLET_WS_URL', defaultValue: 'wss://api.merope.app/ws/wallet');
+  final wsUrl = const String.fromEnvironment('WALLET_WS_URL',
+      defaultValue: 'wss://api.merope.app/ws/wallet');
   final channel = WebSocketChannel.connect(Uri.parse(wsUrl));
   final controller = StreamController<double>();
   channel.stream.listen(

@@ -27,7 +27,9 @@ abstract class IMessageRepository {
   Future<List<ChatFolder>> getFolders();
   Future<void> createFolder(String name, List<String> conversationIds);
   Future<void> updateFolder(
-      String folderId, String name, List<String> conversationIds,
+    String folderId,
+    String name,
+    List<String> conversationIds,
   );
   Future<void> deleteFolder(String folderId);
 }
@@ -69,7 +71,8 @@ class DriftMessageRepository implements IMessageRepository {
         updatedAt: row.updatedAt.millisecondsSinceEpoch,
         isEncrypted: row.isEncrypted,
         reactions: (row.reactions != null)
-            ? (jsonDecode(row.reactions!) as List<dynamic>? ?? []).cast<String>()
+            ? (jsonDecode(row.reactions!) as List<dynamic>? ?? [])
+                .cast<String>()
             : [],
         threadId: row.threadId,
         version: row.version,
@@ -89,12 +92,13 @@ class DriftMessageRepository implements IMessageRepository {
             authorAvatar: Value(message.authorAvatar),
             content: jsonEncode(message.blocks.map((b) => b.toJson()).toList()),
             createdAt: DateTime.fromMillisecondsSinceEpoch(message.createdAt),
-            updatedAt: Value(DateTime.fromMillisecondsSinceEpoch(message.updatedAt)),
+            updatedAt:
+                Value(DateTime.fromMillisecondsSinceEpoch(message.updatedAt)),
             isEncrypted: Value(message.isEncrypted),
             reactions: Value(jsonEncode(message.reactions)),
             threadId: Value(message.threadId),
             version: Value(message.version),
-      ));
+          ));
 
       // 2. Log operation for Chronos Sync Engine
       await _logOperation(
@@ -115,9 +119,10 @@ class DriftMessageRepository implements IMessageRepository {
     await _db.transaction(() async {
       await (_db.update(_db.messages)..where((m) => m.id.equals(messageId)))
           .write(
-         MessagesCompanion(
-             content: Value(newContent), updatedAt: Value(DateTime.now()),
-           ),
+        MessagesCompanion(
+          content: Value(newContent),
+          updatedAt: Value(DateTime.now()),
+        ),
       );
 
       await _logOperation(
@@ -132,7 +137,8 @@ class DriftMessageRepository implements IMessageRepository {
   @override
   Future<void> deleteMessage(String messageId) async {
     await _db.transaction(() async {
-      await (_db.delete(_db.messages)..where((m) => m.id.equals(messageId))).go();
+      await (_db.delete(_db.messages)..where((m) => m.id.equals(messageId)))
+          .go();
 
       await _logOperation(
         entityType: 'message',
@@ -149,16 +155,16 @@ class DriftMessageRepository implements IMessageRepository {
     Map<String, dynamic>? metadata,
   }) async {
     await _db.into(_db.operationLogs).insert(
-      OperationLogsCompanion.insert(
-        id: _uuid.v4(),
-        entityType: entityType,
-        entityId: entityId,
-        operation: operation,
-        performedBy: 'current_user', // Placeholder
-        performedAt: DateTime.now(),
-        metadata: Value(metadata != null ? jsonEncode(metadata) : null),
-      ),
-    );
+          OperationLogsCompanion.insert(
+            id: _uuid.v4(),
+            entityType: entityType,
+            entityId: entityId,
+            operation: operation,
+            performedBy: 'current_user', // Placeholder
+            performedAt: DateTime.now(),
+            metadata: Value(metadata != null ? jsonEncode(metadata) : null),
+          ),
+        );
   }
 
   @override
@@ -208,7 +214,8 @@ class DriftMessageRepository implements IMessageRepository {
 
   @override
   Future<void> muteConversation(
-      String conversationId, int? durationMinutes,
+    String conversationId,
+    int? durationMinutes,
   ) async {
     // Simplified implementation
   }
@@ -225,7 +232,9 @@ class DriftMessageRepository implements IMessageRepository {
 
   @override
   Future<void> updateFolder(
-      String folderId, String name, List<String> conversationIds,
+    String folderId,
+    String name,
+    List<String> conversationIds,
   ) async {
     // Simplified implementation
   }

@@ -17,7 +17,8 @@ class QuantumVaultSentinelNotifier extends AsyncNotifier<void> {
 }
 
 final quantumVaultSentinelProvider =
-    AsyncNotifierProvider<QuantumVaultSentinelNotifier, void>(QuantumVaultSentinelNotifier.new);
+    AsyncNotifierProvider<QuantumVaultSentinelNotifier, void>(
+        QuantumVaultSentinelNotifier.new);
 
 /// QuantumVaultSentinel V7 - Titan Layer (Hardware Acceleration).
 class QuantumVaultSentinel {
@@ -35,7 +36,8 @@ class QuantumVaultSentinel {
   static Future<String> encryptWithHardware(String plaintext) async {
     // In Flutter, 'flutter_secure_storage' wraps the underlying hardware-backed
     // keystore/keychain. Writing to it ensures the data is encrypted via TEE.
-    final keyId = "hw_accel_${sha256.convert(utf8.encode(plaintext)).toString().substring(0, 8)}";
+    final keyId =
+        "hw_accel_${sha256.convert(utf8.encode(plaintext)).toString().substring(0, 8)}";
     await _storage.write(key: keyId, value: plaintext);
     return keyId; // Return a reference to the secured data
   }
@@ -51,7 +53,8 @@ class QuantumVaultSentinel {
     final existing = await _storage.read(key: 'titan_hw_salt');
     if (existing != null) return base64Decode(existing);
 
-    final salt = Uint8List.fromList(List.generate(32, (_) => Random.secure().nextInt(256)));
+    final salt = Uint8List.fromList(
+        List.generate(32, (_) => Random.secure().nextInt(256)));
     await _storage.write(key: 'titan_hw_salt', value: base64Encode(salt));
     return salt;
   }
@@ -68,6 +71,9 @@ class QuantumVaultSentinel {
 
   static String reconstructVSS(String s1, int id1, String s2, int id2) {
     // Simulated reconstruction
-    return s1.replaceAll('shard_alpha_', '').replaceAll('shard_beta_', '').replaceAll('shard_gamma_', '');
+    return s1
+        .replaceAll('shard_alpha_', '')
+        .replaceAll('shard_beta_', '')
+        .replaceAll('shard_gamma_', '');
   }
 }

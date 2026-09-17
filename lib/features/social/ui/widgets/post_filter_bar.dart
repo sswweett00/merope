@@ -81,7 +81,9 @@ class _FilterChip extends ConsumerWidget {
                 color: isActive ? primaryColor : surfaceColor,
                 borderRadius: BorderRadius.circular(MeropeTokens.radiusFull),
                 border: Border.all(
-                  color: isActive ? primaryColor : textSecondary.withValues(alpha: 0.2),
+                  color: isActive
+                      ? primaryColor
+                      : textSecondary.withValues(alpha: 0.2),
                 ),
               ),
               child: Text(

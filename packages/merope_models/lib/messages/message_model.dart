@@ -96,45 +96,51 @@ class MeropeMessage {
   }
 
   factory MeropeMessage.fromJson(Map<String, dynamic> json) => MeropeMessage(
-    id: json['id'] as String,
-    authorId: (json['author_id'] ?? json['authorId']) as String,
-    authorName: (json['author_username'] ?? json['authorName']) as String,
-    authorAvatar: (json['author_avatar_url'] ?? json['authorAvatar'] ?? '') as String,
-    blocks: (json['blocks'] as List<dynamic>?)?.map((e) => MessageBlock.fromJson(e as Map<String, dynamic>)).toList() ?? [],
-    channelId: (json['room_id'] ?? json['channelId']) as String,
-    createdAt: (json['timestamp'] ?? json['createdAt']) as int,
-    updatedAt: (json['updated_at'] ?? json['updatedAt'] ?? 0) as int,
-    isEncrypted: (json['is_encrypted'] ?? json['isEncrypted']) as bool? ?? false,
-    reactions: (json['reactions'] as List<dynamic>?)?.cast<String>() ?? [],
-    threadId: (json['thread_id'] ?? json['threadId']) as String?,
-    effect: json['effect'] as String?,
-    version: json['version'] as int? ?? 1,
-    parentMessageId: (json['parent_id'] ?? json['parentMessageId']) as String?,
-    messageType: (json['type'] ?? json['messageType']) as String?,
-    fileUrl: (json['file_url'] ?? json['fileUrl']) as String?,
-    encryptedPayload: json['encrypted_payload'] as String?,
-  );
+        id: json['id'] as String,
+        authorId: (json['author_id'] ?? json['authorId']) as String,
+        authorName: (json['author_username'] ?? json['authorName']) as String,
+        authorAvatar:
+            (json['author_avatar_url'] ?? json['authorAvatar'] ?? '') as String,
+        blocks: (json['blocks'] as List<dynamic>?)
+                ?.map((e) => MessageBlock.fromJson(e as Map<String, dynamic>))
+                .toList() ??
+            [],
+        channelId: (json['room_id'] ?? json['channelId']) as String,
+        createdAt: (json['timestamp'] ?? json['createdAt']) as int,
+        updatedAt: (json['updated_at'] ?? json['updatedAt'] ?? 0) as int,
+        isEncrypted:
+            (json['is_encrypted'] ?? json['isEncrypted']) as bool? ?? false,
+        reactions: (json['reactions'] as List<dynamic>?)?.cast<String>() ?? [],
+        threadId: (json['thread_id'] ?? json['threadId']) as String?,
+        effect: json['effect'] as String?,
+        version: json['version'] as int? ?? 1,
+        parentMessageId:
+            (json['parent_id'] ?? json['parentMessageId']) as String?,
+        messageType: (json['type'] ?? json['messageType']) as String?,
+        fileUrl: (json['file_url'] ?? json['fileUrl']) as String?,
+        encryptedPayload: json['encrypted_payload'] as String?,
+      );
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'authorId': authorId,
-    'authorName': authorName,
-    'authorAvatar': authorAvatar,
-    'blocks': blocks.map((e) => e.toJson()).toList(),
-    'channelId': channelId,
-    'createdAt': createdAt,
-    'updatedAt': updatedAt,
-    'isEncrypted': isEncrypted,
-    'reactions': reactions,
-    'threadId': threadId,
-    'effect': effect,
-    'version': version,
-    'parentMessageId': parentMessageId,
-    'messageType': messageType,
-    'fileUrl': fileUrl,
-    if (encryptedPayload != null) 'encrypted_payload': encryptedPayload,
-    if (metadata != null) 'metadata': metadata,
-  };
+        'id': id,
+        'authorId': authorId,
+        'authorName': authorName,
+        'authorAvatar': authorAvatar,
+        'blocks': blocks.map((e) => e.toJson()).toList(),
+        'channelId': channelId,
+        'createdAt': createdAt,
+        'updatedAt': updatedAt,
+        'isEncrypted': isEncrypted,
+        'reactions': reactions,
+        'threadId': threadId,
+        'effect': effect,
+        'version': version,
+        'parentMessageId': parentMessageId,
+        'messageType': messageType,
+        'fileUrl': fileUrl,
+        if (encryptedPayload != null) 'encrypted_payload': encryptedPayload,
+        if (metadata != null) 'metadata': metadata,
+      };
 }
 
 class MessageBlock {
@@ -149,17 +155,17 @@ class MessageBlock {
   });
 
   factory MessageBlock.fromJson(Map<String, dynamic> json) => MessageBlock(
-    type: MessageBlockType.values.firstWhere(
-      (e) => e.name == json['type'] as String,
-      orElse: () => MessageBlockType.text,
-    ),
-    content: json['content'] as String,
-    metadata: json['metadata'] as Map<String, dynamic>?,
-  );
+        type: MessageBlockType.values.firstWhere(
+          (e) => e.name == json['type'] as String,
+          orElse: () => MessageBlockType.text,
+        ),
+        content: json['content'] as String,
+        metadata: json['metadata'] as Map<String, dynamic>?,
+      );
 
   Map<String, dynamic> toJson() => {
-    'type': type.name,
-    'content': content,
-    if (metadata != null) 'metadata': metadata,
-  };
+        'type': type.name,
+        'content': content,
+        if (metadata != null) 'metadata': metadata,
+      };
 }

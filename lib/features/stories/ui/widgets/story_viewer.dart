@@ -18,7 +18,8 @@ class StoryViewer extends ConsumerWidget {
     if (story.segments.isEmpty) {
       return const Scaffold(
         backgroundColor: Colors.black,
-        body: Center(child: Text('No segments', style: TextStyle(color: Colors.white))),
+        body: Center(
+            child: Text('No segments', style: TextStyle(color: Colors.white))),
       );
     }
 
@@ -34,14 +35,20 @@ class StoryViewer extends ConsumerWidget {
             onTapDown: (details) {
               final width = MediaQuery.of(context).size.width;
               if (details.globalPosition.dx < width / 3) {
-                ref.read(storyPlayerControllerProvider(story).notifier).previous();
+                ref
+                    .read(storyPlayerControllerProvider(story).notifier)
+                    .previous();
               } else if (details.globalPosition.dx > 2 * width / 3) {
                 ref.read(storyPlayerControllerProvider(story).notifier).next();
               }
             },
-            onLongPressStart: (_) => ref.read(storyPlayerControllerProvider(story).notifier).pause(),
-            onLongPressEnd: (_) => ref.read(storyPlayerControllerProvider(story).notifier).resume(),
-            child: StoryMediaRenderer(segment: story.segments[controller.currentIndex]),
+            onLongPressStart: (_) =>
+                ref.read(storyPlayerControllerProvider(story).notifier).pause(),
+            onLongPressEnd: (_) => ref
+                .read(storyPlayerControllerProvider(story).notifier)
+                .resume(),
+            child: StoryMediaRenderer(
+                segment: story.segments[controller.currentIndex]),
           ),
 
           // Header
@@ -54,18 +61,21 @@ class StoryViewer extends ConsumerWidget {
                   progress: controller.progress,
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Row(
                     children: [
                       MeropeImage.avatar(
                         imageUrl: null,
                         radius: 18,
-                        initials: story.userId.isNotEmpty ? story.userId[0] : '?',
+                        initials:
+                            story.userId.isNotEmpty ? story.userId[0] : '?',
                       ),
                       const SizedBox(width: 12),
                       Text(
                         story.userId,
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                       const Spacer(),
                       IconButton(
@@ -98,7 +108,8 @@ class StoryViewer extends ConsumerWidget {
     );
   }
 
-  void _showReplyBar(BuildContext context, WidgetRef ref, MeropeColorTokens tokens) {
+  void _showReplyBar(
+      BuildContext context, WidgetRef ref, MeropeColorTokens tokens) {
     ref.read(storyPlayerControllerProvider(story).notifier).pause();
     showModalBottomSheet(
       context: context,

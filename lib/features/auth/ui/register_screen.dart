@@ -152,7 +152,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 width: double.infinity,
                 child: MeropeButton(
                   onPressed: _isSubmitting ? null : _handleRegister,
-                  text: _isSubmitting ? 'Creating account...' : 'Create account',
+                  text:
+                      _isSubmitting ? 'Creating account...' : 'Create account',
                 ),
               ),
               // Test button - only visible in development mode

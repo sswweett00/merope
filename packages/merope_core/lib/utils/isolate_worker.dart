@@ -3,12 +3,14 @@ import 'package:flutter/foundation.dart';
 /// Background Isolate Worker for heavy computations and protocol buffer byte parsing
 /// preventing UI thread jank and ensuring 60-120 FPS fluidity.
 class IsolateWorker {
-  static Future<T> computeInBackground<T, M>(ComputeCallback<M, T> callback, M message) async {
+  static Future<T> computeInBackground<T, M>(
+      ComputeCallback<M, T> callback, M message) async {
     return compute(callback, message);
   }
 
   /// Example heavy binary/JSON parsing task running entirely off the UI thread
-  static Future<Map<String, dynamic>> parseLargePayload(Uint8List rawBytes) async {
+  static Future<Map<String, dynamic>> parseLargePayload(
+      Uint8List rawBytes) async {
     return compute(_heavyParsingIsolate, rawBytes);
   }
 

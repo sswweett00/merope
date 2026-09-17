@@ -51,7 +51,8 @@ class SandboxState {
       errorProbability: errorProbability ?? this.errorProbability,
       networkCondition: networkCondition ?? this.networkCondition,
       logLevel: logLevel ?? this.logLevel,
-      featureFlagPlayground: featureFlagPlayground ?? this.featureFlagPlayground,
+      featureFlagPlayground:
+          featureFlagPlayground ?? this.featureFlagPlayground,
       featureFlags: featureFlags ?? this.featureFlags,
     );
   }
@@ -104,6 +105,7 @@ class DeveloperSandboxNotifier extends StateNotifier<SandboxState> {
   }
 }
 
-final developerSandboxProvider = StateNotifierProvider<DeveloperSandboxNotifier, SandboxState>((ref) {
+final developerSandboxProvider =
+    StateNotifierProvider<DeveloperSandboxNotifier, SandboxState>((ref) {
   return DeveloperSandboxNotifier();
 });

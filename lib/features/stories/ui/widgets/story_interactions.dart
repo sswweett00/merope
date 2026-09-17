@@ -63,7 +63,8 @@ class _StoryReplyField extends StatelessWidget {
           children: [
             Text(
               'Mesaj gönder...',
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14),
+              style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.8), fontSize: 14),
             ),
           ],
         ),
@@ -73,7 +74,8 @@ class _StoryReplyField extends StatelessWidget {
 }
 
 class _StoryAction extends StatelessWidget {
-  const _StoryAction({required this.icon, required this.onTap, required this.tokens});
+  const _StoryAction(
+      {required this.icon, required this.onTap, required this.tokens});
   final IconData icon;
   final VoidCallback onTap;
   final MeropeColorTokens tokens;

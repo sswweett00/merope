@@ -78,10 +78,15 @@ class ModerationRepositoryImpl implements IModerationRepository {
       moderatorNote: moderatorNote,
       cancelToken: _cancelToken,
     );
-    await localDataSource.logAction(userId, 'ban', 'current_moderator', note: moderatorNote, metadata: {'reason': reason, 'duration_days': durationDays});
+    await localDataSource.logAction(userId, 'ban', 'current_moderator',
+        note: moderatorNote,
+        metadata: {'reason': reason, 'duration_days': durationDays});
     final cached = await localDataSource.getCachedItem(userId);
     if (cached != null) {
-      await localDataSource.updateCachedItem(cached.copyWith(lastAction: LastAction.banned, moderatorNote: moderatorNote, updatedAt: DateTime.now()));
+      await localDataSource.updateCachedItem(cached.copyWith(
+          lastAction: LastAction.banned,
+          moderatorNote: moderatorNote,
+          updatedAt: DateTime.now()));
     }
   }
 
@@ -90,11 +95,18 @@ class ModerationRepositoryImpl implements IModerationRepository {
     required String userId,
     String? moderatorNote,
   }) async {
-    await remoteDataSource.markSafe(userId: userId, moderatorNote: moderatorNote, cancelToken: _cancelToken);
-    await localDataSource.logAction(userId, 'safe', 'current_moderator', note: moderatorNote);
+    await remoteDataSource.markSafe(
+        userId: userId,
+        moderatorNote: moderatorNote,
+        cancelToken: _cancelToken);
+    await localDataSource.logAction(userId, 'safe', 'current_moderator',
+        note: moderatorNote);
     final cached = await localDataSource.getCachedItem(userId);
     if (cached != null) {
-      await localDataSource.updateCachedItem(cached.copyWith(lastAction: LastAction.safe, moderatorNote: moderatorNote, updatedAt: DateTime.now()));
+      await localDataSource.updateCachedItem(cached.copyWith(
+          lastAction: LastAction.safe,
+          moderatorNote: moderatorNote,
+          updatedAt: DateTime.now()));
     }
   }
 
@@ -104,11 +116,19 @@ class ModerationRepositoryImpl implements IModerationRepository {
     String? target,
     String? moderatorNote,
   }) async {
-    await remoteDataSource.escalate(userId: userId, target: target, moderatorNote: moderatorNote, cancelToken: _cancelToken);
-    await localDataSource.logAction(userId, 'escalate', 'current_moderator', note: moderatorNote, metadata: {'target': target});
+    await remoteDataSource.escalate(
+        userId: userId,
+        target: target,
+        moderatorNote: moderatorNote,
+        cancelToken: _cancelToken);
+    await localDataSource.logAction(userId, 'escalate', 'current_moderator',
+        note: moderatorNote, metadata: {'target': target});
     final cached = await localDataSource.getCachedItem(userId);
     if (cached != null) {
-      await localDataSource.updateCachedItem(cached.copyWith(lastAction: LastAction.escalated, moderatorNote: moderatorNote, updatedAt: DateTime.now()));
+      await localDataSource.updateCachedItem(cached.copyWith(
+          lastAction: LastAction.escalated,
+          moderatorNote: moderatorNote,
+          updatedAt: DateTime.now()));
     }
   }
 
@@ -119,34 +139,49 @@ class ModerationRepositoryImpl implements IModerationRepository {
     String? reason,
     String? moderatorNote,
   }) async {
-    await remoteDataSource.bulkAction(type: type, userIds: userIds, reason: reason, moderatorNote: moderatorNote, cancelToken: _cancelToken);
+    await remoteDataSource.bulkAction(
+        type: type,
+        userIds: userIds,
+        reason: reason,
+        moderatorNote: moderatorNote,
+        cancelToken: _cancelToken);
     await Future.forEach(userIds, (String userId) async {
-      await localDataSource.logAction(userId, type.name, 'current_moderator', note: moderatorNote, metadata: {'bulk': true, 'reason': reason});
+      await localDataSource.logAction(userId, type.name, 'current_moderator',
+          note: moderatorNote, metadata: {'bulk': true, 'reason': reason});
     });
   }
 
   @override
-  Future<List<ModerationQueueItem>> getCachedQueue() => localDataSource.getCachedQueue();
+  Future<List<ModerationQueueItem>> getCachedQueue() =>
+      localDataSource.getCachedQueue();
 
   @override
-  Future<void> cacheQueue(List<ModerationQueueItem> items) => localDataSource.cacheQueue(items);
+  Future<void> cacheQueue(List<ModerationQueueItem> items) =>
+      localDataSource.cacheQueue(items);
 
   @override
   Future<void> clearCache() => localDataSource.clearCache();
 
   @override
-  Future<List<ModerationActionLogEntry>> getActionLog({int limit = 50}) => localDataSource.getActionLog(limit: limit);
+  Future<List<ModerationActionLogEntry>> getActionLog({int limit = 50}) =>
+      localDataSource.getActionLog(limit: limit);
 
   @override
-  Future<void> logAction(String userId, String actionType, String moderatorId, {String? note, Map<String, dynamic>? metadata}) =>
-      localDataSource.logAction(userId, actionType, moderatorId, note: note, metadata: metadata);
+  Future<void> logAction(String userId, String actionType, String moderatorId,
+          {String? note, Map<String, dynamic>? metadata}) =>
+      localDataSource.logAction(userId, actionType, moderatorId,
+          note: note, metadata: metadata);
 
   @override
-  Future<List<ModerationSavedFilter>> getSavedFilters() => localDataSource.getSavedFilters();
+  Future<List<ModerationSavedFilter>> getSavedFilters() =>
+      localDataSource.getSavedFilters();
 
   @override
-  Future<void> saveFilter(String name, List<RiskLevel> riskLevels, List<ModerationReason> reasons, {String? dateRange, String? searchQuery}) =>
-      localDataSource.saveFilter(name, riskLevels, reasons, dateRange: dateRange, searchQuery: searchQuery);
+  Future<void> saveFilter(String name, List<RiskLevel> riskLevels,
+          List<ModerationReason> reasons,
+          {String? dateRange, String? searchQuery}) =>
+      localDataSource.saveFilter(name, riskLevels, reasons,
+          dateRange: dateRange, searchQuery: searchQuery);
 
   void cancelAll() {
     if (!_cancelToken.isCancelled) {

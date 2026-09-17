@@ -15,7 +15,8 @@ class _SparkFeedScreenState extends ConsumerState<SparkFeedScreen> {
   final List<Map<String, dynamic>> _sparks = [
     {
       'author': '@orbit_explorer',
-      'caption': 'Merope Spark ile 60fps akıcı dikey yörünge! 🔥 #merope #spark #neural',
+      'caption':
+          'Merope Spark ile 60fps akıcı dikey yörünge! 🔥 #merope #spark #neural',
       'audioTag': 'Neural Pulse - Merope Original',
       'pulses': 15200,
       'echoes': 942,
@@ -23,7 +24,8 @@ class _SparkFeedScreenState extends ConsumerState<SparkFeedScreen> {
     },
     {
       'author': '@dev_nexus',
-      'caption': 'Nexus timelines üzerinde dikey veri senkronizasyonu testi. 🚀 #nexus #dev',
+      'caption':
+          'Nexus timelines üzerinde dikey veri senkronizasyonu testi. 🚀 #nexus #dev',
       'audioTag': 'Grid Rhythm - NodeBeats',
       'pulses': 9200,
       'echoes': 412,
@@ -78,7 +80,10 @@ class _SparkFeedScreenState extends ConsumerState<SparkFeedScreen> {
                 child: Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [Colors.transparent, Colors.black.withValues(alpha: 0.85)],
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withValues(alpha: 0.85)
+                      ],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                     ),
@@ -110,14 +115,19 @@ class _SparkFeedScreenState extends ConsumerState<SparkFeedScreen> {
                         ),
                         const SizedBox(width: 10),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
                             color: tokens.primary,
-                            borderRadius: BorderRadius.circular(MeropeTokens.radiusSm),
+                            borderRadius:
+                                BorderRadius.circular(MeropeTokens.radiusSm),
                           ),
                           child: const Text(
                             'Sync',
-                            style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold),
                           ),
                         ),
                       ],
@@ -132,12 +142,14 @@ class _SparkFeedScreenState extends ConsumerState<SparkFeedScreen> {
                     const SizedBox(height: 10),
                     Row(
                       children: [
-                        const Icon(Icons.blur_linear, color: Colors.white70, size: 16),
+                        const Icon(Icons.blur_linear,
+                            color: Colors.white70, size: 16),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
                             spark['audioTag'] as String,
-                            style: const TextStyle(color: Colors.white70, fontSize: 13),
+                            style: const TextStyle(
+                                color: Colors.white70, fontSize: 13),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -161,26 +173,35 @@ class _SparkFeedScreenState extends ConsumerState<SparkFeedScreen> {
                       onPressed: () {
                         setState(() {
                           spark['isActivated'] = !isActivated;
-                          spark['pulses'] = (spark['pulses'] as int) + (isActivated ? -1 : 1);
+                          spark['pulses'] =
+                              (spark['pulses'] as int) + (isActivated ? -1 : 1);
                         });
                       },
                     ),
                     Text(
                       '${spark['pulses']}',
-                      style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 16),
                     IconButton(
-                      icon: const Icon(Icons.bubble_chart, color: Colors.white, size: 32),
+                      icon: const Icon(Icons.bubble_chart,
+                          color: Colors.white, size: 32),
                       onPressed: () {},
                     ),
                     Text(
                       '${spark['echoes']}',
-                      style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 16),
                     IconButton(
-                      icon: const Icon(Icons.ios_share, color: Colors.white, size: 32),
+                      icon: const Icon(Icons.ios_share,
+                          color: Colors.white, size: 32),
                       onPressed: () {},
                     ),
                     const SizedBox(height: 24),
@@ -192,7 +213,8 @@ class _SparkFeedScreenState extends ConsumerState<SparkFeedScreen> {
                         color: tokens.primary.withValues(alpha: 0.3),
                         border: Border.all(color: Colors.white, width: 2),
                       ),
-                      child: Icon(Icons.stream, color: tokens.primary, size: 28),
+                      child:
+                          Icon(Icons.stream, color: tokens.primary, size: 28),
                     ),
                   ],
                 ),

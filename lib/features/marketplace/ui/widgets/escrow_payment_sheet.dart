@@ -19,7 +19,8 @@ class EscrowPaymentSheet extends ConsumerWidget {
     required this.tokens,
   });
 
-  static Future<void> show(BuildContext context, {
+  static Future<void> show(
+    BuildContext context, {
     required String productId,
     required String title,
     required String price,
@@ -52,7 +53,10 @@ class EscrowPaymentSheet extends ConsumerWidget {
             children: [
               Text(
                 'Secure Escrow Checkout',
-                style: TextStyle(color: tokens.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    color: tokens.textPrimary,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold),
               ),
               IconButton(
                 icon: Icon(Icons.close, color: tokens.textSecondary),
@@ -62,17 +66,24 @@ class EscrowPaymentSheet extends ConsumerWidget {
           ),
           const SizedBox(height: 24),
           _PaymentInfoRow(label: 'Product', value: title, tokens: tokens),
-          _PaymentInfoRow(label: 'Price', value: price, tokens: tokens, isHighlight: true),
-          _PaymentInfoRow(label: 'Escrow Fee (2%)', value: '5 MRO', tokens: tokens),
+          _PaymentInfoRow(
+              label: 'Price', value: price, tokens: tokens, isHighlight: true),
+          _PaymentInfoRow(
+              label: 'Escrow Fee (2%)', value: '5 MRO', tokens: tokens),
           const Divider(height: 32, color: Colors.white10),
-          _PaymentInfoRow(label: 'Total to be Held', value: '255 MRO', tokens: tokens, isTotal: true),
+          _PaymentInfoRow(
+              label: 'Total to be Held',
+              value: '255 MRO',
+              tokens: tokens,
+              isTotal: true),
           const SizedBox(height: 32),
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: tokens.secondary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(MeropeTokens.radiusMd),
-              border: Border.all(color: tokens.secondary.withValues(alpha: 0.2)),
+              border:
+                  Border.all(color: tokens.secondary.withValues(alpha: 0.2)),
             ),
             child: Row(
               children: [
@@ -125,13 +136,19 @@ class _PaymentInfoRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(color: tokens.textSecondary, fontSize: 14)),
+          Text(label,
+              style: TextStyle(color: tokens.textSecondary, fontSize: 14)),
           Text(
             value,
             style: TextStyle(
-              color: isTotal ? tokens.primary : (isHighlight ? tokens.textPrimary : tokens.textPrimary.withValues(alpha: 0.8)),
+              color: isTotal
+                  ? tokens.primary
+                  : (isHighlight
+                      ? tokens.textPrimary
+                      : tokens.textPrimary.withValues(alpha: 0.8)),
               fontSize: isTotal ? 18 : 14,
-              fontWeight: isTotal || isHighlight ? FontWeight.bold : FontWeight.normal,
+              fontWeight:
+                  isTotal || isHighlight ? FontWeight.bold : FontWeight.normal,
             ),
           ),
         ],

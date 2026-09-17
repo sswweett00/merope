@@ -29,14 +29,16 @@ class _WaveBar extends StatefulWidget {
   State<_WaveBar> createState() => _WaveBarState();
 }
 
-class _WaveBarState extends State<_WaveBar> with SingleTickerProviderStateMixin {
+class _WaveBarState extends State<_WaveBar>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
     final duration = Duration(milliseconds: 300 + (widget.index % 8) * 150);
-    _controller = AnimationController(vsync: this, duration: duration)..repeat(reverse: true);
+    _controller = AnimationController(vsync: this, duration: duration)
+      ..repeat(reverse: true);
   }
 
   @override
@@ -50,13 +52,18 @@ class _WaveBarState extends State<_WaveBar> with SingleTickerProviderStateMixin 
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        final height = 10 + (_controller.value * (40 + (widget.index % 5) * 20));
+        final height =
+            10 + (_controller.value * (40 + (widget.index % 5) * 20));
         return Container(
           width: 3,
           height: height,
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.white.withValues(alpha: 0.1), Colors.white.withValues(alpha: 0.4), Colors.white.withValues(alpha: 0.1)],
+              colors: [
+                Colors.white.withValues(alpha: 0.1),
+                Colors.white.withValues(alpha: 0.4),
+                Colors.white.withValues(alpha: 0.1)
+              ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
@@ -92,12 +99,17 @@ class NowPlayingScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.keyboard_arrow_down, color: tokens.textPrimary, size: 32),
+          icon: Icon(Icons.keyboard_arrow_down,
+              color: tokens.textPrimary, size: 32),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
           'MEROPE AUDIO PLAYER',
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: tokens.textSecondary, letterSpacing: 1.5),
+          style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: tokens.textSecondary,
+              letterSpacing: 1.5),
         ),
         centerTitle: true,
       ),
@@ -122,10 +134,10 @@ class NowPlayingScreen extends ConsumerWidget {
                       end: Alignment.bottomRight,
                     ),
                   ),
-                  child: const Icon(Icons.graphic_eq, size: 100, color: Colors.white),
+                  child: const Icon(Icons.graphic_eq,
+                      size: 100, color: Colors.white),
                 ),
-                if (playerState.isPlaying)
-                  const _NeuralWaveVisualizer(),
+                if (playerState.isPlaying) const _NeuralWaveVisualizer(),
               ],
             ),
             const Spacer(),
@@ -149,7 +161,8 @@ class NowPlayingScreen extends ConsumerWidget {
                       const SizedBox(height: 4),
                       Text(
                         '${track.artist} • ${track.album}',
-                        style: TextStyle(fontSize: 16, color: tokens.textSecondary),
+                        style: TextStyle(
+                            fontSize: 16, color: tokens.textSecondary),
                       ),
                     ],
                   ),
@@ -162,12 +175,18 @@ class NowPlayingScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 24),
             Slider(
-              value: playerState.position.inSeconds.toDouble().clamp(0, playerState.duration.inSeconds.toDouble()),
-              max: playerState.duration.inSeconds > 0 ? playerState.duration.inSeconds.toDouble() : 100,
+              value: playerState.position.inSeconds
+                  .toDouble()
+                  .clamp(0, playerState.duration.inSeconds.toDouble()),
+              max: playerState.duration.inSeconds > 0
+                  ? playerState.duration.inSeconds.toDouble()
+                  : 100,
               activeColor: tokens.primary,
               inactiveColor: tokens.border,
               onChanged: (val) {
-                ref.read(audioPlayerProvider.notifier).seek(Duration(seconds: val.toInt()));
+                ref
+                    .read(audioPlayerProvider.notifier)
+                    .seek(Duration(seconds: val.toInt()));
               },
             ),
             Row(
@@ -194,7 +213,8 @@ class NowPlayingScreen extends ConsumerWidget {
                   onPressed: () {},
                 ),
                 IconButton(
-                  icon: Icon(Icons.skip_previous, color: tokens.textPrimary, size: 36),
+                  icon: Icon(Icons.skip_previous,
+                      color: tokens.textPrimary, size: 36),
                   onPressed: () {
                     ref.read(audioPlayerProvider.notifier).previousTrack();
                   },
@@ -214,7 +234,8 @@ class NowPlayingScreen extends ConsumerWidget {
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.skip_next, color: tokens.textPrimary, size: 36),
+                  icon: Icon(Icons.skip_next,
+                      color: tokens.textPrimary, size: 36),
                   onPressed: () {
                     ref.read(audioPlayerProvider.notifier).nextTrack();
                   },
@@ -232,11 +253,19 @@ class NowPlayingScreen extends ConsumerWidget {
             ),
             const Spacer(),
             ExpansionTile(
-              title: Text('Şarkı Sözleri (Lyrics)', style: TextStyle(color: tokens.primary, fontWeight: FontWeight.bold)),
-              children: track.lyrics.map((line) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Text(line, style: TextStyle(color: tokens.textPrimary, fontSize: 14)),
-              ),).toList(),
+              title: Text('Şarkı Sözleri (Lyrics)',
+                  style: TextStyle(
+                      color: tokens.primary, fontWeight: FontWeight.bold)),
+              children: track.lyrics
+                  .map(
+                    (line) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Text(line,
+                          style: TextStyle(
+                              color: tokens.textPrimary, fontSize: 14)),
+                    ),
+                  )
+                  .toList(),
             ),
             const SizedBox(height: 12),
           ],
@@ -250,13 +279,18 @@ class _ControlLabel extends StatelessWidget {
   final String label;
   final MeropeColorTokens tokens;
   final VoidCallback onTap;
-  const _ControlLabel({required this.label, required this.tokens, required this.onTap});
+  const _ControlLabel(
+      {required this.label, required this.tokens, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Text(label, style: TextStyle(color: tokens.textSecondary, fontSize: 12, fontWeight: FontWeight.bold)),
+      child: Text(label,
+          style: TextStyle(
+              color: tokens.textSecondary,
+              fontSize: 12,
+              fontWeight: FontWeight.bold)),
     );
   }
 }

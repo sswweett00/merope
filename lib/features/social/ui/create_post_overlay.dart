@@ -56,23 +56,32 @@ class _CreatePostOverlayState extends ConsumerState<CreatePostOverlay> {
   }
 
   void _submit() {
-    if (_controller.text.trim().isNotEmpty || _isRecording || _selectedAIVision != null) {
+    if (_controller.text.trim().isNotEmpty ||
+        _isRecording ||
+        _selectedAIVision != null) {
       if (_isPollMode) {
-        final options = _pollOptions.map((e) => e.text.trim()).where((e) => e.isNotEmpty).toList();
+        final options = _pollOptions
+            .map((e) => e.text.trim())
+            .where((e) => e.isNotEmpty)
+            .toList();
         ref.read(nexusTimelineProvider.notifier).broadcastSignal(
-          _controller.text.trim(),
-          pollQuestion: 'Poll',
-          pollOptions: options,
-        );
+              _controller.text.trim(),
+              pollQuestion: 'Poll',
+              pollOptions: options,
+            );
       } else {
         final List<SignalMedia> media = [];
-        if (_isRecording) media.add(const SignalMedia(url: 'audio_wave_placeholder', type: MediaType.audio));
-        if (_selectedAIVision != null) media.add(SignalMedia(url: _selectedAIVision!, type: MediaType.image));
+        if (_isRecording)
+          media.add(const SignalMedia(
+              url: 'audio_wave_placeholder', type: MediaType.audio));
+        if (_selectedAIVision != null)
+          media
+              .add(SignalMedia(url: _selectedAIVision!, type: MediaType.image));
 
         ref.read(nexusTimelineProvider.notifier).broadcastSignal(
-          _controller.text.trim(),
-          media: media,
-        );
+              _controller.text.trim(),
+              media: media,
+            );
       }
       MeropeHaptics.neuralSyncPulse();
       MeropeAcoustics.trigger(AcousticEffect.syncSuccess);
@@ -109,12 +118,17 @@ class _CreatePostOverlayState extends ConsumerState<CreatePostOverlay> {
                           color: tokens.textPrimary,
                         ),
                       ),
-                      Text(_isAIStudioOpen ? 'Generating high-resonance visions' : 'Draft Saved Locally',
-                        style: TextStyle(fontSize: 10, color: tokens.primary)),
+                      Text(
+                          _isAIStudioOpen
+                              ? 'Generating high-resonance visions'
+                              : 'Draft Saved Locally',
+                          style:
+                              TextStyle(fontSize: 10, color: tokens.primary)),
                     ],
                   ),
                   IconButton(
-                    icon: Icon(_isAIStudioOpen ? Icons.arrow_back : Icons.close, color: tokens.textSecondary),
+                    icon: Icon(_isAIStudioOpen ? Icons.arrow_back : Icons.close,
+                        color: tokens.textSecondary),
                     onPressed: () {
                       if (_isAIStudioOpen) {
                         setState(() => _isAIStudioOpen = false);
@@ -135,7 +149,9 @@ class _CreatePostOverlayState extends ConsumerState<CreatePostOverlay> {
                 Row(
                   children: [
                     _ToolButton(
-                      icon: _selectedAIVision != null ? Icons.auto_awesome : Icons.image_outlined,
+                      icon: _selectedAIVision != null
+                          ? Icons.auto_awesome
+                          : Icons.image_outlined,
                       label: 'Media',
                       tokens: tokens,
                     ),
@@ -145,7 +161,8 @@ class _CreatePostOverlayState extends ConsumerState<CreatePostOverlay> {
                       tokens: tokens,
                       onPressed: () {
                         setState(() => _isRecording = !_isRecording);
-                        if (_isRecording) MeropeHaptics.trigger(MeropeTokens.hapticLight);
+                        if (_isRecording)
+                          MeropeHaptics.trigger(MeropeTokens.hapticLight);
                       },
                     ),
                     _ToolButton(
@@ -158,23 +175,24 @@ class _CreatePostOverlayState extends ConsumerState<CreatePostOverlay> {
                       icon: Icons.local_fire_department_outlined,
                       label: 'Burn: $_burnOption',
                       tokens: tokens,
-                       onPressed: () {
-                         setState(() {
-                           if (_burnOption == 'Never') {
-                             _burnOption = '24h';
-                           } else if (_burnOption == '24h') {
-                             _burnOption = '1w';
-                           } else {
-                             _burnOption = 'Never';
-                           }
-                         });
-                       },
+                      onPressed: () {
+                        setState(() {
+                          if (_burnOption == 'Never') {
+                            _burnOption = '24h';
+                          } else if (_burnOption == '24h') {
+                            _burnOption = '1w';
+                          } else {
+                            _burnOption = 'Never';
+                          }
+                        });
+                      },
                     ),
                     _ToolButton(
                       icon: _isPollMode ? Icons.poll : Icons.poll_outlined,
                       label: 'Poll',
                       tokens: tokens,
-                      onPressed: () => setState(() => _isPollMode = !_isPollMode),
+                      onPressed: () =>
+                          setState(() => _isPollMode = !_isPollMode),
                     ),
                     const Spacer(),
                     ElevatedButton(
@@ -182,8 +200,11 @@ class _CreatePostOverlayState extends ConsumerState<CreatePostOverlay> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: tokens.primary,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(MeropeTokens.radiusMd)),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 32, vertical: 16),
+                        shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(MeropeTokens.radiusMd)),
                       ),
                       child: const Text('Post'),
                     ),
@@ -202,7 +223,8 @@ class _CreatePostOverlayState extends ConsumerState<CreatePostOverlay> {
       children: [
         CircleAvatar(
           backgroundColor: tokens.primary.withValues(alpha: 0.2),
-          child: const Icon(Icons.person, color: Colors.blue), // Fixed color for demo
+          child: const Icon(Icons.person,
+              color: Colors.blue), // Fixed color for demo
         ),
         const SizedBox(width: MeropeTokens.space16),
         Expanded(
@@ -215,7 +237,8 @@ class _CreatePostOverlayState extends ConsumerState<CreatePostOverlay> {
                 style: TextStyle(color: tokens.textPrimary, fontSize: 16),
                 decoration: InputDecoration(
                   hintText: "What's on your mind?",
-                  hintStyle: TextStyle(color: tokens.textSecondary.withValues(alpha: 0.5)),
+                  hintStyle: TextStyle(
+                      color: tokens.textSecondary.withValues(alpha: 0.5)),
                   border: InputBorder.none,
                 ),
               ),
@@ -223,7 +246,9 @@ class _CreatePostOverlayState extends ConsumerState<CreatePostOverlay> {
                 Container(
                   margin: const EdgeInsets.only(top: 16),
                   padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(color: tokens.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
+                  decoration: BoxDecoration(
+                      color: tokens.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12)),
                   child: Row(
                     children: [
                       const Icon(Icons.mic, color: Colors.red, size: 16),
@@ -231,15 +256,19 @@ class _CreatePostOverlayState extends ConsumerState<CreatePostOverlay> {
                       Expanded(
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: List.generate(20, (i) => Container(
-                            width: 2,
-                            height: 10.0 + (i % 7) * 4,
-                            color: tokens.primary,
-                          )),
+                          children: List.generate(
+                              20,
+                              (i) => Container(
+                                    width: 2,
+                                    height: 10.0 + (i % 7) * 4,
+                                    color: tokens.primary,
+                                  )),
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Text('0:04', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                      const Text('0:04',
+                          style: TextStyle(
+                              fontSize: 10, fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
@@ -262,7 +291,8 @@ class _CreatePostOverlayState extends ConsumerState<CreatePostOverlay> {
                         alignment: Alignment.topRight,
                         child: IconButton(
                           icon: const Icon(Icons.close, color: Colors.white),
-                          onPressed: () => setState(() => _selectedAIVision = null),
+                          onPressed: () =>
+                              setState(() => _selectedAIVision = null),
                         ),
                       ),
                     ],
@@ -271,20 +301,23 @@ class _CreatePostOverlayState extends ConsumerState<CreatePostOverlay> {
               if (_isPollMode) ...[
                 const SizedBox(height: 16),
                 ..._pollOptions.asMap().entries.map((entry) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: TextField(
-                    controller: entry.value,
-                    style: TextStyle(color: tokens.textPrimary, fontSize: 14),
-                    decoration: InputDecoration(
-                      hintText: 'Option ${entry.key + 1}',
-                      filled: true,
-                      fillColor: tokens.surface,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                  ),
-                )),
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: TextField(
+                        controller: entry.value,
+                        style:
+                            TextStyle(color: tokens.textPrimary, fontSize: 14),
+                        decoration: InputDecoration(
+                          hintText: 'Option ${entry.key + 1}',
+                          filled: true,
+                          fillColor: tokens.surface,
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                        ),
+                      ),
+                    )),
                 TextButton.icon(
-                  onPressed: () => setState(() => _pollOptions.add(TextEditingController())),
+                  onPressed: () =>
+                      setState(() => _pollOptions.add(TextEditingController())),
                   icon: const Icon(Icons.add),
                   label: const Text('Add Option'),
                 ),
@@ -306,7 +339,8 @@ class _CreatePostOverlayState extends ConsumerState<CreatePostOverlay> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Select a Neural Vision:', style: TextStyle(color: tokens.textSecondary, fontSize: 13)),
+        Text('Select a Neural Vision:',
+            style: TextStyle(color: tokens.textSecondary, fontSize: 13)),
         const SizedBox(height: 16),
         SizedBox(
           height: 200,
@@ -352,7 +386,8 @@ class _ToolButton extends StatelessWidget {
   final MeropeColorTokens tokens;
   final VoidCallback? onPressed;
 
-  const _ToolButton({this.icon, required this.label, required this.tokens, this.onPressed});
+  const _ToolButton(
+      {this.icon, required this.label, required this.tokens, this.onPressed});
 
   @override
   Widget build(BuildContext context) {

@@ -26,11 +26,15 @@ class CorporateAuthScreen extends ConsumerWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.business_center_rounded, size: 80, color: tokens.primary),
+                        Icon(Icons.business_center_rounded,
+                            size: 80, color: tokens.primary),
                         const SizedBox(height: 24),
                         Text(
                           'Merope Enterprise',
-                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: tokens.textPrimary),
+                          style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: tokens.textPrimary),
                         ),
                       ],
                     ),
@@ -44,9 +48,14 @@ class CorporateAuthScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Enterprise Portal', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: tokens.textPrimary)),
+                    Text('Enterprise Portal',
+                        style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: tokens.textPrimary)),
                     const SizedBox(height: 8),
-                    Text('Manage your organization and team.', style: TextStyle(color: tokens.textSecondary)),
+                    Text('Manage your organization and team.',
+                        style: TextStyle(color: tokens.textSecondary)),
                     const SizedBox(height: 48),
                     _buildInput('Business Email', tokens),
                     const SizedBox(height: 16),
@@ -59,20 +68,28 @@ class CorporateAuthScreen extends ConsumerWidget {
                       height: 56,
                       child: ElevatedButton(
                         onPressed: () {
-                          ref.read(workspaceProvider.notifier).setLayer(WorkspaceLayer.work);
+                          ref
+                              .read(workspaceProvider.notifier)
+                              .setLayer(WorkspaceLayer.work);
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: tokens.primary,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(MeropeTokens.radiusSm)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.circular(MeropeTokens.radiusSm)),
                         ),
-                        child: Text('Login to Workspace', style: TextStyle(color: tokens.onPrimary, fontWeight: FontWeight.bold)),
+                        child: Text('Login to Workspace',
+                            style: TextStyle(
+                                color: tokens.onPrimary,
+                                fontWeight: FontWeight.bold)),
                       ),
                     ),
                     const Spacer(),
                     Center(
                       child: TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: Text('Switch to Personal Account', style: TextStyle(color: tokens.textSecondary)),
+                        child: Text('Switch to Personal Account',
+                            style: TextStyle(color: tokens.textSecondary)),
                       ),
                     ),
                   ],
@@ -85,11 +102,17 @@ class CorporateAuthScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildInput(String label, MeropeColorTokens tokens, {bool isObscure = false}) {
+  Widget _buildInput(String label, MeropeColorTokens tokens,
+      {bool isObscure = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: tokens.textSecondary, letterSpacing: 1)),
+        Text(label,
+            style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: tokens.textSecondary,
+                letterSpacing: 1)),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -101,7 +124,8 @@ class CorporateAuthScreen extends ConsumerWidget {
           child: TextField(
             obscureText: isObscure,
             style: TextStyle(color: tokens.textPrimary),
-            decoration: const InputDecoration(border: InputBorder.none, isDense: true),
+            decoration:
+                const InputDecoration(border: InputBorder.none, isDense: true),
           ),
         ),
       ],

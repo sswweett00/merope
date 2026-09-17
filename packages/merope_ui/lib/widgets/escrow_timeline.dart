@@ -30,7 +30,9 @@ class EscrowTimeline extends StatelessWidget {
   }
 
   Widget _buildNode(EscrowStage stage, bool isCompleted) {
-    final color = isCompleted ? const Color(0xFF5865F2) : Colors.grey.withValues(alpha: 0.3);
+    final color = isCompleted
+        ? const Color(0xFF5865F2)
+        : Colors.grey.withValues(alpha: 0.3);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -42,12 +44,15 @@ class EscrowTimeline extends StatelessWidget {
             shape: BoxShape.circle,
             border: Border.all(color: color, width: 2),
           ),
-          child: isCompleted ? const Icon(Icons.check, size: 14, color: Colors.white) : null,
+          child: isCompleted
+              ? const Icon(Icons.check, size: 14, color: Colors.white)
+              : null,
         ),
         const SizedBox(height: 8),
         Text(
           stage.name.toUpperCase(),
-          style: TextStyle(color: color, fontSize: 8, fontWeight: FontWeight.bold),
+          style:
+              TextStyle(color: color, fontSize: 8, fontWeight: FontWeight.bold),
         ),
       ],
     );
@@ -58,7 +63,9 @@ class EscrowTimeline extends StatelessWidget {
       child: Container(
         height: 2,
         margin: const EdgeInsets.symmetric(horizontal: 4),
-        color: isCompleted ? const Color(0xFF5865F2) : Colors.grey.withValues(alpha: 0.2),
+        color: isCompleted
+            ? const Color(0xFF5865F2)
+            : Colors.grey.withValues(alpha: 0.2),
       ),
     );
   }

@@ -7,7 +7,11 @@ class SkeletonLoader extends StatelessWidget {
   final double height;
   final BorderRadius? borderRadius;
 
-  const SkeletonLoader({super.key, required this.width, required this.height, this.borderRadius});
+  const SkeletonLoader(
+      {super.key,
+      required this.width,
+      required this.height,
+      this.borderRadius});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +22,8 @@ class SkeletonLoader extends StatelessWidget {
         height: height,
         decoration: BoxDecoration(
           color: tokens.border.withValues(alpha: 0.5),
-          borderRadius: borderRadius ?? BorderRadius.circular(MeropeTokens.radiusXs),
+          borderRadius:
+              borderRadius ?? BorderRadius.circular(MeropeTokens.radiusXs),
         ),
         child: const SizedBox.expand(),
       ),
@@ -38,7 +43,8 @@ class AuditLogList extends ConsumerWidget {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(MeropeTokens.space24),
-          child: Text('No audit events recorded', style: TextStyle(color: tokens.textSecondary, fontSize: 12)),
+          child: Text('No audit events recorded',
+              style: TextStyle(color: tokens.textSecondary, fontSize: 12)),
         ),
       );
     }
@@ -51,12 +57,21 @@ class AuditLogList extends ConsumerWidget {
               leading: CircleAvatar(
                 backgroundColor: _statusColor(entry.status, tokens),
                 radius: 14,
-                child: Icon(_statusIcon(entry.status), size: 14, color: tokens.onPrimary),
+                child: Icon(_statusIcon(entry.status),
+                    size: 14, color: tokens.onPrimary),
               ),
-              title: Text(entry.action, style: TextStyle(color: tokens.textPrimary, fontSize: 13, fontWeight: FontWeight.w600)),
-              subtitle: Text('${entry.actorId} • ${_formatTime(entry.timestamp)}', style: TextStyle(color: tokens.textSecondary, fontSize: 11)),
+              title: Text(entry.action,
+                  style: TextStyle(
+                      color: tokens.textPrimary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600)),
+              subtitle: Text(
+                  '${entry.actorId} • ${_formatTime(entry.timestamp)}',
+                  style: TextStyle(color: tokens.textSecondary, fontSize: 11)),
               trailing: entry.details != null
-                  ? Icon(Icons.info_outline, size: 14, color: tokens.textSecondary.withValues(alpha: 0.5))
+                  ? Icon(Icons.info_outline,
+                      size: 14,
+                      color: tokens.textSecondary.withValues(alpha: 0.5))
                   : null,
             ),
           );
