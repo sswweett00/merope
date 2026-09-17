@@ -10,7 +10,9 @@ class SessionStorage {
   static const _userKey = 'auth_user';
 
   String? _cachedToken;
+  AuthUser? _cachedUser;
   bool _tokenLoaded = false;
+  bool _userLoaded = false;
 
   SessionStorage({FlutterSecureStorage? storage})
       : _storage = storage ??
@@ -24,18 +26,23 @@ class SessionStorage {
     int? expiresAt,
     AuthUser? user,
   }) async {
-    await _storage.write(key: _tokenKey, value: token);
-    _cachedToken = token;
-    _tokenLoaded = true;
-
+    final writes = <Future<void>>[_storage.write(key: _tokenKey, value: token)];
     if (user != null) {
-      await _storage.write(key: _userKey, value: jsonEncode(user.toJson()));
+      writes.add(_storage.write(key: _userKey, value: jsonEncode(user.toJson())));
     }
     if (refreshToken != null) {
-      await _storage.write(key: 'refresh_token', value: refreshToken);
+      writes.add(_storage.write(key: 'refresh_token', value: refreshToken));
     }
     if (expiresAt != null) {
-      await _storage.write(key: 'session_expiry', value: expiresAt.toString());
+      writes.add(_storage.write(key: 'session_expiry', value: expiresAt.toString()));
+    }
+
+    await Future.wait(writes);
+    _cachedToken = token;
+    _tokenLoaded = true;
+    if (user != null) {
+      _cachedUser = user;
+      _userLoaded = true;
     }
   }
 
@@ -47,13 +54,21 @@ class SessionStorage {
   }
 
   Future<AuthUser?> getUser() async {
+    if (_userLoaded) return _cachedUser;
+
     final userJson = await _storage.read(key: _userKey);
-    if (userJson == null) return null;
-    try {
-      return AuthUser.fromJson(jsonDecode(userJson) as Map<String, dynamic>);
-    } catch (_) {
+    _userLoaded = true;
+    if (userJson == null) {
+      _cachedUser = null;
       return null;
     }
+
+    try {
+      _cachedUser = AuthUser.fromJson(jsonDecode(userJson) as Map<String, dynamic>);
+    } catch (_) {
+      _cachedUser = null;
+    }
+    return _cachedUser;
   }
 
   Future<void> clearSession() async {
@@ -64,7 +79,9 @@ class SessionStorage {
       _storage.delete(key: 'session_expiry'),
     ]);
     _cachedToken = null;
+    _cachedUser = null;
     _tokenLoaded = true;
+    _userLoaded = true;
   }
 
   Future<bool> hasSession() async {
