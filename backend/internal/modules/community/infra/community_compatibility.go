@@ -21,15 +21,15 @@ func (r *postgresCommunityRepository) GetCommunity(ctx context.Context, commID s
 	var description, avatarURL string
 	var isPrivate bool
 	var createdAt pgtype.Timestamptz
-	if err := r.queries.QueryRow(ctx, `
-SELECT id, owner_id, name, description, avatar_url, is_private, created_at
-FROM communities
-WHERE id = $1`, id).Scan(&dbID, &ownerID, &c.Name, &description, &avatarURL, &isPrivate, &createdAt); err != nil {
-		return nil, err
-	}
-
 	var memberCount int32
-	if err := r.queries.QueryRow(ctx, `SELECT COUNT(*)::int FROM community_members WHERE community_id = $1 AND role <> 'banned'`, id).Scan(&memberCount); err != nil {
+	if err := r.queries.QueryRow(ctx, `
+SELECT c.id, c.owner_id, c.name, c.description, c.avatar_url, c.is_private, c.created_at,
+       COUNT(cm.user_id) FILTER (WHERE cm.role <> 'banned')::int AS member_count
+FROM communities c
+LEFT JOIN community_members cm ON cm.community_id = c.id
+WHERE c.id = $1
+GROUP BY c.id, c.owner_id, c.name, c.description, c.avatar_url, c.is_private, c.created_at`, id).
+		Scan(&dbID, &ownerID, &c.Name, &description, &avatarURL, &isPrivate, &createdAt, &memberCount); err != nil {
 		return nil, err
 	}
 
