@@ -25,6 +25,9 @@ import (
 	"local/merope/internal/platform/redis"
 	"local/merope/internal/platform/scylla"
 
+	communityInfra "local/merope/internal/modules/community/infra"
+	communityService "local/merope/internal/modules/community/service"
+	communityTransport "local/merope/internal/modules/community/transport"
 	contentDomain "local/merope/internal/modules/content/domain"
 	contentInfra "local/merope/internal/modules/content/infra"
 	contentService "local/merope/internal/modules/content/service"
@@ -62,6 +65,7 @@ type Handlers struct {
 	Social       *socialTransport.SocialHandler
 	Lumia        *lumiaTransport.LumiaHandler
 	Developer    *developerTransport.DeveloperHandler
+	Community    *communityTransport.CommunityHandler
 	VeritasGuard socialService.VeritasContentGuard
 }
 
@@ -123,7 +127,11 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	developerSvc := developerService.NewDeveloperService(developerRepo)
 	developerHandler := developerTransport.NewDeveloperHandler(developerSvc)
 
-	handlers := &Handlers{Identity: idHandler, Content: contHandler, Messaging: msgHandler, Social: socHandler, Lumia: lumHandler, Developer: developerHandler, VeritasGuard: veritasGuard}
+	communityRepo := communityInfra.NewPostgresCommunityRepository(queries)
+	communitySvc := communityService.NewCommunityService(communityRepo)
+	communityHandler := communityTransport.NewCommunityHandler(communitySvc, communityRepo)
+
+	handlers := &Handlers{Identity: idHandler, Content: contHandler, Messaging: msgHandler, Social: socHandler, Lumia: lumHandler, Developer: developerHandler, Community: communityHandler, VeritasGuard: veritasGuard}
 	rbacEnforcer, err := security.NewDefaultEnforcer()
 	if err != nil { log.Fatalf("failed to initialize RBAC: %v", err) }
 
@@ -150,6 +158,40 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	content := protected.Group("/content"); content.Get("/feed", contHandler.Feed); content.Get("/posts/:id", contHandler.GetPost); content.Post("/posts", contHandler.CreatePost); content.Put("/posts/:id", contHandler.UpdatePost); content.Delete("/posts/:id", contHandler.DeletePost); content.Get("/posts/:id/comments", contHandler.GetComments); content.Post("/posts/:id/react", contHandler.React); content.Post("/posts/:id/like", contHandler.Like); content.Delete("/posts/:id/like", contHandler.Unlike); content.Post("/posts/:id/repost", contHandler.Repost); content.Delete("/posts/:id/comments/:comment_id", contHandler.DeleteComment)
 	social := protected.Group("/social"); social.Get("/timeline", contHandler.Feed); social.Get("/profile/:id", socHandler.Profile); social.Get("/search/users", socHandler.Search); social.Get("/followers/:id", socHandler.Followers); social.Get("/following/:id", socHandler.Following); social.Post("/follow/:id", socHandler.Follow); social.Post("/unfollow/:id", socHandler.Unfollow)
 	lumia := protected.Group("/lumia"); lumia.Post("/tip", lumHandler.Tip); lumia.Get("/live", lumHandler.GetLive)
+
+	community := protected.Group("/community")
+	community.Get("/communities", communityHandler.ListCommunities)
+	community.Get("/communities/:id", communityHandler.GetCommunity)
+	community.Post("/communities", communityHandler.CreateCommunity)
+	community.Post("/communities/:id/join", communityHandler.Join)
+	community.Post("/communities/:id/leave", communityHandler.Leave)
+	community.Patch("/communities/:id/settings", communityHandler.UpdateSettings)
+	community.Get("/communities/:id/guidelines", communityHandler.GetGuidelines)
+	community.Put("/communities/:id/guidelines", communityHandler.UpdateGuidelines)
+	community.Get("/communities/:id/members", communityHandler.Members)
+	community.Patch("/communities/:id/members/:member_id", communityHandler.UpdateMemberRole)
+	community.Post("/communities/:id/members/:member_id/ban", communityHandler.BanMember)
+	community.Post("/communities/:id/members/:member_id/unban", communityHandler.UnbanMember)
+	community.Get("/communities/:id/analytics", communityHandler.Analytics)
+	community.Get("/events", communityHandler.ListEvents)
+	community.Get("/events/upcoming", communityHandler.UpcomingEvents)
+	community.Post("/events", communityHandler.CreateEvent)
+	community.Post("/events/:id/rsvp", communityHandler.RSVP)
+	community.Delete("/events/:id", communityHandler.CancelEvent)
+	community.Get("/collectives", communityHandler.ListCollectives)
+	community.Post("/collectives", communityHandler.CreateCollective)
+	community.Post("/collectives/:id/join", communityHandler.JoinCollective)
+	community.Get("/collectives/:id/threads", communityHandler.ListThreads)
+	community.Post("/collectives/:id/threads", communityHandler.CreateThread)
+	community.Post("/threads/:id/resonate", communityHandler.ResonateThread)
+	community.Get("/threads/:id/replies", communityHandler.ThreadReplies)
+	community.Post("/threads/:id/replies", communityHandler.CreateThreadReply)
+	community.Post("/threads/:id/pin", communityHandler.PinThread)
+	community.Post("/threads/:id/lock", communityHandler.LockThread)
+	community.Get("/subscriptions", communityHandler.Subscriptions)
+	community.Post("/subscriptions", communityHandler.CreateSubscription)
+	community.Delete("/subscriptions/:id", communityHandler.CancelSubscription)
+	community.Patch("/subscriptions/:id", communityHandler.UpdateSubscription)
 
 	developer := protected.Group("/developer")
 	developer.Get("/apps", developerHandler.ListApps)
