@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"local/merope/internal/database/db"
+	"local/merope/internal/core/util"
 	"local/merope/internal/modules/messaging/domain"
 
 	"github.com/jackc/pgx/v5/pgtype"
@@ -29,7 +29,7 @@ LIMIT 1`, id).Scan(&content, &authorID, &createdAt)
 		MessageID: messageID,
 		Content: content,
 		Version: 1,
-		AuthorID: authorID.String(),
+		AuthorID: util.UUIDToString(authorID),
 		CreatedAt: createdAt.Time,
 	}}, nil
 }
@@ -58,5 +58,3 @@ func (r *ScyllaMessagingRepository) MarkDelivered(ctx context.Context, messageID
 
 var _ domain.MessagingRepository = (*PostgresMessagingRepository)(nil)
 var _ domain.MessagingRepository = (*ScyllaMessagingRepository)(nil)
-
-var _ = db.Queries{}
