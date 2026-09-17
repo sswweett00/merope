@@ -5,8 +5,8 @@ CREATE INDEX IF NOT EXISTS idx_posts_pending_publish
     ON posts(published_at ASC, id)
     WHERE is_draft = TRUE AND published_at IS NOT NULL;
 
-CREATE INDEX IF NOT EXISTS idx_posts_feed_active_time
-    ON posts(created_at DESC, id)
+CREATE INDEX IF NOT EXISTS idx_posts_feed_published_time
+    ON posts(published_at DESC, id)
     WHERE is_archived = FALSE AND is_draft = FALSE AND deleted_at IS NULL;
 
 CREATE INDEX IF NOT EXISTS idx_comments_post_created
