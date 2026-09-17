@@ -13,10 +13,10 @@ import (
 )
 
 type developerService struct {
-	repo domain.DeveloperRepository
+	repo domain.RuntimeDeveloperRepository
 }
 
-func NewDeveloperService(repo domain.DeveloperRepository) domain.RuntimeDeveloperService {
+func NewDeveloperService(repo domain.RuntimeDeveloperRepository) domain.RuntimeDeveloperService {
 	return &developerService{repo: repo}
 }
 
