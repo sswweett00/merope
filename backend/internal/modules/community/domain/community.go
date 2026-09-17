@@ -6,353 +6,265 @@ import (
 )
 
 type Community struct {
-	ID          string
-	OwnerID     string
-	Name        string
-	Slug        string
-	Description string
-	AvatarURL   string
-	BannerURL   string
-	IsPrivate   bool
-	IsVerified  bool
-	MemberCount int32
-	PostCount   int32
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-	Category    string
-	Tags        []string
-	Rules       []string
-	Settings    CommunitySettings
-	Stats       CommunityStats
+	ID          string            `json:"id"`
+	OwnerID     string            `json:"ownerId"`
+	Name        string            `json:"name"`
+	Slug        string            `json:"slug"`
+	Description string            `json:"description"`
+	AvatarURL   string            `json:"avatarUrl"`
+	BannerURL   string            `json:"bannerUrl"`
+	IsPrivate   bool              `json:"isPrivate"`
+	IsVerified  bool              `json:"isVerified"`
+	MemberCount int32             `json:"memberCount"`
+	PostCount   int32             `json:"postCount"`
+	CreatedAt   time.Time         `json:"createdAt"`
+	UpdatedAt   time.Time         `json:"updatedAt"`
+	Category    string            `json:"category"`
+	Tags        []string          `json:"tags"`
+	Rules       []string          `json:"rules"`
+	Settings    CommunitySettings `json:"settings"`
+	Stats       CommunityStats    `json:"stats"`
 }
 
 type CommunitySettings struct {
-	AllowGuestPosts      bool
-	RequireModeration    bool
-	EnableVoiceChat      bool
-	EnableVideoChat      bool
-	EnableScreenShare    bool
-	MaxMembers          int32
-	AutoDeleteAfterDays  int32
-	ContentFilterLevel  string // none, low, medium, high
-	Language             string
-	Timezone             string
+	AllowGuestPosts     bool   `json:"allowGuestPosts"`
+	RequireModeration   bool   `json:"requireModeration"`
+	EnableVoiceChat     bool   `json:"enableVoiceChat"`
+	EnableVideoChat     bool   `json:"enableVideoChat"`
+	EnableScreenShare   bool   `json:"enableScreenShare"`
+	MaxMembers          int32  `json:"maxMembers"`
+	AutoDeleteAfterDays int32  `json:"autoDeleteAfterDays"`
+	ContentFilterLevel  string `json:"contentFilterLevel"`
+	Language            string `json:"language"`
+	Timezone            string `json:"timezone"`
 }
 
 type CommunityStats struct {
-	DailyActiveUsers    int32
-	WeeklyActiveUsers   int32
-	MonthlyActiveUsers  int32
-	TotalPosts          int32
-	TotalComments       int32
-	TotalEvents         int32
-	AvgEngagementScore  float64
-	ReportCount         int32
-	WarningCount        int32
+	DailyActiveUsers   int32   `json:"dailyActiveUsers"`
+	WeeklyActiveUsers  int32   `json:"weeklyActiveUsers"`
+	MonthlyActiveUsers int32   `json:"monthlyActiveUsers"`
+	TotalPosts         int32   `json:"totalPosts"`
+	TotalComments      int32   `json:"totalComments"`
+	TotalEvents        int32   `json:"totalEvents"`
+	AvgEngagementScore float64 `json:"avgEngagementScore"`
+	ReportCount        int32   `json:"reportCount"`
+	WarningCount       int32   `json:"warningCount"`
 }
 
 type CommunityMember struct {
-	ID            string
-	CommunityID   string
-	UserID        string
-	Role          string // owner, admin, moderator, member, guest
-	JoinedAt      time.Time
-	IsActive      bool
-	LastActiveAt  time.Time
-	PostCount     int32
-	CommentCount  int32
-	Reputation    int32
-	Badges        []string
-	Preferences   MemberPreferences
+	ID            string            `json:"id"`
+	CommunityID   string            `json:"communityId"`
+	UserID        string            `json:"userId"`
+	Role          string            `json:"role"`
+	JoinedAt      time.Time         `json:"joinedAt"`
+	IsActive      bool              `json:"isActive"`
+	LastActiveAt  time.Time         `json:"lastActiveAt"`
+	PostCount     int32             `json:"postCount"`
+	CommentCount  int32             `json:"commentCount"`
+	Reputation    int32             `json:"reputation"`
+	Badges        []string          `json:"badges"`
+	Preferences   MemberPreferences `json:"preferences"`
 }
 
 type MemberPreferences struct {
-	NotificationsEnabled bool
-	EmailDigest          string // none, daily, weekly
-	MuteUntil            *time.Time
-	HideActivity         bool
+	NotificationsEnabled bool       `json:"notificationsEnabled"`
+	EmailDigest          string     `json:"emailDigest"`
+	MuteUntil            *time.Time `json:"muteUntil,omitempty"`
+	HideActivity         bool       `json:"hideActivity"`
 }
 
 type Event struct {
-	ID           string
-	CreatorID    string
-	CommunityID  *string
-	Title        string
-	Description  string
-	StartTime    time.Time
-	EndTime      time.Time
-	LocationName string
-	Latitude     *float64
-	Longitude    *float64
-	LocationURL  string
-	MaxAttendees int32
-	CurrentAttendees int32
-	IsPublic     bool
-	IsRecurring bool
-	RecurrencePattern string // daily, weekly, monthly
-	ImageURL     string
-	Status       string // draft, published, cancelled, completed
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
-	TicketInfo   EventTicketInfo
+	ID                string          `json:"id"`
+	CreatorID         string          `json:"creatorId"`
+	CommunityID       *string         `json:"communityId,omitempty"`
+	Title             string          `json:"title"`
+	Description       string          `json:"description"`
+	StartTime         time.Time       `json:"startTime"`
+	EndTime           time.Time       `json:"endTime"`
+	LocationName      string          `json:"locationName"`
+	Latitude          *float64        `json:"latitude,omitempty"`
+	Longitude         *float64        `json:"longitude,omitempty"`
+	LocationURL       string          `json:"locationUrl"`
+	MaxAttendees      int32           `json:"maxAttendees"`
+	CurrentAttendees  int32           `json:"currentAttendees"`
+	IsPublic          bool            `json:"isPublic"`
+	IsRecurring       bool            `json:"isRecurring"`
+	RecurrencePattern string          `json:"recurrencePattern"`
+	ImageURL          string          `json:"imageUrl"`
+	Status            string          `json:"status"`
+	CreatedAt         time.Time       `json:"createdAt"`
+	UpdatedAt         time.Time       `json:"updatedAt"`
+	TicketInfo        EventTicketInfo `json:"ticketInfo"`
 }
 
 type EventTicketInfo struct {
-	IsRequired      bool
-	Price           float64
-	Currency        string
-	AvailableTickets int32
-	SoldTickets     int32
-	EarlyBirdUntil *time.Time
+	IsRequired       bool       `json:"isRequired"`
+	Price            float64    `json:"price"`
+	Currency         string     `json:"currency"`
+	AvailableTickets int32      `json:"availableTickets"`
+	SoldTickets      int32      `json:"soldTickets"`
+	EarlyBirdUntil   *time.Time `json:"earlyBirdUntil,omitempty"`
 }
 
 type Collective struct {
-	ID          string
-	Name        string
-	Slug        string
-	Description string
-	Icon        string
-	BannerURL   string
-	NodeCount   int
-	Influence   float64 // Reputation score of the collective
-	MemberCount int32
-	IsOfficial  bool
-	Category    string
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-	Stats       CollectiveStats
+	ID          string          `json:"id"`
+	Name        string          `json:"name"`
+	Slug        string          `json:"slug"`
+	Description string          `json:"description"`
+	Icon        string          `json:"icon"`
+	BannerURL   string          `json:"bannerUrl"`
+	NodeCount   int             `json:"nodeCount"`
+	Influence   float64         `json:"influence"`
+	MemberCount int32           `json:"memberCount"`
+	IsOfficial  bool            `json:"isOfficial"`
+	Category    string          `json:"category"`
+	CreatedAt   time.Time       `json:"createdAt"`
+	UpdatedAt   time.Time       `json:"updatedAt"`
+	Stats       CollectiveStats `json:"stats"`
 }
 
 type CollectiveStats struct {
-	TotalThreads    int32
-	TotalReplies   int32
-	ActiveMembers  int32
-	WeeklyActivity int32
+	TotalThreads   int32 `json:"totalThreads"`
+	TotalReplies   int32 `json:"totalReplies"`
+	ActiveMembers  int32 `json:"activeMembers"`
+	WeeklyActivity int32 `json:"weeklyActivity"`
 }
 
 type Thread struct {
-	ID           string
-	CollectiveID string
-	AuthorID     string
-	Title        string
-	Content      string
-	Resonance    int // Net upvotes
-	ViewCount    int32
-	ReplyCount   int32
-	IsPinned     bool
-	IsLocked     bool
-	IsAnnouncement bool
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
-	Tags         []string
-	Category     string
+	ID             string    `json:"id"`
+	CollectiveID   string    `json:"collectiveId"`
+	AuthorID       string    `json:"authorId"`
+	Title          string    `json:"title"`
+	Content        string    `json:"content"`
+	Resonance      int       `json:"resonance"`
+	ViewCount      int32     `json:"viewCount"`
+	ReplyCount     int32     `json:"replyCount"`
+	IsPinned       bool      `json:"isPinned"`
+	IsLocked       bool      `json:"isLocked"`
+	IsAnnouncement bool      `json:"isAnnouncement"`
+	CreatedAt      time.Time `json:"createdAt"`
+	UpdatedAt      time.Time `json:"updatedAt"`
+	Tags           []string  `json:"tags"`
+	Category       string    `json:"category"`
 }
 
 type ThreadReply struct {
-	ID         string
-	ThreadID   string
-	AuthorID   string
-	Content    string
-	Resonance  int
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
-	IsEdited   bool
-	ParentID   *string
+	ID        string    `json:"id"`
+	ThreadID  string    `json:"threadId"`
+	AuthorID  string    `json:"authorId"`
+	Content   string    `json:"content"`
+	Resonance int       `json:"resonance"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+	IsEdited  bool      `json:"isEdited"`
+	ParentID  *string   `json:"parentId,omitempty"`
 }
 
 type CommunityRepository interface {
-	CreateCommunity(ctx context.Context, comm *Community) error
-	GetCommunity(ctx context.Context, commID string) (*Community, error)
-	GetCommunityBySlug(ctx context.Context, slug string) (*Community, error)
-	UpdateCommunity(ctx context.Context, commID string, updates *Community) error
-	DeleteCommunity(ctx context.Context, commID string) error
-	ListCommunities(ctx context.Context, userID string, category string, limit, offset int32) ([]*Community, error)
-	SearchCommunities(ctx context.Context, query string, limit, offset int32) ([]*Community, error)
-	GetTrendingCommunities(ctx context.Context, limit int32) ([]*Community, error)
-	
-	// Members
-	JoinCommunity(ctx context.Context, commID, userID, role string) error
-	LeaveCommunity(ctx context.Context, commID, userID string) error
-	GetCommunityMembers(ctx context.Context, commID string, role string, limit, offset int32) ([]*CommunityMember, error)
-	UpdateMemberRole(ctx context.Context, commID, userID, role string) error
-	RemoveMember(ctx context.Context, commID, userID string) error
-	GetMemberStats(ctx context.Context, commID, userID string) (*CommunityStats, error)
-	BanMember(ctx context.Context, commID, userID string, reason string, duration *time.Time) error
-	UnbanMember(ctx context.Context, commID, userID string) error
-	
-	// Collectives
-	CreateCollective(ctx context.Context, coll *Collective) error
-	GetCollectives(ctx context.Context, limit, offset int32) ([]*Collective, error)
-	GetCollective(ctx context.Context, collID string) (*Collective, error)
-	UpdateCollective(ctx context.Context, collID string, updates *Collective) error
-	DeleteCollective(ctx context.Context, collID string) error
-	JoinCollective(ctx context.Context, collID, userID string) error
-	LeaveCollective(ctx context.Context, collID, userID string) error
-	CreateThread(ctx context.Context, thread *Thread) error
-	GetThreads(ctx context.Context, collectiveID string, limit, offset int32) ([]*Thread, error)
-	GetThread(ctx context.Context, threadID string) (*Thread, error)
-	UpdateThread(ctx context.Context, threadID string, updates *Thread) error
-	DeleteThread(ctx context.Context, threadID string) error
-	ResonateThread(ctx context.Context, threadID string, delta int) error
-	CreateThreadReply(ctx context.Context, reply *ThreadReply) error
-	GetThreadReplies(ctx context.Context, threadID string, limit, offset int32) ([]*ThreadReply, error)
-	PinThread(ctx context.Context, threadID string, pinned bool) error
-	LockThread(ctx context.Context, threadID string, locked bool) error
-	
-	// Events
-	CreateEvent(ctx context.Context, event *Event) error
-	GetEvent(ctx context.Context, eventID string) (*Event, error)
-	UpdateEvent(ctx context.Context, eventID string, updates *Event) error
-	DeleteEvent(ctx context.Context, eventID string) error
-	ListEvents(ctx context.Context, communityID *string, userID string, status string, limit, offset int32) ([]*Event, error)
-	GetUpcomingEvents(ctx context.Context, userID string, limit int32) ([]*Event, error)
-	RSVP(ctx context.Context, eventID, userID, status string) error
-	GetAttendees(ctx context.Context, eventID string, limit, offset int32) ([]string, error)
-	
-	// Ticketing
-	CreateTicket(ctx context.Context, eventID, userID, code string) error
-	GetTicket(ctx context.Context, ticketID string) (*Ticket, error)
-	GetUserTickets(ctx context.Context, userID string) ([]*Ticket, error)
-	ValidateTicket(ctx context.Context, ticketCode string) (*Ticket, error)
-	CancelTicket(ctx context.Context, ticketID string) error
-	
-	// Subscriptions
-	CreateSubscription(ctx context.Context, subID, creatorID, tier string, expiresAt time.Time) error
-	GetSubscription(ctx context.Context, subID string) (*Subscription, error)
-	GetUserSubscriptions(ctx context.Context, userID string) ([]*Subscription, error)
-	CancelSubscription(ctx context.Context, subID string) error
-	UpdateSubscription(ctx context.Context, subID string, tier string) error
-	
-	// Moderation
-	ReportContent(ctx context.Context, reporterID, contentType, contentID, reason string) error
-	GetReports(ctx context.Context, communityID string, status string, limit, offset int32) ([]*ContentReport, error)
-	ResolveReport(ctx context.Context, reportID string, resolution string) error
-	GetCommunityGuidelines(ctx context.Context, communityID string) ([]*Guideline, error)
-	UpdateGuidelines(ctx context.Context, communityID string, guidelines []*Guideline) error
-	
-	// Analytics
-	UpdateCommunityStats(ctx context.Context, communityID string) error
-	GetCommunityAnalytics(ctx context.Context, communityID string, period string) (*CommunityAnalytics, error)
-	GetMemberActivity(ctx context.Context, communityID string, userID string, period string) (*MemberActivity, error)
+	CreateCommunity(context.Context, *Community) error
+	GetCommunity(context.Context, string) (*Community, error)
+	GetCommunityBySlug(context.Context, string) (*Community, error)
+	UpdateCommunity(context.Context, string, *Community) error
+	DeleteCommunity(context.Context, string) error
+	ListCommunities(context.Context, string, string, int32, int32) ([]*Community, error)
+	SearchCommunities(context.Context, string, int32, int32) ([]*Community, error)
+	GetTrendingCommunities(context.Context, int32) ([]*Community, error)
+	JoinCommunity(context.Context, string, string, string) error
+	LeaveCommunity(context.Context, string, string) error
+	GetCommunityMembers(context.Context, string, string, int32, int32) ([]*CommunityMember, error)
+	UpdateMemberRole(context.Context, string, string, string) error
+	RemoveMember(context.Context, string, string) error
+	GetMemberStats(context.Context, string, string) (*CommunityStats, error)
+	BanMember(context.Context, string, string, string, *time.Time) error
+	UnbanMember(context.Context, string, string) error
+	CreateCollective(context.Context, *Collective) error
+	GetCollectives(context.Context, int32, int32) ([]*Collective, error)
+	GetCollective(context.Context, string) (*Collective, error)
+	UpdateCollective(context.Context, string, *Collective) error
+	DeleteCollective(context.Context, string) error
+	JoinCollective(context.Context, string, string) error
+	LeaveCollective(context.Context, string, string) error
+	CreateThread(context.Context, *Thread) error
+	GetThreads(context.Context, string, int32, int32) ([]*Thread, error)
+	GetThread(context.Context, string) (*Thread, error)
+	UpdateThread(context.Context, string, *Thread) error
+	DeleteThread(context.Context, string) error
+	ResonateThread(context.Context, string, int) error
+	CreateThreadReply(context.Context, *ThreadReply) error
+	GetThreadReplies(context.Context, string, int32, int32) ([]*ThreadReply, error)
+	PinThread(context.Context, string, bool) error
+	LockThread(context.Context, string, bool) error
+	CreateEvent(context.Context, *Event) error
+	GetEvent(context.Context, string) (*Event, error)
+	UpdateEvent(context.Context, string, *Event) error
+	DeleteEvent(context.Context, string) error
+	ListEvents(context.Context, *string, string, string, int32, int32) ([]*Event, error)
+	GetUpcomingEvents(context.Context, string, int32) ([]*Event, error)
+	RSVP(context.Context, string, string, string) error
+	GetAttendees(context.Context, string, int32, int32) ([]string, error)
+	CreateTicket(context.Context, string, string, string) error
+	GetTicket(context.Context, string) (*Ticket, error)
+	GetUserTickets(context.Context, string) ([]*Ticket, error)
+	ValidateTicket(context.Context, string) (*Ticket, error)
+	CancelTicket(context.Context, string) error
+	CreateSubscription(context.Context, string, string, string, string, time.Time) error
+	GetSubscription(context.Context, string) (*Subscription, error)
+	GetUserSubscriptions(context.Context, string) ([]*Subscription, error)
+	CancelSubscription(context.Context, string) error
+	UpdateSubscription(context.Context, string, string) error
+	ReportContent(context.Context, string, string, string, string) error
+	GetReports(context.Context, string, string, int32, int32) ([]*ContentReport, error)
+	ResolveReport(context.Context, string, string) error
+	GetCommunityGuidelines(context.Context, string) ([]*Guideline, error)
+	UpdateGuidelines(context.Context, string, []*Guideline) error
+	UpdateCommunityStats(context.Context, string) error
+	GetCommunityAnalytics(context.Context, string, string) (*CommunityAnalytics, error)
+	GetMemberActivity(context.Context, string, string, string) (*MemberActivity, error)
 }
 
 type Ticket struct {
-	ID         string
-	EventID    string
-	UserID     string
-	TicketCode string
-	Status     string // active, used, cancelled, expired
-	PurchasedAt time.Time
-	UsedAt     *time.Time
-	ExpiresAt  *time.Time
-	Metadata   map[string]interface{}
+	ID string `json:"id"`; EventID string `json:"eventId"`; UserID string `json:"userId"`; TicketCode string `json:"ticketCode"`; Status string `json:"status"`; PurchasedAt time.Time `json:"purchasedAt"`; UsedAt *time.Time `json:"usedAt,omitempty"`; ExpiresAt *time.Time `json:"expiresAt,omitempty"`; Metadata map[string]interface{} `json:"metadata"`
 }
 
 type Subscription struct {
-	ID           string
-	CreatorID    string
-	SubscriberID string
-	Tier         string
-	Amount       float64
-	Currency     string
-	Status       string // active, cancelled, expired, past_due
-	StartedAt    time.Time
-	ExpiresAt    time.Time
-	AutoRenew    bool
-	Benefits     []string
+	ID string `json:"id"`; CreatorID string `json:"creatorId"`; SubscriberID string `json:"subscriberId"`; Tier string `json:"tier"`; Amount float64 `json:"amount"`; Currency string `json:"currency"`; Status string `json:"status"`; StartedAt time.Time `json:"startedAt"`; ExpiresAt time.Time `json:"expiresAt"`; AutoRenew bool `json:"autoRenew"`; Benefits []string `json:"benefits"`
 }
 
-type ContentReport struct {
-	ID          string
-	ReporterID  string
-	ContentType string // post, comment, thread, event
-	ContentID   string
-	Reason      string
-	Description string
-	Status      string // pending, resolved, dismissed
-	CreatedAt   time.Time
-	ResolvedAt  *time.Time
-	ResolvedBy  *string
-	Resolution  string
-}
+type ContentReport struct { ID string `json:"id"`; ReporterID string `json:"reporterId"`; ContentType string `json:"contentType"`; ContentID string `json:"contentId"`; Reason string `json:"reason"`; Description string `json:"description"`; Status string `json:"status"`; CreatedAt time.Time `json:"createdAt"`; ResolvedAt *time.Time `json:"resolvedAt,omitempty"`; ResolvedBy *string `json:"resolvedBy,omitempty"`; Resolution string `json:"resolution"` }
 
-type Guideline struct {
-	ID          string
-	CommunityID string
-	Title       string
-	Description string
-	Order       int
-	IsActive    bool
-	CreatedAt   time.Time
-}
+type Guideline struct { ID string `json:"id"`; CommunityID string `json:"communityId"`; Title string `json:"title"`; Description string `json:"description"`; Order int `json:"order"`; IsActive bool `json:"isActive"`; CreatedAt time.Time `json:"createdAt"` }
 
-type CommunityAnalytics struct {
-	CommunityID    string
-	Period         string
-	MemberCount    int32
-	NewMembers     int32
-	ActiveMembers  int32
-	PostCount      int32
-	CommentCount   int32
-	EventCount     int32
-	EngagementRate float64
-	AvgSessionTime float64
-	TopContent     []string
-}
+type CommunityAnalytics struct { CommunityID string `json:"communityId"`; Period string `json:"period"`; MemberCount int32 `json:"memberCount"`; NewMembers int32 `json:"newMembers"`; ActiveMembers int32 `json:"activeMembers"`; PostCount int32 `json:"postCount"`; CommentCount int32 `json:"commentCount"`; EventCount int32 `json:"eventCount"`; EngagementRate float64 `json:"engagementRate"`; AvgSessionTime float64 `json:"avgSessionTime"`; TopContent []string `json:"topContent"` }
 
-type MemberActivity struct {
-	UserID        string
-	CommunityID   string
-	Period        string
-	PostsCreated  int32
-	CommentsMade  int32
-	EventsAttended int32
-	ReactionsGiven int32
-	TimeSpent     int32 // minutes
-	LastActiveAt  time.Time
-}
+type MemberActivity struct { UserID string `json:"userId"`; CommunityID string `json:"communityId"`; Period string `json:"period"`; PostsCreated int32 `json:"postsCreated"`; CommentsMade int32 `json:"commentsMade"`; EventsAttended int32 `json:"eventsAttended"`; ReactionsGiven int32 `json:"reactionsGiven"`; TimeSpent int32 `json:"timeSpent"`; LastActiveAt time.Time `json:"lastActiveAt"` }
 
 type CommunityService interface {
-	CreateGroup(ctx context.Context, ownerID, name, desc string, isPrivate bool) (*Community, error)
-	Join(ctx context.Context, commID, userID string) error
-	Leave(ctx context.Context, commID, userID string) error
-	
-	// Event Management
-	OrganizeEvent(ctx context.Context, event *Event) (*Event, error)
-	AttendEvent(ctx context.Context, eventID, userID string) error
-	CancelEvent(ctx context.Context, eventID string) error
-	UpdateEvent(ctx context.Context, eventID string, updates *Event) error
-	
-	// Subscription Management
-	SubscribeToCreator(ctx context.Context, subID, creatorID, tier string) error
-	CancelSubscription(ctx context.Context, subID string) error
-	UpdateSubscriptionTier(ctx context.Context, subID, tier string) error
-	
-	// Synergy Collectives
-	FormCollective(ctx context.Context, name, desc, icon string) (*Collective, error)
-	StartThread(ctx context.Context, collectiveID, authorID, title, content string) (*Thread, error)
-	Resonate(ctx context.Context, threadID string, isPositive bool) error
-	ReplyToThread(ctx context.Context, threadID, authorID, content string) (*ThreadReply, error)
-	PinThread(ctx context.Context, threadID string, pinned bool) error
-	LockThread(ctx context.Context, threadID string, locked bool) error
-	
-	// Member Management
-	PromoteMember(ctx context.Context, commID, userID, role string) error
-	DemoteMember(ctx context.Context, commID, userID, role string) error
-	BanMember(ctx context.Context, commID, userID, reason string, duration *time.Time) error
-	UnbanMember(ctx context.Context, commID, userID string) error
-	
-	// Moderation
-	ReportContent(ctx context.Context, reporterID, contentType, contentID, reason string) error
-	ResolveReport(ctx context.Context, reportID, resolution string) error
-	SetCommunityGuidelines(ctx context.Context, communityID string, guidelines []*Guideline) error
-	
-	// Analytics
-	GetCommunityAnalytics(ctx context.Context, communityID string, period string) (*CommunityAnalytics, error)
-	GetMemberActivity(ctx context.Context, communityID, userID string, period string) (*MemberActivity, error)
-	
-	// Discovery
-	SearchCommunities(ctx context.Context, query string, filters map[string]interface{}) ([]*Community, error)
-	GetTrendingCommunities(ctx context.Context, limit int32) ([]*Community, error)
-	GetRecommendedCommunities(ctx context.Context, userID string, limit int32) ([]*Community, error)
+	CreateGroup(context.Context, string, string, string, bool) (*Community, error)
+	Join(context.Context, string, string) error
+	Leave(context.Context, string, string) error
+	OrganizeEvent(context.Context, *Event) (*Event, error)
+	AttendEvent(context.Context, string, string) error
+	CancelEvent(context.Context, string) error
+	UpdateEvent(context.Context, string, *Event) error
+	SubscribeToCreator(context.Context, string, string, string, string) error
+	CancelSubscription(context.Context, string) error
+	UpdateSubscriptionTier(context.Context, string, string) error
+	FormCollective(context.Context, string, string, string) (*Collective, error)
+	StartThread(context.Context, string, string, string, string) (*Thread, error)
+	Resonate(context.Context, string, bool) error
+	ReplyToThread(context.Context, string, string, string) (*ThreadReply, error)
+	PinThread(context.Context, string, bool) error
+	LockThread(context.Context, string, bool) error
+	PromoteMember(context.Context, string, string, string) error
+	DemoteMember(context.Context, string, string, string) error
+	BanMember(context.Context, string, string, string, *time.Time) error
+	UnbanMember(context.Context, string, string) error
+	ReportContent(context.Context, string, string, string, string) error
+	ResolveReport(context.Context, string, string) error
+	SetCommunityGuidelines(context.Context, string, []*Guideline) error
+	GetCommunityAnalytics(context.Context, string, string) (*CommunityAnalytics, error)
+	GetMemberActivity(context.Context, string, string, string) (*MemberActivity, error)
+	SearchCommunities(context.Context, string, map[string]interface{}) ([]*Community, error)
+	GetTrendingCommunities(context.Context, int32) ([]*Community, error)
+	GetRecommendedCommunities(context.Context, string, int32) ([]*Community, error)
 }
