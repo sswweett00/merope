@@ -103,9 +103,5 @@ func (r *postgresCommunityRepository) CreateSubscription(ctx context.Context, su
 	return err
 }
 
-func (r *postgresCommunityRepository) CreateCollective(ctx context.Context, col *domain.Collective) error { return nil }
-func (r *postgresCommunityRepository) GetCollective(ctx context.Context, id string) (*domain.Collective, error) { return nil, nil }
-func (r *postgresCommunityRepository) ListCollectives(ctx context.Context) ([]*domain.Collective, error) { return nil, nil }
 func (r *postgresCommunityRepository) CreateThread(ctx context.Context, t *domain.Thread) error { return nil }
-func (r *postgresCommunityRepository) GetCollectives(ctx context.Context) ([]*domain.Collective, error) { return nil, nil }
 func (r *postgresCommunityRepository) ResonateThread(ctx context.Context, threadID string, amplitude int) error { return nil }
