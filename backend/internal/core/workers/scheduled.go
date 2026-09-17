@@ -2,7 +2,6 @@ package workers
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"local/merope/internal/core/analytics"
@@ -21,12 +20,7 @@ type ScheduledWorkers struct {
 
 func NewScheduledWorkers(chClient *ch.Client, rds *redis.Client, bus events.Publisher) *ScheduledWorkers {
 	engine := analytics.NewAnalyticsEngine(chClient, bus)
-	return &ScheduledWorkers{
-		engine: engine,
-		redis:  rds,
-		bus:    bus,
-		ch:     chClient,
-	}
+	return &ScheduledWorkers{engine: engine, redis: rds, bus: bus, ch: chClient}
 }
 
 func (w *ScheduledWorkers) Start(ctx context.Context) {
@@ -42,15 +36,9 @@ func (w *ScheduledWorkers) rankerRecalculation(ctx context.Context, interval tim
 	defer ticker.Stop()
 	for {
 		select {
-		case <-ctx.Done():
-			return
+		case <-ctx.Done(): return
 		case <-ticker.C:
-			_ = w.bus.Publish(ctx, "analytics.ranks.recalculate", events.Event{
-				Type: "RANK_RECALCULATION",
-				Payload: map[string]interface{}{
-					"triggered_at": time.Now().Unix(),
-				},
-			})
+			_ = w.bus.Publish(ctx, "analytics.ranks.recalculate", events.Event{Type: "RANK_RECALCULATION", Payload: map[string]interface{}{"triggered_at": time.Now().Unix()}})
 		}
 	}
 }
@@ -60,12 +48,9 @@ func (w *ScheduledWorkers) trendRefresh(ctx context.Context, interval time.Durat
 	defer ticker.Stop()
 	for {
 		select {
-		case <-ctx.Done():
-			return
+		case <-ctx.Done(): return
 		case <-ticker.C:
-			if err := w.engine.RefreshTrendingTopics(ctx); err != nil {
-				logger.Warn("trend refresh failed", "error", err)
-			}
+			if err := w.engine.RefreshTrendingTopics(ctx); err != nil { logger.Warn("trend refresh failed", "error", err) }
 		}
 	}
 }
@@ -75,13 +60,9 @@ func (w *ScheduledWorkers) analyticsAggregation(ctx context.Context, interval ti
 	defer ticker.Stop()
 	for {
 		select {
-		case <-ctx.Done():
-			return
+		case <-ctx.Done(): return
 		case <-ticker.C:
-			date := time.Now().UTC()
-			if err := w.engine.AggregateDailyStats(ctx, date); err != nil {
-				logger.Warn("analytics aggregation failed", "error", err)
-			}
+			if err := w.engine.AggregateDailyStats(ctx, time.Now().UTC()); err != nil { logger.Warn("analytics aggregation failed", "error", err) }
 		}
 	}
 }
@@ -91,24 +72,19 @@ func (w *ScheduledWorkers) sessionCleanup(ctx context.Context, interval time.Dur
 	defer ticker.Stop()
 	for {
 		select {
-		case <-ctx.Done():
-			return
+		case <-ctx.Done(): return
 		case <-ticker.C:
-			if w.redis == nil {
-				continue
-			}
+			if w.redis == nil { continue }
 			stats, err := w.redis.Info(ctx)
-			if err == nil {
-				_ = stats
-			}
+			if err == nil { _ = stats }
 		}
 	}
 }
 
 type PushNotificationDispatcher struct {
-	enabled   bool
-	ch        *ch.Client
-	bus       events.Publisher
+	enabled bool
+	ch      *ch.Client
+	bus     events.Publisher
 }
 
 func NewPushNotificationDispatcher(chClient *ch.Client, bus events.Publisher) *PushNotificationDispatcher {
@@ -116,11 +92,7 @@ func NewPushNotificationDispatcher(chClient *ch.Client, bus events.Publisher) *P
 		logger.Warn("ClickHouse not available, push dispatch events logged only")
 		return &PushNotificationDispatcher{enabled: false}
 	}
-	return &PushNotificationDispatcher{
-		enabled: true,
-		ch:      chClient,
-		bus:     bus,
-	}
+	return &PushNotificationDispatcher{enabled: true, ch: chClient, bus: bus}
 }
 
 func (d *PushNotificationDispatcher) Start(ctx context.Context) {
@@ -133,14 +105,10 @@ func (d *PushNotificationDispatcher) processPushQueue(ctx context.Context, inter
 	defer ticker.Stop()
 	for {
 		select {
-		case <-ctx.Done():
-			return
+		case <-ctx.Done(): return
 		case <-ticker.C:
 			if d.enabled {
-				_ = d.bus.Publish(ctx, "push.queue.flush", events.Event{
-					Type:    "PUSH_QUEUE_FLUSH",
-					Payload: map[string]interface{}{"timestamp": time.Now().Unix()},
-				})
+				_ = d.bus.Publish(ctx, "push.queue.flush", events.Event{Type: "PUSH_QUEUE_FLUSH", Payload: map[string]interface{}{"timestamp": time.Now().Unix()}})
 			}
 		}
 	}
@@ -151,14 +119,10 @@ func (d *PushNotificationDispatcher) recordPushMetrics(ctx context.Context, inte
 	defer ticker.Stop()
 	for {
 		select {
-		case <-ctx.Done():
-			return
+		case <-ctx.Done(): return
 		case <-ticker.C:
 			if d.enabled {
-				_ = d.bus.Publish(ctx, "push.metrics.record", events.Event{
-					Type:    "PUSH_METRICS_RECORD",
-					Payload: map[string]interface{}{"timestamp": time.Now().Unix()},
-				})
+				_ = d.bus.Publish(ctx, "push.metrics.record", events.Event{Type: "PUSH_METRICS_RECORD", Payload: map[string]interface{}{"timestamp": time.Now().Unix()}})
 			}
 		}
 	}
