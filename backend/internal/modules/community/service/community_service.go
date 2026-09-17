@@ -12,33 +12,17 @@ import (
 )
 
 type communityService struct { repo domain.CommunityRepository }
-
 func NewCommunityService(repo domain.CommunityRepository) domain.CommunityService { return &communityService{repo: repo} }
-
-func (s *communityService) CreateGroup(ctx context.Context, ownerID, name, desc string, isPrivate bool) (*domain.Community, error) {
-	if name == "" { return nil, fmt.Errorf("community name is required") }
-	slug := security.StripHTML(security.SanitizeHTML(name))
-	comm := &domain.Community{ID:uuid.New().String(), OwnerID:ownerID, Name:security.StripHTML(name), Slug:slug, Description:security.SanitizeHTML(desc), IsPrivate:isPrivate, MemberCount:1, CreatedAt:time.Now(), UpdatedAt:time.Now(), Category:"general", Tags:[]string{}, Rules:[]string{}}
-	if err := s.repo.CreateCommunity(ctx, comm); err != nil { return nil, err }
-	if err := s.repo.JoinCommunity(ctx, comm.ID, ownerID, "owner"); err != nil { return nil, err }
-	return comm, nil
-}
-func (s *communityService) Join(ctx context.Context, commID, userID string) error { return s.repo.JoinCommunity(ctx, commID, userID, "member") }
-func (s *communityService) Leave(ctx context.Context, commID, userID string) error { return s.repo.LeaveCommunity(ctx, commID, userID) }
-func (s *communityService) OrganizeEvent(ctx context.Context, event *domain.Event) (*domain.Event, error) { if event.ID=="" { event.ID=uuid.New().String() }; if event.CreatedAt.IsZero(){event.CreatedAt=time.Now()}; event.UpdatedAt=time.Now(); if err:=s.repo.CreateEvent(ctx,event);err!=nil{return nil,err};return event,nil }
-func (s *communityService) AttendEvent(ctx context.Context,eventID,userID string) error{return s.repo.RSVP(ctx,eventID,userID,"attending")}
-func (s *communityService) CancelEvent(ctx context.Context,eventID string) error{event,err:=s.repo.GetEvent(ctx,eventID);if err!=nil{return err};event.Status="cancelled";event.UpdatedAt=time.Now();return s.repo.UpdateEvent(ctx,eventID,event)}
-func (s *communityService) UpdateEvent(ctx context.Context,eventID string,updates *domain.Event) error{return s.repo.UpdateEvent(ctx,eventID,updates)}
-
-func (s *communityService) SubscribeToCreator(ctx context.Context, subscriberID, creatorID, tier string, args ...string) error {
-	// The optional first argument is a pre-generated subscription ID. Keeping it optional
-	// preserves compatibility with older callers while making ownership explicit.
-	subID := uuid.New().String()
-	if len(args) > 0 && args[0] != "" { subID = args[0] }
-	return s.repo.CreateSubscription(ctx, subID, subscriberID, creatorID, tier, time.Now().Add(30*24*time.Hour))
-}
-func (s *communityService) CancelSubscription(ctx context.Context,subID string) error{return s.repo.CancelSubscription(ctx,subID)}
-func (s *communityService) UpdateSubscriptionTier(ctx context.Context,subID,tier string) error{return s.repo.UpdateSubscription(ctx,subID,tier)}
+func (s *communityService) CreateGroup(ctx context.Context, ownerID, name, desc string, isPrivate bool) (*domain.Community,error){if name==""{return nil,fmt.Errorf("community name is required")};slug:=security.StripHTML(security.SanitizeHTML(name));comm:=&domain.Community{ID:uuid.New().String(),OwnerID:ownerID,Name:security.StripHTML(name),Slug:slug,Description:security.SanitizeHTML(desc),IsPrivate:isPrivate,MemberCount:1,CreatedAt:time.Now(),UpdatedAt:time.Now(),Category:"general",Tags:[]string{},Rules:[]string{}};if err:=s.repo.CreateCommunity(ctx,comm);err!=nil{return nil,err};if err:=s.repo.JoinCommunity(ctx,comm.ID,ownerID,"owner");err!=nil{return nil,err};return comm,nil}
+func (s *communityService) Join(ctx context.Context,commID,userID string)error{return s.repo.JoinCommunity(ctx,commID,userID,"member")}
+func (s *communityService) Leave(ctx context.Context,commID,userID string)error{return s.repo.LeaveCommunity(ctx,commID,userID)}
+func (s *communityService) OrganizeEvent(ctx context.Context,event *domain.Event)(*domain.Event,error){if event.ID==""{event.ID=uuid.New().String()};if event.CreatedAt.IsZero(){event.CreatedAt=time.Now()};event.UpdatedAt=time.Now();if err:=s.repo.CreateEvent(ctx,event);err!=nil{return nil,err};return event,nil}
+func (s *communityService) AttendEvent(ctx context.Context,eventID,userID string)error{return s.repo.RSVP(ctx,eventID,userID,"attending")}
+func (s *communityService) CancelEvent(ctx context.Context,eventID string)error{event,err:=s.repo.GetEvent(ctx,eventID);if err!=nil{return err};event.Status="cancelled";event.UpdatedAt=time.Now();return s.repo.UpdateEvent(ctx,eventID,event)}
+func (s *communityService) UpdateEvent(ctx context.Context,eventID string,updates *domain.Event)error{return s.repo.UpdateEvent(ctx,eventID,updates)}
+func (s *communityService) SubscribeToCreator(ctx context.Context,subscriberID,creatorID,tier,subID string)error{if subID==""{subID=uuid.New().String()};return s.repo.CreateSubscription(ctx,subID,subscriberID,creatorID,tier,time.Now().Add(30*24*time.Hour))}
+func (s *communityService) CancelSubscription(ctx context.Context,subID string)error{return s.repo.CancelSubscription(ctx,subID)}
+func (s *communityService) UpdateSubscriptionTier(ctx context.Context,subID,tier string)error{return s.repo.UpdateSubscription(ctx,subID,tier)}
 func (s *communityService) FormCollective(ctx context.Context,name,desc,icon string)(*domain.Collective,error){slug:=security.StripHTML(security.SanitizeHTML(name));coll:=&domain.Collective{ID:uuid.New().String(),Name:security.StripHTML(name),Slug:slug,Description:security.SanitizeHTML(desc),Icon:icon,CreatedAt:time.Now(),UpdatedAt:time.Now(),Stats:domain.CollectiveStats{}};if err:=s.repo.CreateCollective(ctx,coll);err!=nil{return nil,err};return coll,nil}
 func (s *communityService) StartThread(ctx context.Context,collectiveID,authorID,title,content string)(*domain.Thread,error){thread:=&domain.Thread{ID:uuid.New().String(),CollectiveID:collectiveID,AuthorID:authorID,Title:security.StripHTML(title),Content:security.SanitizeHTML(content),CreatedAt:time.Now(),UpdatedAt:time.Now(),Tags:[]string{},Category:"general"};if err:=s.repo.CreateThread(ctx,thread);err!=nil{return nil,err};return thread,nil}
 func (s *communityService) Resonate(ctx context.Context,threadID string,isPositive bool)error{delta:=1;if !isPositive{delta=-1};return s.repo.ResonateThread(ctx,threadID,delta)}
