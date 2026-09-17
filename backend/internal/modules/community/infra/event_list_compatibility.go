@@ -95,8 +95,9 @@ LIMIT $%d OFFSET $%d`, where, limitArg, offsetArg), args...)
 		event.Description = description.String
 		event.StartTime = createdAt.Time
 		event.EndTime = endsAt.Time
-		event.Status = "published"
-		if !endsAt.Time.After(createdAt.Time) {
+		if endsAt.Time.After(time.Now()) {
+			event.Status = "published"
+		} else {
 			event.Status = "completed"
 		}
 		event.CreatedAt = createdAt.Time
