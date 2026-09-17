@@ -40,3 +40,7 @@ func (s *notificationsService) GetActivity(ctx context.Context, userID string, p
 	const pageSize int32 = 20
 	return s.repo.GetForUser(ctx, userID, pageSize, page*pageSize)
 }
+
+func (s *notificationsService) ClearForUser(ctx context.Context, userID string) error {
+	return s.repo.ClearForUser(ctx, userID)
+}
