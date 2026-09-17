@@ -161,19 +161,12 @@ LIMIT $2 OFFSET $3`, uid, limit, offset)
 	return result, nil
 }
 
-func (r *PostgresNotificationsRepository) MarkAsRead(ctx context.Context, id, userID string) error {
-	nID, err := parseNotificationUUID(id)
+func (r *PostgresNotificationsRepository) ClearForUser(ctx context.Context, userID string) error {
+	uid, err := parseNotificationUUID(userID)
 	if err != nil {
 		return err
 	}
-	uID, err := parseNotificationUUID(userID)
-	if err != nil {
-		return err
-	}
-	_, err = r.queries.Exec(ctx, `
-UPDATE notifications
-SET is_read = TRUE, read_at = COALESCE(read_at, NOW())
-WHERE id = $1 AND user_id = $2`, nID, uID)
+	_, err = r.queries.Exec(ctx, `DELETE FROM notifications WHERE user_id = $1`, uid)
 	return err
 }
 
