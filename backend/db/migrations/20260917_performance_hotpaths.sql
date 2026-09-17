@@ -9,11 +9,28 @@ CREATE INDEX IF NOT EXISTS idx_posts_feed_published_time
     ON posts(published_at DESC, id)
     WHERE is_archived = FALSE AND is_draft = FALSE AND deleted_at IS NULL;
 
+CREATE INDEX IF NOT EXISTS idx_posts_feed_author_time
+    ON posts(author_id, published_at DESC, id)
+    WHERE is_archived = FALSE AND is_draft = FALSE AND deleted_at IS NULL;
+
+CREATE INDEX IF NOT EXISTS idx_posts_public_feed_time
+    ON posts(published_at DESC, id)
+    WHERE visibility = 'public'
+      AND is_archived = FALSE
+      AND is_draft = FALSE
+      AND deleted_at IS NULL;
+
+CREATE INDEX IF NOT EXISTS idx_follows_follower_following
+    ON follows(follower_id, following_id);
+
 CREATE INDEX IF NOT EXISTS idx_comments_post_created
     ON comments(post_id, created_at ASC, id);
 
 CREATE INDEX IF NOT EXISTS idx_collective_members_collective_joined
     ON collective_members(collective_id, joined_at DESC, user_id);
+
+CREATE INDEX IF NOT EXISTS idx_collective_members_user_collective
+    ON collective_members(user_id, collective_id);
 
 CREATE INDEX IF NOT EXISTS idx_thread_replies_thread_created
     ON thread_replies(thread_id, created_at ASC, id);
@@ -29,3 +46,11 @@ CREATE INDEX IF NOT EXISTS idx_developer_api_requests_app_time_success
 
 CREATE INDEX IF NOT EXISTS idx_developer_webhook_deliveries_webhook_time_status
     ON developer_webhook_deliveries(webhook_id, delivered_at DESC, success);
+
+CREATE INDEX IF NOT EXISTS idx_stories_active_expiry
+    ON stories(expires_at DESC, id)
+    WHERE is_archived = FALSE;
+
+CREATE INDEX IF NOT EXISTS idx_broadcasts_live_viewers
+    ON broadcasts(viewer_count DESC, started_at DESC, id)
+    WHERE is_live = TRUE;
