@@ -124,13 +124,13 @@ LIMIT $3 OFFSET $4`, uid, category, limit, offset)
 		); err != nil {
 			return nil, err
 		}
+		_ = isJoined
+		_ = userRole
 
 		community.ID = util.UUIDToString(id)
 		community.OwnerID = util.UUIDToString(ownerID)
 		community.CreatedAt = createdAt.Time
 		community.UpdatedAt = updatedAt.Time
-		community.IsJoined = isJoined
-		community.UserRole = userRole
 		community.Settings = domain.CommunitySettings{}
 		community.Stats = domain.CommunityStats{}
 		community.Tags = append([]string(nil), community.Tags...)
