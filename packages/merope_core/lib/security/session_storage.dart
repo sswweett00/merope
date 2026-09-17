@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:merope_models/auth/auth_user.dart';
 
@@ -7,6 +8,9 @@ class SessionStorage {
 
   static const _tokenKey = 'auth_token';
   static const _userKey = 'auth_user';
+
+  String? _cachedToken;
+  bool _tokenLoaded = false;
 
   SessionStorage({FlutterSecureStorage? storage})
       : _storage = storage ??
@@ -21,6 +25,9 @@ class SessionStorage {
     AuthUser? user,
   }) async {
     await _storage.write(key: _tokenKey, value: token);
+    _cachedToken = token;
+    _tokenLoaded = true;
+
     if (user != null) {
       await _storage.write(key: _userKey, value: jsonEncode(user.toJson()));
     }
@@ -33,7 +40,10 @@ class SessionStorage {
   }
 
   Future<String?> getToken() async {
-    return await _storage.read(key: _tokenKey);
+    if (_tokenLoaded) return _cachedToken;
+    _cachedToken = await _storage.read(key: _tokenKey);
+    _tokenLoaded = true;
+    return _cachedToken;
   }
 
   Future<AuthUser?> getUser() async {
@@ -47,14 +57,18 @@ class SessionStorage {
   }
 
   Future<void> clearSession() async {
-    await _storage.delete(key: _tokenKey);
-    await _storage.delete(key: _userKey);
-    await _storage.delete(key: 'refresh_token');
-    await _storage.delete(key: 'session_expiry');
+    await Future.wait([
+      _storage.delete(key: _tokenKey),
+      _storage.delete(key: _userKey),
+      _storage.delete(key: 'refresh_token'),
+      _storage.delete(key: 'session_expiry'),
+    ]);
+    _cachedToken = null;
+    _tokenLoaded = true;
   }
 
   Future<bool> hasSession() async {
     final token = await getToken();
-    return token != null;
+    return token != null && token.isNotEmpty;
   }
 }
