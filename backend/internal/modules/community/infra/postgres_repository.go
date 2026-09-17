@@ -2,9 +2,10 @@ package infra
 
 import (
 	"context"
+
+	"local/merope/internal/core/util"
 	"local/merope/internal/database/db"
 	"local/merope/internal/modules/community/domain"
-	"local/merope/internal/core/util"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
@@ -47,10 +48,6 @@ func (r *postgresCommunityRepository) JoinCommunity(ctx context.Context, commID,
 	})
 }
 
-func (r *postgresCommunityRepository) GetCommunityMembers(ctx context.Context, commID string) ([]string, error) {
-	return nil, nil
-}
-
 func (r *postgresCommunityRepository) CreateEvent(ctx context.Context, event *domain.Event) error {
 	var uid, cid pgtype.UUID
 	_ = uid.Scan(event.CreatorID)
@@ -59,11 +56,11 @@ func (r *postgresCommunityRepository) CreateEvent(ctx context.Context, event *do
 	}
 
 	dbEvent, err := r.queries.CreateEvent(ctx, db.CreateEventParams{
-		ProposerID:   uid,
-		CommunityID:  cid,
-		Title:        event.Title,
-		Description:  event.Description,
-		EndsAt:       pgtype.Timestamptz{Time: event.EndTime, Valid: true},
+		ProposerID:  uid,
+		CommunityID: cid,
+		Title:       event.Title,
+		Description: event.Description,
+		EndsAt:      pgtype.Timestamptz{Time: event.EndTime, Valid: true},
 	})
 	if err != nil {
 		return err
