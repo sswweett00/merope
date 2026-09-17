@@ -5,19 +5,20 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"time"
+
 	"local/merope/internal/modules/notifications/domain"
 	pushDomain "local/merope/internal/modules/push/domain"
 )
 
 type pushService struct {
 	tokenRepo pushDomain.PushRepository
-	notifRepo domain.NotificationsRepository
+	notifRepo domain.RuntimeNotificationRepository
 	dispatcher func(ctx context.Context, token, title, body string, data map[string]string, priority string) error
 }
 
 func NewPushNotificationService(
 	tokenRepo pushDomain.PushRepository,
-	notifRepo domain.NotificationsRepository,
+	notifRepo domain.RuntimeNotificationRepository,
 	dispatcher func(ctx context.Context, token, title, body string, data map[string]string, priority string) error,
 ) pushDomain.PushService {
 	return &pushService{tokenRepo: tokenRepo, notifRepo: notifRepo, dispatcher: dispatcher}
@@ -33,12 +34,12 @@ func (s *pushService) RegisterDevice(ctx context.Context, userID, token, platfor
 	}
 
 	pt := &pushDomain.PushToken{
-		UserID:    userID,
-		Token:     tokenHash,
+		UserID: userID,
+		Token: tokenHash,
 		TokenPlain: token,
-		Platform:  platform,
-		DeviceID:  deviceID,
-		IsActive:  true,
+		Platform: platform,
+		DeviceID: deviceID,
+		IsActive: true,
 		CreatedAt: time.Now().Format(time.RFC3339),
 	}
 	return s.tokenRepo.SaveToken(ctx, pt)
@@ -50,13 +51,15 @@ func (s *pushService) UnregisterDevice(ctx context.Context, tokenID string) erro
 
 func (s *pushService) Dispatch(ctx context.Context, userID, title, body string, data map[string]string) error {
 	if s.notifRepo != nil {
-		_ = s.notifRepo.Create(ctx, &domain.Notification{
+		if err := s.notifRepo.Create(ctx, &domain.Notification{
 			ReceiverID: userID,
 			EntityType: "push",
-			Type:       "push",
-			IsRead:     false,
-			CreatedAt:  time.Now(),
-		})
+			Type: "push",
+			IsRead: false,
+			CreatedAt: time.Now(),
+		}); err != nil {
+			return err
+		}
 	}
 
 	tokens, err := s.tokenRepo.GetActiveTokens(ctx, userID)
@@ -69,12 +72,12 @@ func (s *pushService) Dispatch(ctx context.Context, userID, title, body string, 
 
 	priority := "high"
 	pn := &pushDomain.PushNotification{
-		UserID:    userID,
-		Title:     title,
-		Body:      body,
-		Data:      data,
-		Priority:  priority,
-		Status:    "pending",
+		UserID: userID,
+		Title: title,
+		Body: body,
+		Data: data,
+		Priority: priority,
+		Status: "pending",
 		CreatedAt: time.Now().Format(time.RFC3339),
 	}
 	if err := s.tokenRepo.CreateNotification(ctx, pn); err != nil {
@@ -86,9 +89,11 @@ func (s *pushService) Dispatch(ctx context.Context, userID, title, body string, 
 		if token.TokenPlain != "" {
 			plainToken = token.TokenPlain
 		}
-		_ = s.dispatcher(ctx, plainToken, title, body, data, priority)
+		if err := s.dispatcher(ctx, plainToken, title, body, data, priority); err != nil {
+			_ = s.tokenRepo.UpdateNotificationStatus(ctx, pn.ID, "failed", err.Error())
+			return err
+		}
 	}
-
 	return s.tokenRepo.UpdateNotificationStatus(ctx, pn.ID, "sent", "")
 }
 
