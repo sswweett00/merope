@@ -28,15 +28,9 @@ WHERE id = $1`, id).Scan(&dbID, &ownerID, &c.Name, &description, &avatarURL, &is
 		return nil, err
 	}
 
-	var memberCount, postCount int32
+	var memberCount int32
 	if err := r.queries.QueryRow(ctx, `SELECT COUNT(*)::int FROM community_members WHERE community_id = $1 AND role <> 'banned'`, id).Scan(&memberCount); err != nil {
 		return nil, err
-	}
-	if err := r.queries.QueryRow(ctx, `
-SELECT COUNT(*)::int
-FROM posts p
-WHERE p.visibility = $1`, "community:"+util.UUIDToString(dbID)).Scan(&postCount); err != nil {
-		postCount = 0
 	}
 
 	c.ID = util.UUIDToString(dbID)
@@ -45,7 +39,7 @@ WHERE p.visibility = $1`, "community:"+util.UUIDToString(dbID)).Scan(&postCount)
 	c.AvatarURL = avatarURL
 	c.IsPrivate = isPrivate
 	c.MemberCount = memberCount
-	c.PostCount = postCount
+	c.PostCount = 0
 	c.CreatedAt = createdAt.Time
 	c.UpdatedAt = createdAt.Time
 	return &c, nil
@@ -77,16 +71,13 @@ func (r *postgresCommunityRepository) GetCommunityMembers(ctx context.Context, c
 	}
 
 	query := `
-SELECT cm.community_id, cm.user_id, cm.role, cm.joined_at, u.username
+SELECT cm.community_id, cm.user_id, cm.role, cm.joined_at
 FROM community_members cm
-JOIN users u ON u.id = cm.user_id
 WHERE cm.community_id = $1`
 	args := []interface{}{cid}
 	if strings.TrimSpace(role) != "" {
-		query += ` AND cm.role = $2`
-		args = append(args, role)
-		query += ` ORDER BY cm.joined_at ASC LIMIT $3 OFFSET $4`
-		args = append(args, limit, offset)
+		query += ` AND cm.role = $2 ORDER BY cm.joined_at ASC LIMIT $3 OFFSET $4`
+		args = append(args, role, limit, offset)
 	} else {
 		query += ` ORDER BY cm.joined_at ASC LIMIT $2 OFFSET $3`
 		args = append(args, limit, offset)
@@ -101,21 +92,22 @@ WHERE cm.community_id = $1`
 	members := make([]*domain.CommunityMember, 0)
 	for rows.Next() {
 		var communityID, userID pgtype.UUID
-		var memberRole, username string
+		var memberRole string
 		var joinedAt pgtype.Timestamptz
-		if err := rows.Scan(&communityID, &userID, &memberRole, &joinedAt, &username); err != nil {
+		if err := rows.Scan(&communityID, &userID, &memberRole, &joinedAt); err != nil {
 			return nil, err
 		}
 		members = append(members, &domain.CommunityMember{
-			ID:          util.UUIDToString(userID),
-			CommunityID: util.UUIDToString(communityID),
-			UserID:      util.UUIDToString(userID),
-			Role:        memberRole,
-			JoinedAt:    joinedAt.Time,
-			IsActive:    memberRole != "banned",
-			Preferences: domain.MemberPreferences{},
-			// Username is resolved by the transport layer when needed; the domain member model does not expose it.
-			_ : username,
+			ID:           util.UUIDToString(userID),
+			CommunityID:  util.UUIDToString(communityID),
+			UserID:       util.UUIDToString(userID),
+			Role:         memberRole,
+			JoinedAt:     joinedAt.Time,
+			IsActive:     memberRole != "banned",
+			Preferences:  domain.MemberPreferences{},
+			PostCount:    0,
+			CommentCount: 0,
+			Reputation:   0,
 		})
 	}
 	if err := rows.Err(); err != nil {
