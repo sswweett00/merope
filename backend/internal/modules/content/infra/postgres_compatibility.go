@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"local/merope/internal/core/util"
 	"local/merope/internal/modules/content/domain"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -18,4 +17,3 @@ func (r *PostgresContentRepository) DeleteNode(ctx context.Context, nodeID strin
 }
 
 var _ domain.ContentRepository = (*PostgresContentRepository)(nil)
-var _ = util.UUIDToString
