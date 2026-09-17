@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"local/merope/internal/core/util"
@@ -18,7 +19,7 @@ func (r *postgresCommunityRepository) GetSubscription(ctx context.Context, subID
 	var plan, currency, status string
 	var amount float64
 	var startedAt, expiresAt pgtype.Timestamptz
-	var active, autoRenew bool
+	var autoRenew bool
 	var benefits []string
 	if err := r.queries.QueryRow(ctx, `
 SELECT id, user_id, creator_id, plan, amount, currency,
@@ -63,9 +64,9 @@ ORDER BY started_at DESC`, uid)
 		var plan, currency, status string
 		var amount float64
 		var startedAt, expiresAt pgtype.Timestamptz
-		var activeAuto bool
+		var autoRenew bool
 		var benefits []string
-		if err := rows.Scan(&id, &subscriberID, &creatorID, &plan, &amount, &currency, &status, &startedAt, &expiresAt, &activeAuto, &benefits); err != nil { return nil, err }
+		if err := rows.Scan(&id, &subscriberID, &creatorID, &plan, &amount, &currency, &status, &startedAt, &expiresAt, &autoRenew, &benefits); err != nil { return nil, err }
 		sub.ID = util.UUIDToString(id)
 		sub.SubscriberID = util.UUIDToString(subscriberID)
 		sub.CreatorID = util.UUIDToString(creatorID)
@@ -75,7 +76,7 @@ ORDER BY started_at DESC`, uid)
 		sub.Status = status
 		sub.StartedAt = startedAt.Time
 		sub.ExpiresAt = expiresAt.Time
-		sub.AutoRenew = activeAuto
+		sub.AutoRenew = autoRenew
 		sub.Benefits = benefits
 		result = append(result, &sub)
 	}
@@ -92,8 +93,7 @@ func (r *postgresCommunityRepository) UpdateSubscription(ctx context.Context, su
 }
 
 func (r *postgresCommunityRepository) CreateSubscription(ctx context.Context, subID, subscriberID, creatorID, tier string, expiresAt time.Time) error {
-	id, err := parseUUID(subID)
-	if err != nil { return err }
+	id, err := parseUUID(subID); if err != nil { return err }
 	subscriber, err := parseUUID(subscriberID); if err != nil { return err }
 	creator, err := parseUUID(creatorID); if err != nil { return err }
 	tier = strings.TrimSpace(tier)
