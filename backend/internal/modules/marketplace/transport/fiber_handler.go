@@ -7,10 +7,10 @@ import (
 )
 
 type MarketplaceHandler struct {
-	service domain.MarketplaceService
+	service domain.RuntimeMarketplaceService
 }
 
-func NewMarketplaceHandler(service domain.MarketplaceService) *MarketplaceHandler {
+func NewMarketplaceHandler(service domain.RuntimeMarketplaceService) *MarketplaceHandler {
 	return &MarketplaceHandler{service: service}
 }
 
@@ -19,23 +19,23 @@ func (h *MarketplaceHandler) ListProduct(c *fiber.Ctx) error {
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
 	}
+	if req.Price < 0 || req.StockQuantity < 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid product values"})
+	}
 
 	if err := h.service.PostProduct(c.Context(), &req); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
-
 	return c.JSON(fiber.Map{"message": "Product listed successfully", "product_id": req.ID})
 }
 
 func (h *MarketplaceHandler) Purchase(c *fiber.Ctx) error {
 	userID := c.Locals("user_id").(string)
-
 	var req struct {
 		ProductIDs []string `json:"product_ids"`
 		Quantities []int32  `json:"quantities"`
 		Address    string   `json:"address"`
 	}
-
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
 	}
@@ -44,10 +44,9 @@ func (h *MarketplaceHandler) Purchase(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
-
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"order":      order,
-		"order_id":   order.ID,
+		"order": order,
+		"order_id": order.ID,
 		"total_amount": order.TotalAmount,
 	})
 }
