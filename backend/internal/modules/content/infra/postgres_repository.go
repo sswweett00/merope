@@ -3,12 +3,12 @@ package infra
 import (
 	"context"
 	"fmt"
-	"local/merope/internal/core/util"
-	"local/merope/internal/database/db"
-	"local/merope/internal/modules/content/domain"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
+	"local/merope/internal/core/util"
+	"local/merope/internal/database/db"
+	"local/merope/internal/modules/content/domain"
 )
 
 type PostgresContentRepository struct {
@@ -58,14 +58,14 @@ func (r *PostgresContentRepository) GetStream(ctx context.Context, userID string
 	res := make([]*domain.Signal, len(rows))
 	for i, row := range rows {
 		res[i] = &domain.Signal{
-			ID:           util.UUIDToString(row.ID),
-			AuthorID:     util.UUIDToString(row.AuthorID),
-			AuthorName:   row.AuthorUsername,
-			AuthorAvatar: row.AuthorAvatar.String,
-			ContentText:  row.ContentText,
-			MediaURLs:    row.MediaUrls,
-			Visibility:   row.Visibility,
-			CreatedAt:    row.CreatedAt.Time,
+			ID:            util.UUIDToString(row.ID),
+			AuthorID:      util.UUIDToString(row.AuthorID),
+			AuthorName:    row.AuthorUsername,
+			AuthorAvatar:  row.AuthorAvatar.String,
+			ContentText:   row.ContentText,
+			MediaURLs:     row.MediaUrls,
+			Visibility:    row.Visibility,
+			CreatedAt:     row.CreatedAt.Time,
 			CreatedAtUnix: row.CreatedAt.Time.Unix(),
 		}
 	}
@@ -188,18 +188,6 @@ func (r *PostgresContentRepository) DeleteSignal(ctx context.Context, signalID s
 
 func (r *PostgresContentRepository) CreateMentions(ctx context.Context, mentions []*domain.Mention) error {
 	return nil
-}
-
-func (r *PostgresContentRepository) CreateWavePool(ctx context.Context, signalID, question string, endsAt time.Time, options []string) error {
-	return nil
-}
-
-func (r *PostgresContentRepository) VoteWave(ctx context.Context, poolID, optionID, userID string) error {
-	return nil
-}
-
-func (r *PostgresContentRepository) GetWaveResults(ctx context.Context, poolID string) (map[string]int, error) {
-	return nil, nil
 }
 
 func (r *PostgresContentRepository) LinkFrequencies(ctx context.Context, signalID string, tags []string) error {
