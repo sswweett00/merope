@@ -116,4 +116,41 @@ WHERE cm.community_id = $1`
 	return members, nil
 }
 
+func (r *postgresCommunityRepository) GetTrendingCommunities(ctx context.Context, limit int32) ([]*domain.Community, error) {
+	if limit <= 0 || limit > 100 {
+		limit = 20
+	}
+	rows, err := r.queries.Query(ctx, `
+SELECT c.id, c.owner_id, c.name, COALESCE(c.description, ''), COALESCE(c.avatar_url, ''), c.is_private, c.created_at,
+       COUNT(cm.user_id) FILTER (WHERE cm.role <> 'banned')::int AS member_count
+FROM communities c
+LEFT JOIN community_members cm ON cm.community_id = c.id
+GROUP BY c.id, c.owner_id, c.name, c.description, c.avatar_url, c.is_private, c.created_at
+ORDER BY member_count DESC, c.created_at DESC
+LIMIT $1`, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	communities := make([]*domain.Community, 0)
+	for rows.Next() {
+		var community domain.Community
+		var id, ownerID pgtype.UUID
+		var createdAt pgtype.Timestamptz
+		if err := rows.Scan(&id, &ownerID, &community.Name, &community.Description, &community.AvatarURL, &community.IsPrivate, &createdAt, &community.MemberCount); err != nil {
+			return nil, err
+		}
+		community.ID = util.UUIDToString(id)
+		community.OwnerID = util.UUIDToString(ownerID)
+		community.CreatedAt = createdAt.Time
+		community.UpdatedAt = createdAt.Time
+		communities = append(communities, &community)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return communities, nil
+}
+
 var _ domain.CommunityRepository = (*postgresCommunityRepository)(nil)
