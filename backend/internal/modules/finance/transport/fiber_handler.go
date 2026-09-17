@@ -7,10 +7,10 @@ import (
 )
 
 type FinanceHandler struct {
-	service domain.FinanceService
+	service domain.RuntimeFinanceService
 }
 
-func NewFinanceHandler(service domain.FinanceService) *FinanceHandler {
+func NewFinanceHandler(service domain.RuntimeFinanceService) *FinanceHandler {
 	return &FinanceHandler{service: service}
 }
 
@@ -27,7 +27,7 @@ func (h *FinanceHandler) Tip(c *fiber.Ctx) error {
 	senderID := c.Locals("user_id").(string)
 	type request struct {
 		ReceiverID string `json:"receiver_id"`
-		Amount     int32  `json:"amount"`
+		Amount     int64  `json:"amount"`
 	}
 	var req request
 	if err := c.BodyParser(&req); err != nil {
@@ -44,7 +44,7 @@ func (h *FinanceHandler) CreateEscrow(c *fiber.Ctx) error {
 	buyerID := c.Locals("user_id").(string)
 	var req struct {
 		SellerID    string `json:"seller_id"`
-		Amount      int32  `json:"amount"`
+		Amount      int64  `json:"amount"`
 		Description string `json:"description"`
 	}
 	if err := c.BodyParser(&req); err != nil {
