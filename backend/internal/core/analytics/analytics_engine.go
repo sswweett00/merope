@@ -55,7 +55,6 @@ type AnalyticsEngine struct {
 
 func (e *AnalyticsEngine) AggregateDailyStats(ctx context.Context, date time.Time) error {
 	dayStart := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.UTC)
-	dayEnd := dayStart.Add(24 * time.Hour)
 
 	select {
 	case <-ctx.Done():
