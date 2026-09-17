@@ -96,3 +96,17 @@ CREATE TABLE IF NOT EXISTS developer_webhook_deliveries (
     delivered_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_developer_webhook_deliveries_webhook ON developer_webhook_deliveries(webhook_id, delivered_at DESC);
+
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'bot_webhooks')
+       AND NOT EXISTS (
+           SELECT 1 FROM pg_constraint
+           WHERE conname = 'bot_webhooks_bot_id_fkey'
+             AND conrelid = 'bot_webhooks'::regclass
+       ) THEN
+        ALTER TABLE bot_webhooks
+            ADD CONSTRAINT bot_webhooks_bot_id_fkey
+            FOREIGN KEY (bot_id) REFERENCES developer_apps(id) ON DELETE CASCADE;
+    END IF;
+END $$;
