@@ -18,30 +18,58 @@ func (r *postgresCommunityRepository) GetCommunity(ctx context.Context, commID s
 
 	var c domain.Community
 	var dbID, ownerID pgtype.UUID
-	var description, avatarURL string
-	var isPrivate bool
-	var createdAt pgtype.Timestamptz
-	var memberCount int32
+	var createdAt, updatedAt pgtype.Timestamptz
 	if err := r.queries.QueryRow(ctx, `
-SELECT c.id, c.owner_id, c.name, c.description, c.avatar_url, c.is_private, c.created_at,
-       COUNT(cm.user_id) FILTER (WHERE cm.role <> 'banned')::int AS member_count
+SELECT
+    c.id,
+    c.owner_id,
+    c.name,
+    COALESCE(c.slug, ''),
+    COALESCE(c.description, ''),
+    COALESCE(c.avatar_url, ''),
+    COALESCE(c.banner_url, ''),
+    c.is_private,
+    c.is_verified,
+    COUNT(cm.user_id) FILTER (WHERE cm.role <> 'banned')::int AS member_count,
+    c.created_at,
+    c.updated_at,
+    COALESCE(c.category, 'general'),
+    COALESCE(c.tags, '{}'),
+    COALESCE(c.rules, '{}')
 FROM communities c
 LEFT JOIN community_members cm ON cm.community_id = c.id
 WHERE c.id = $1
-GROUP BY c.id, c.owner_id, c.name, c.description, c.avatar_url, c.is_private, c.created_at`, id).
-		Scan(&dbID, &ownerID, &c.Name, &description, &avatarURL, &isPrivate, &createdAt, &memberCount); err != nil {
+GROUP BY c.id, c.owner_id, c.name, c.slug, c.description, c.avatar_url, c.banner_url,
+         c.is_private, c.is_verified, c.created_at, c.updated_at, c.category, c.tags, c.rules`, id).
+		Scan(
+			&dbID,
+			&ownerID,
+			&c.Name,
+			&c.Slug,
+			&c.Description,
+			&c.AvatarURL,
+			&c.BannerURL,
+			&c.IsPrivate,
+			&c.IsVerified,
+			&c.MemberCount,
+			&createdAt,
+			&updatedAt,
+			&c.Category,
+			&c.Tags,
+			&c.Rules,
+		); err != nil {
 		return nil, err
 	}
 
 	c.ID = util.UUIDToString(dbID)
 	c.OwnerID = util.UUIDToString(ownerID)
-	c.Description = description
-	c.AvatarURL = avatarURL
-	c.IsPrivate = isPrivate
-	c.MemberCount = memberCount
 	c.PostCount = 0
 	c.CreatedAt = createdAt.Time
-	c.UpdatedAt = createdAt.Time
+	c.UpdatedAt = updatedAt.Time
+	c.Settings = domain.CommunitySettings{}
+	c.Stats = domain.CommunityStats{}
+	c.Tags = append([]string(nil), c.Tags...)
+	c.Rules = append([]string(nil), c.Rules...)
 	return &c, nil
 }
 
@@ -52,7 +80,7 @@ func (r *postgresCommunityRepository) GetCommunityBySlug(ctx context.Context, sl
 	}
 
 	var id pgtype.UUID
-	if err := r.queries.QueryRow(ctx, `SELECT id FROM communities WHERE LOWER(REPLACE(name, ' ', '-')) = LOWER($1) LIMIT 1`, slug).Scan(&id); err != nil {
+	if err := r.queries.QueryRow(ctx, `SELECT id FROM communities WHERE LOWER(slug) = LOWER($1) LIMIT 1`, slug).Scan(&id); err != nil {
 		return nil, err
 	}
 	return r.GetCommunity(ctx, util.UUIDToString(id))
@@ -71,8 +99,9 @@ func (r *postgresCommunityRepository) GetCommunityMembers(ctx context.Context, c
 	}
 
 	query := `
-SELECT cm.community_id, cm.user_id, cm.role, cm.joined_at
+SELECT cm.community_id, cm.user_id, u.username, COALESCE(u.avatar_url, ''), cm.role, cm.joined_at
 FROM community_members cm
+JOIN users u ON u.id = cm.user_id
 WHERE cm.community_id = $1`
 	args := []interface{}{cid}
 	if strings.TrimSpace(role) != "" {
@@ -92,9 +121,9 @@ WHERE cm.community_id = $1`
 	members := make([]*domain.CommunityMember, 0)
 	for rows.Next() {
 		var communityID, userID pgtype.UUID
-		var memberRole string
+		var username, avatarURL, memberRole string
 		var joinedAt pgtype.Timestamptz
-		if err := rows.Scan(&communityID, &userID, &memberRole, &joinedAt); err != nil {
+		if err := rows.Scan(&communityID, &userID, &username, &avatarURL, &memberRole, &joinedAt); err != nil {
 			return nil, err
 		}
 		members = append(members, &domain.CommunityMember{
@@ -104,11 +133,15 @@ WHERE cm.community_id = $1`
 			Role:         memberRole,
 			JoinedAt:     joinedAt.Time,
 			IsActive:     memberRole != "banned",
+			LastActiveAt: joinedAt.Time,
 			Preferences:  domain.MemberPreferences{},
 			PostCount:    0,
 			CommentCount: 0,
 			Reputation:   0,
+			Badges:       []string{},
 		})
+		_ = username
+		_ = avatarURL
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -135,12 +168,28 @@ func (r *postgresCommunityRepository) GetTrendingCommunities(ctx context.Context
 		limit = 20
 	}
 	rows, err := r.queries.Query(ctx, `
-SELECT c.id, c.owner_id, c.name, COALESCE(c.description, ''), COALESCE(c.avatar_url, ''), c.is_private, c.created_at,
-       COUNT(cm.user_id) FILTER (WHERE cm.role <> 'banned')::int AS member_count
+SELECT
+    c.id,
+    c.owner_id,
+    c.name,
+    COALESCE(c.slug, ''),
+    COALESCE(c.description, ''),
+    COALESCE(c.avatar_url, ''),
+    COALESCE(c.banner_url, ''),
+    c.is_private,
+    c.is_verified,
+    COUNT(cm.user_id) FILTER (WHERE cm.role <> 'banned')::int AS member_count,
+    c.created_at,
+    c.updated_at,
+    COALESCE(c.category, 'general'),
+    COALESCE(c.tags, '{}'),
+    COALESCE(c.rules, '{}')
 FROM communities c
 LEFT JOIN community_members cm ON cm.community_id = c.id
-GROUP BY c.id, c.owner_id, c.name, c.description, c.avatar_url, c.is_private, c.created_at
-ORDER BY member_count DESC, c.created_at DESC
+WHERE c.is_private = FALSE
+GROUP BY c.id, c.owner_id, c.name, c.slug, c.description, c.avatar_url, c.banner_url,
+         c.is_private, c.is_verified, c.created_at, c.updated_at, c.category, c.tags, c.rules
+ORDER BY member_count DESC, c.created_at DESC, c.id ASC
 LIMIT $1`, limit)
 	if err != nil {
 		return nil, err
@@ -151,14 +200,34 @@ LIMIT $1`, limit)
 	for rows.Next() {
 		var community domain.Community
 		var id, ownerID pgtype.UUID
-		var createdAt pgtype.Timestamptz
-		if err := rows.Scan(&id, &ownerID, &community.Name, &community.Description, &community.AvatarURL, &community.IsPrivate, &createdAt, &community.MemberCount); err != nil {
+		var createdAt, updatedAt pgtype.Timestamptz
+		if err := rows.Scan(
+			&id,
+			&ownerID,
+			&community.Name,
+			&community.Slug,
+			&community.Description,
+			&community.AvatarURL,
+			&community.BannerURL,
+			&community.IsPrivate,
+			&community.IsVerified,
+			&community.MemberCount,
+			&createdAt,
+			&updatedAt,
+			&community.Category,
+			&community.Tags,
+			&community.Rules,
+		); err != nil {
 			return nil, err
 		}
 		community.ID = util.UUIDToString(id)
 		community.OwnerID = util.UUIDToString(ownerID)
 		community.CreatedAt = createdAt.Time
-		community.UpdatedAt = createdAt.Time
+		community.UpdatedAt = updatedAt.Time
+		community.Settings = domain.CommunitySettings{}
+		community.Stats = domain.CommunityStats{}
+		community.Tags = append([]string(nil), community.Tags...)
+		community.Rules = append([]string(nil), community.Rules...)
 		communities = append(communities, &community)
 	}
 	if err := rows.Err(); err != nil {
@@ -166,5 +235,3 @@ LIMIT $1`, limit)
 	}
 	return communities, nil
 }
-
-var _ domain.CommunityRepository = (*postgresCommunityRepository)(nil)
