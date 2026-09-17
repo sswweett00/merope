@@ -61,6 +61,7 @@ class ApiClient {
     dio.interceptors.add(IdempotencyInterceptor());
     dio.interceptors.add(
       AuthInterceptor(
+        dio,
         _sessionStorage,
         onRefresh: () => refreshCallback?.call() ?? Future.value(false),
       ),
@@ -217,7 +218,8 @@ class BackgroundTransformer extends SyncTransformer {
 }
 
 class AuthInterceptor extends Interceptor {
-  AuthInterceptor(this._sessionStorage, {this.onRefresh});
+  AuthInterceptor(this._dio, this._sessionStorage, {this.onRefresh});
+  final Dio _dio;
   final SessionStorage _sessionStorage;
   final Future<bool> Function()? onRefresh;
   bool _isRefreshing = false;
@@ -294,22 +296,21 @@ class AuthInterceptor extends Interceptor {
     handler.next(err);
   }
 
-  Future<Response> _retry(RequestOptions requestOptions) {
-    return _sessionStorage.getToken().then((token) {
-      return dio.fetch(
-        requestOptions.copyWith(
-          extra: {
-            ...requestOptions.extra,
-            'skipAuthRefresh': true,
-          },
-          headers: {
-            ...requestOptions.headers,
-            if (token != null && token.isNotEmpty)
-              'Authorization': 'Bearer $token',
-          },
-        ),
-      );
-    });
+  Future<Response> _retry(RequestOptions requestOptions) async {
+    final token = await _sessionStorage.getToken();
+    return _dio.fetch(
+      requestOptions.copyWith(
+        extra: {
+          ...requestOptions.extra,
+          'skipAuthRefresh': true,
+        },
+        headers: {
+          ...requestOptions.headers,
+          if (token != null && token.isNotEmpty)
+            'Authorization': 'Bearer $token',
+        },
+      ),
+    );
   }
 }
 
