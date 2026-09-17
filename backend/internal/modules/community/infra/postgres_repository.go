@@ -2,11 +2,11 @@ package infra
 
 import (
 	"context"
+	"time"
 
 	"local/merope/internal/core/util"
 	"local/merope/internal/database/db"
 	"local/merope/internal/modules/community/domain"
-	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -99,6 +99,3 @@ func (r *postgresCommunityRepository) CreateSubscription(ctx context.Context, su
 	})
 	return err
 }
-
-func (r *postgresCommunityRepository) CreateThread(ctx context.Context, t *domain.Thread) error { return nil }
-func (r *postgresCommunityRepository) ResonateThread(ctx context.Context, threadID string, amplitude int) error { return nil }
