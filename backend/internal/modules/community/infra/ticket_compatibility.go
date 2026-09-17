@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
+	"local/merope/internal/core/util"
 	"local/merope/internal/modules/community/domain"
 )
 
@@ -38,8 +39,8 @@ FROM transactions
 WHERE id = $1 AND tx_type = 'event_ticket'`, id).Scan(&rowID, &userID, &reference, &status, &createdAt); err != nil {
 		return nil, err
 	}
-	ticket.ID = uuidString(rowID)
-	ticket.UserID = uuidString(userID)
+	ticket.ID = util.UUIDToString(rowID)
+	ticket.UserID = util.UUIDToString(userID)
 	ticket.TicketCode = reference
 	ticket.Status = status
 	ticket.PurchasedAt = createdAt
@@ -68,8 +69,8 @@ ORDER BY created_at DESC`, uid)
 		if err := rows.Scan(&id, &ownerID, &ticket.TicketCode, &ticket.Status, &ticket.PurchasedAt); err != nil {
 			return nil, err
 		}
-		ticket.ID = uuidString(id)
-		ticket.UserID = uuidString(ownerID)
+		ticket.ID = util.UUIDToString(id)
+		ticket.UserID = util.UUIDToString(ownerID)
 		ticket.Metadata = map[string]interface{}{}
 		result = append(result, &ticket)
 	}
@@ -90,8 +91,8 @@ ORDER BY created_at DESC
 LIMIT 1`, ticketCode).Scan(&id, &ownerID, &ticket.TicketCode, &ticket.Status, &ticket.PurchasedAt); err != nil {
 		return nil, err
 	}
-	ticket.ID = uuidString(id)
-	ticket.UserID = uuidString(ownerID)
+	ticket.ID = util.UUIDToString(id)
+	ticket.UserID = util.UUIDToString(ownerID)
 	ticket.Metadata = map[string]interface{}{}
 	return &ticket, nil
 }
@@ -106,11 +107,4 @@ UPDATE transactions
 SET status = 'cancelled'
 WHERE id = $1 AND tx_type = 'event_ticket'`, id)
 	return err
-}
-
-func uuidString(id pgtype.UUID) string {
-	if !id.Valid {
-		return ""
-	}
-	return fmt.Sprintf("%s", id.Bytes)
 }
