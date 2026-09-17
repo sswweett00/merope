@@ -3,9 +3,9 @@ package infra
 import (
 	"context"
 	"fmt"
+	"local/merope/internal/core/util"
 	"local/merope/internal/database/db"
 	"local/merope/internal/modules/content/domain"
-	"local/merope/internal/core/util"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
@@ -21,7 +21,9 @@ func NewPostgresContentRepository(queries *db.Queries) *PostgresContentRepositor
 
 func (r *PostgresContentRepository) CreateSignal(ctx context.Context, p *domain.Signal) error {
 	var aid pgtype.UUID
-	_ = aid.Scan(p.AuthorID)
+	if err := aid.Scan(p.AuthorID); err != nil {
+		return fmt.Errorf("invalid author uuid: %w", err)
+	}
 
 	dbPost, err := r.queries.CreatePost(ctx, db.CreatePostParams{
 		AuthorID:    aid,
@@ -40,7 +42,9 @@ func (r *PostgresContentRepository) CreateSignal(ctx context.Context, p *domain.
 
 func (r *PostgresContentRepository) GetStream(ctx context.Context, userID string, limit, offset int32) ([]*domain.Signal, error) {
 	var uid pgtype.UUID
-	_ = uid.Scan(userID)
+	if err := uid.Scan(userID); err != nil {
+		return nil, fmt.Errorf("invalid user uuid: %w", err)
+	}
 
 	rows, err := r.queries.GetFeed(ctx, db.GetFeedParams{
 		FollowerID: uid,
@@ -62,6 +66,7 @@ func (r *PostgresContentRepository) GetStream(ctx context.Context, userID string
 			MediaURLs:    row.MediaUrls,
 			Visibility:   row.Visibility,
 			CreatedAt:    row.CreatedAt.Time,
+			CreatedAtUnix: row.CreatedAt.Time.Unix(),
 		}
 	}
 	return res, nil
@@ -69,8 +74,12 @@ func (r *PostgresContentRepository) GetStream(ctx context.Context, userID string
 
 func (r *PostgresContentRepository) AddResonance(ctx context.Context, userID, targetID string, amplitude int) error {
 	var uid, tid pgtype.UUID
-	_ = uid.Scan(userID)
-	_ = tid.Scan(targetID)
+	if err := uid.Scan(userID); err != nil {
+		return fmt.Errorf("invalid user uuid: %w", err)
+	}
+	if err := tid.Scan(targetID); err != nil {
+		return fmt.Errorf("invalid target uuid: %w", err)
+	}
 
 	_, err := r.queries.AddReaction(ctx, db.AddReactionParams{
 		UserID:       uid,
@@ -147,21 +156,91 @@ func (r *PostgresContentRepository) GetNodesForSignal(ctx context.Context, signa
 	return res, nil
 }
 
-func (r *PostgresContentRepository) UpdateSignalStatus(ctx context.Context, signalID string, pinned, archived, draft bool) error { return nil }
+func (r *PostgresContentRepository) UpdateSignalStatus(ctx context.Context, signalID string, pinned, archived, draft bool) error {
+	var sid pgtype.UUID
+	if err := sid.Scan(signalID); err != nil {
+		return fmt.Errorf("invalid signal uuid: %w", err)
+	}
+	_, err := r.queries.Exec(ctx, `
+UPDATE posts
+SET is_archived = $2,
+    is_draft = $3,
+    updated_at = NOW()
+WHERE id = $1`, sid, archived, draft)
+	return err
+}
+
 func (r *PostgresContentRepository) UpdateSignal(ctx context.Context, s *domain.Signal) error {
 	var sid pgtype.UUID
-	_ = sid.Scan(s.ID)
+	if err := sid.Scan(s.ID); err != nil {
+		return fmt.Errorf("invalid signal uuid: %w", err)
+	}
 	return r.queries.UpdatePost(ctx, s.ContentText, s.MediaURLs, sid)
 }
+
 func (r *PostgresContentRepository) DeleteSignal(ctx context.Context, signalID string) error {
 	var sid pgtype.UUID
-	_ = sid.Scan(signalID)
+	if err := sid.Scan(signalID); err != nil {
+		return fmt.Errorf("invalid signal uuid: %w", err)
+	}
 	return r.queries.DeletePost(ctx, sid)
 }
-func (r *PostgresContentRepository) CreateMentions(ctx context.Context, mentions []*domain.Mention) error { return nil }
-func (r *PostgresContentRepository) CreateWavePool(ctx context.Context, signalID, question string, endsAt time.Time, options []string) error { return nil }
-func (r *PostgresContentRepository) VoteWave(ctx context.Context, poolID, optionID, userID string) error { return nil }
-func (r *PostgresContentRepository) GetWaveResults(ctx context.Context, poolID string) (map[string]int, error) { return nil, nil }
-func (r *PostgresContentRepository) LinkFrequencies(ctx context.Context, signalID string, tags []string) error { return nil }
-func (r *PostgresContentRepository) CreateVault(ctx context.Context, ownerID, name string, isPrivate bool) (string, error) { return "", nil }
-func (r *PostgresContentRepository) VaultSignal(ctx context.Context, userID, signalID string, vaultID *string) error { return nil }
+
+func (r *PostgresContentRepository) CreateMentions(ctx context.Context, mentions []*domain.Mention) error {
+	return nil
+}
+
+func (r *PostgresContentRepository) CreateWavePool(ctx context.Context, signalID, question string, endsAt time.Time, options []string) error {
+	return nil
+}
+
+func (r *PostgresContentRepository) VoteWave(ctx context.Context, poolID, optionID, userID string) error {
+	return nil
+}
+
+func (r *PostgresContentRepository) GetWaveResults(ctx context.Context, poolID string) (map[string]int, error) {
+	return nil, nil
+}
+
+func (r *PostgresContentRepository) LinkFrequencies(ctx context.Context, signalID string, tags []string) error {
+	return nil
+}
+
+func (r *PostgresContentRepository) CreateVault(ctx context.Context, ownerID, name string, isPrivate bool) (string, error) {
+	var uid pgtype.UUID
+	if err := uid.Scan(ownerID); err != nil {
+		return "", fmt.Errorf("invalid owner uuid: %w", err)
+	}
+
+	var id pgtype.UUID
+	if err := r.queries.QueryRow(ctx, `
+INSERT INTO bookmark_collections (owner_id, name, is_private)
+VALUES ($1, $2, $3)
+RETURNING id`, uid, name, isPrivate).Scan(&id); err != nil {
+		return "", err
+	}
+	return util.UUIDToString(id), nil
+}
+
+func (r *PostgresContentRepository) VaultSignal(ctx context.Context, userID, signalID string, vaultID *string) error {
+	var uid, sid pgtype.UUID
+	if err := uid.Scan(userID); err != nil {
+		return fmt.Errorf("invalid user uuid: %w", err)
+	}
+	if err := sid.Scan(signalID); err != nil {
+		return fmt.Errorf("invalid signal uuid: %w", err)
+	}
+
+	var collection pgtype.UUID
+	if vaultID != nil && *vaultID != "" {
+		if err := collection.Scan(*vaultID); err != nil {
+			return fmt.Errorf("invalid vault uuid: %w", err)
+		}
+	}
+	_, err := r.queries.Exec(ctx, `
+INSERT INTO bookmarks (user_id, post_id, collection_id)
+VALUES ($1, $2, $3)
+ON CONFLICT (user_id, post_id)
+DO UPDATE SET collection_id = EXCLUDED.collection_id`, uid, sid, collection)
+	return err
+}
