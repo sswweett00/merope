@@ -23,6 +23,10 @@ func main() {
 	app, resources, _, cleanup := wiring.BuildApp(ctx, cfg)
 	defer cleanup()
 
+	if err := wiring.RegisterStoriesRoutes(app, cfg, resources.PostgresPool, resources.Redis); err != nil {
+		log.Fatalf("failed to register stories routes: %v", err)
+	}
+
 	app.Get("/health/live", func(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "ok"})
 	})
