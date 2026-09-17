@@ -3,50 +3,60 @@ package infra
 import (
 	"context"
 	"fmt"
-	"time"
 
+	"local/merope/internal/database/db"
 	"local/merope/internal/modules/messaging/domain"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func (r *PostgresMessagingRepository) GetMessageHistory(ctx context.Context, messageID string) ([]*domain.MessageHistory, error) {
-	messages, err := r.GetMessages(ctx, "00000000-0000-0000-0000-000000000000", 0, 0)
-	_ = messages
-	if err != nil {
-		// Preserve the repository contract: history is optional for deployments
-		// that do not have a dedicated history table yet.
-		return nil, nil
-	}
-	return nil, nil
+	var id pgtype.UUID
+	if err := id.Scan(messageID); err != nil { return nil, fmt.Errorf("invalid message id: %w", err) }
+
+	var content string
+	var authorID pgtype.UUID
+	var createdAt pgtype.Timestamptz
+	err := r.queries.QueryRow(ctx, `
+SELECT content, author_id, created_at
+FROM chat_messages
+WHERE id = $1
+ORDER BY created_at DESC
+LIMIT 1`, id).Scan(&content, &authorID, &createdAt)
+	if err != nil { return nil, err }
+
+	return []*domain.MessageHistory{{
+		MessageID: messageID,
+		Content: content,
+		Version: 1,
+		AuthorID: authorID.String(),
+		CreatedAt: createdAt.Time,
+	}}, nil
 }
 
 func (r *PostgresMessagingRepository) MarkDelivered(ctx context.Context, messageID string) error {
+	if messageID == "" { return fmt.Errorf("message id is required") }
 	return nil
 }
 
 func (r *ScyllaMessagingRepository) GetMessageHistory(ctx context.Context, messageID string) ([]*domain.MessageHistory, error) {
 	message, err := r.getMessageByID(ctx, messageID)
-	if err != nil {
-		return nil, err
-	}
+	if err != nil { return nil, err }
 	return []*domain.MessageHistory{{
 		MessageID: message.ID,
-		Content:   message.Content,
-		Version:   message.Version,
-		AuthorID:  message.SenderID,
+		Content: message.Content,
+		Version: message.Version,
+		AuthorID: message.SenderID,
 		CreatedAt: message.CreatedAt,
 	}}, nil
 }
 
 func (r *ScyllaMessagingRepository) MarkDelivered(ctx context.Context, messageID string) error {
-	if messageID == "" {
-		return fmt.Errorf("message id is required")
-	}
-	// Delivery receipts are currently emitted through the event bus; keeping
-	// this repository method side-effect free avoids inventing a non-existent
-	// Scylla delivery table.
+	if messageID == "" { return fmt.Errorf("message id is required") }
 	return nil
 }
 
-var _ = time.Time{}
 var _ domain.MessagingRepository = (*PostgresMessagingRepository)(nil)
 var _ domain.MessagingRepository = (*ScyllaMessagingRepository)(nil)
+
+var _ = db.Queries{}
