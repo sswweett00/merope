@@ -80,16 +80,6 @@ func (r *postgresCommunityRepository) RSVP(ctx context.Context, eventID, userID,
 	})
 }
 
-func (r *postgresCommunityRepository) CreateTicket(ctx context.Context, eventID, userID, code string) error {
-	var uid pgtype.UUID
-	_ = uid.Scan(userID)
-	_, err := r.queries.CreateEventTicket(ctx, db.CreateEventTicketParams{
-		WalletID:  uid,
-		Reference: pgtype.Text{String: code, Valid: true},
-	})
-	return err
-}
-
 func (r *postgresCommunityRepository) CreateSubscription(ctx context.Context, subID, creatorID, tier string, expiresAt time.Time) error {
 	var uid pgtype.UUID
 	_ = uid.Scan(creatorID)
