@@ -28,8 +28,8 @@ func NewIdentityService(repo domain.IdentityRepository, jwtSecret string, sentin
 	return &identityService{repo: repo, jwtSecret: jwtSecret, sentinel: sentinel}
 }
 
-func (s *identityService) Register(ctx context.Context, username, email, password, ip, ua string, sys domain.SystemType) (*domain.User, string, error) {
-	strength := zxcvbn.PasswordStrength(password, []string{username, email})
+func (s *identityService) Register(ctx context.Context, username, displayName, email, password, ip, ua string, sys domain.SystemType) (*domain.User, string, error) {
+	strength := zxcvbn.PasswordStrength(password, []string{username, email, displayName})
 	if strength.Score < 3 {
 		return nil, "", fmt.Errorf("password is too weak (score: %d/4). Try a longer phrase or add symbols", strength.Score)
 	}
@@ -37,7 +37,13 @@ func (s *identityService) Register(ctx context.Context, username, email, passwor
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to hash password: %w", err)
 	}
-	user := &domain.User{Username: username, Email: email, PasswordHash: hashedPassword, SystemType: sys}
+	user := &domain.User{
+		Username:    username,
+		DisplayName: displayName,
+		Email:       email,
+		PasswordHash: hashedPassword,
+		SystemType:  sys,
+	}
 	if err := s.repo.CreateUser(ctx, user); err != nil {
 		return nil, "", err
 	}
@@ -164,7 +170,7 @@ func (s *identityService) Logout(ctx context.Context, tokenID string, expiration
 	return s.repo.BlacklistToken(ctx, tokenID, duration)
 }
 
-func (s *identityService) RefreshToken(ctx context.Context, refreshToken string) (string, string, error) {
+func (s *identityService) RefreshToken(ctx context.Context, refreshToken, ip, ua string) (string, string, error) {
 	newRefreshToken, err := security.GenerateRefreshToken()
 	if err != nil {
 		return "", "", fmt.Errorf("failed to generate refresh token: %w", err)
@@ -191,10 +197,12 @@ func (s *identityService) RefreshToken(ctx context.Context, refreshToken string)
 	if err != nil {
 		return "", "", fmt.Errorf("user not found")
 	}
-	fingerprint := security.GenerateFingerprint("", "")
+	// Refresh requests must issue an access token bound to the same request
+	// fingerprint that AuthMiddleware will evaluate on the next API call.
+	fingerprint := security.GenerateFingerprint(ip, ua)
 	token, err := security.GenerateToken(user.ID, "user", fingerprint, s.jwtSecret)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to generate token: %w", err)
+		return "", "", fmt.Errorf("failed to generate access token: %w", err)
 	}
 	return token, newRefreshToken, nil
 }

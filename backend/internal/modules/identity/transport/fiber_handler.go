@@ -47,18 +47,16 @@ func (h *IdentityHandler) Register(c *fiber.Ctx) error {
 	if len(req.Username) < 3 || len(req.Username) > 64 {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"code": errors.ErrValidation, "message": "Invalid username"})
 	}
-	if _, err := mail.ParseAddress(req.Email); err != nil {
+	parsedEmail, err := mail.ParseAddress(req.Email)
+	if err != nil || parsedEmail.Address != req.Email {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"code": errors.ErrValidation, "message": "Invalid email format"})
 	}
 	if len(req.Password) < 8 || len(req.Password) > 128 {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"code": errors.ErrValidation, "message": "Invalid password"})
 	}
-	user, token, err := h.service.Register(c.Context(), req.Username, req.Email, req.Password, c.IP(), c.Get("User-Agent"), sys)
+	user, token, err := h.service.Register(c.Context(), req.Username, req.DisplayName, req.Email, req.Password, c.IP(), c.Get("User-Agent"), sys)
 	if err != nil {
 		return c.Status(fiber.StatusConflict).JSON(fiber.Map{"code": errors.ErrValidation, "message": "Unable to create account"})
-	}
-	if req.DisplayName != "" {
-		user.DisplayName = req.DisplayName
 	}
 	refreshToken, err := security.GenerateRefreshToken()
 	if err != nil {
@@ -75,6 +73,7 @@ func (h *IdentityHandler) Login(c *fiber.Ctx) error {
 	type request struct {
 		Email       string `json:"email"`
 		Password    string `json:"password"`
+		DeviceID    string `json:"device_id"`
 		Fingerprint string `json:"fingerprint"`
 	}
 	var req request
@@ -95,7 +94,13 @@ func (h *IdentityHandler) Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{"code": "AUTH_RATE_LIMITED", "message": "Too many authentication attempts"})
 	}
 
-	user, token, mfaRequired, err := h.service.Login(c.Context(), req.Email, req.Password, req.Fingerprint, c.IP(), c.Get("User-Agent"))
+	deviceID := strings.TrimSpace(req.DeviceID)
+	if deviceID == "" {
+		// Keep accepting the legacy client field while the app migrates to
+		// the explicit device_id contract.
+		deviceID = strings.TrimSpace(req.Fingerprint)
+	}
+	user, token, mfaRequired, err := h.service.Login(c.Context(), req.Email, req.Password, deviceID, c.IP(), c.Get("User-Agent"))
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"code": errors.ErrAuthFailed, "message": "Invalid credentials"})
 	}
@@ -191,7 +196,7 @@ func (h *IdentityHandler) RefreshToken(c *fiber.Ctx) error {
 	if err := c.BodyParser(&req); err != nil || strings.TrimSpace(req.RefreshToken) == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"code": errors.ErrBadRequest, "message": "Refresh token is required"})
 	}
-	token, newRefreshToken, err := h.service.RefreshToken(c.Context(), req.RefreshToken)
+	token, newRefreshToken, err := h.service.RefreshToken(c.Context(), req.RefreshToken, c.IP(), c.Get("User-Agent"))
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"code": errors.ErrAuthFailed, "message": "Invalid or expired refresh token"})
 	}

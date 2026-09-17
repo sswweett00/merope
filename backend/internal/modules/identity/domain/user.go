@@ -31,8 +31,8 @@ type User struct {
 	FailedLoginAttempts int                `json:"failed_login_attempts"`
 	LockedUntil         *time.Time         `json:"locked_until"`
 
-	CreatedAt           time.Time          `json:"created_at"`
-	UpdatedAt           time.Time          `json:"updated_at"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type Session struct {
@@ -80,7 +80,7 @@ type IdentityRepository interface {
 }
 
 type IdentityService interface {
-	Register(ctx context.Context, username, email, password, ip, ua string, sys SystemType) (*User, string, error)
+	Register(ctx context.Context, username, displayName, email, password, ip, ua string, sys SystemType) (*User, string, error)
 	Login(ctx context.Context, identifier, password, deviceID, ip, ua string) (*User, string, bool, error)
 	SetupMFA(ctx context.Context, userID string) (string, string, error)
 	VerifyMFA(ctx context.Context, userID, code string) (bool, error)
@@ -90,5 +90,5 @@ type IdentityService interface {
 	// GDPR (v4.0)
 	ExportData(ctx context.Context, userID string) (map[string]interface{}, error)
 	Logout(ctx context.Context, tokenID string, expiration time.Time) error
-	RefreshToken(ctx context.Context, refreshToken string) (string, string, error)
+	RefreshToken(ctx context.Context, refreshToken, ip, ua string) (string, string, error)
 }

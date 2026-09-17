@@ -3,6 +3,7 @@ package wiring
 import (
 	"context"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -14,6 +15,7 @@ import (
 
 	"local/merope/internal/core/config"
 	"local/merope/internal/core/errors"
+	coreMiddleware "local/merope/internal/core/middleware"
 	"local/merope/internal/core/security"
 	"local/merope/internal/core/worker"
 	"local/merope/internal/database"
@@ -98,6 +100,9 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	} else {
 		zapLogger.Info("NATS connected", zap.String("url", cfg.NATS.URL))
 	}
+	if bus == nil && strings.EqualFold(cfg.Env, "production") {
+		log.Fatalf("NATS is mandatory in production")
+	}
 
 	orchestrator := worker.NewOrchestrator(queries, 10, 20)
 	orchestrator.Start(ctx)
@@ -167,20 +172,27 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 			code := errors.GetCode(err)
 			message := "request failed"
 			if status < 500 {
-				message = err.Error()
+				if domainErr, ok := err.(*errors.DomainError); ok {
+					message = domainErr.Message
+				}
 			}
-			return c.Status(status).JSON(fiber.Map{"code": code, "message": message})
+			return c.Status(status).JSON(fiber.Map{
+				"code":       code,
+				"message":    message,
+				"request_id": coreMiddleware.GetRequestID(c),
+			})
 		},
 	})
 
 	app.Use(recover.New())
+	app.Use(coreMiddleware.RequestID())
 	app.Use(security.HTTPHardeningMiddleware())
 	app.Use(logger.New())
 	app.Use(security.SecurityHeadersMiddleware())
 	app.Use(security.AnomalyDetectorMiddleware(anomalyDetector))
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: cfg.CORSAllowedOrigins,
-		AllowHeaders: "Origin, Content-Type, Accept, Authorization, X-Request-ID",
+		AllowHeaders: "Origin, Content-Type, Accept, Authorization, X-Request-ID, Idempotency-Key",
 		AllowMethods: "GET,HEAD,POST,PUT,PATCH,DELETE,OPTIONS",
 		AllowCredentials: false,
 	}))
@@ -197,6 +209,7 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	auth.Post("/logout", security.AuthMiddleware(cfg.JWTSecret, rdb.Conn), security.RBACMiddleware(rbacEnforcer), idHandler.Logout)
 
 	protected := api.Group("/", security.AuthMiddleware(cfg.JWTSecret, rdb.Conn), security.RBACMiddleware(rbacEnforcer))
+	protected.Use(coreMiddleware.Idempotency(rdb.Conn, 24*time.Hour))
 
 	messaging := protected.Group("/messaging")
 	messaging.Get("/rooms", msgContractHandler.GetRooms)
@@ -239,7 +252,7 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	lumia.Post("/tip", lumHandler.Tip)
 	lumia.Get("/live", lumHandler.GetLive)
 
-	app.Get("/health", func(c *fiber.Ctx) error { return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "ok"}) })
+	app.Get("/health", func(c *fiber.Ctx) error { return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "ok", "request_id": coreMiddleware.GetRequestID(c)}) })
 
 	cleanup := func() {
 		zapLogger.Info("shutting down API")

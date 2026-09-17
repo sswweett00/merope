@@ -32,6 +32,7 @@ func (h *PreAuthMFAHandler) Login(c *fiber.Ctx) error {
 	type request struct {
 		Email       string `json:"email"`
 		Password    string `json:"password"`
+		DeviceID    string `json:"device_id"`
 		Fingerprint string `json:"fingerprint"`
 	}
 	var req request
@@ -49,7 +50,11 @@ func (h *PreAuthMFAHandler) Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{"code": "AUTH_RATE_LIMITED", "message": "Too many authentication attempts"})
 	}
 
-	user, token, mfaRequired, err := h.service.Login(c.Context(), req.Email, req.Password, req.Fingerprint, c.IP(), c.Get("User-Agent"))
+	deviceID := strings.TrimSpace(req.DeviceID)
+	if deviceID == "" {
+		deviceID = strings.TrimSpace(req.Fingerprint)
+	}
+	user, token, mfaRequired, err := h.service.Login(c.Context(), req.Email, req.Password, deviceID, c.IP(), c.Get("User-Agent"))
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"code": errors.ErrAuthFailed, "message": "Invalid credentials"})
 	}
@@ -69,7 +74,10 @@ func (h *PreAuthMFAHandler) Login(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": errors.ErrInternal, "message": "Unable to establish MFA challenge"})
 	}
-	payload, err := json.Marshal(preAuthChallenge{UserID: user.ID, Fingerprint: req.Fingerprint})
+	payload, err := json.Marshal(preAuthChallenge{
+		UserID:      user.ID,
+		Fingerprint: security.GenerateFingerprint(c.IP(), c.Get("User-Agent")),
+	})
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": errors.ErrInternal, "message": "Unable to establish MFA challenge"})
 	}
@@ -132,7 +140,10 @@ func (h *PreAuthMFAHandler) Verify(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"code": "MFA_CHALLENGE_UNAVAILABLE", "message": "Authentication service unavailable"})
 	}
 
-	token, err := security.GenerateToken(challenge.UserID, "user", challenge.Fingerprint, h.jwtSecret)
+	// The fingerprint is derived by the server from the request; a client never
+	// gets to choose the binding used by the resulting access token.
+	fingerprint := security.GenerateFingerprint(c.IP(), c.Get("User-Agent"))
+	token, err := security.GenerateToken(challenge.UserID, "user", fingerprint, h.jwtSecret)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"code": errors.ErrInternal, "message": "Unable to establish session"})
 	}
