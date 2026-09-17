@@ -41,6 +41,9 @@ import (
 	lumiaInfra "local/merope/internal/modules/lumia/infra"
 	lumiaService "local/merope/internal/modules/lumia/service"
 	lumiaTransport "local/merope/internal/modules/lumia/transport"
+	marketplaceInfra "local/merope/internal/modules/marketplace/infra"
+	marketplaceService "local/merope/internal/modules/marketplace/service"
+	marketplaceTransport "local/merope/internal/modules/marketplace/transport"
 	messagingDomain "local/merope/internal/modules/messaging/domain"
 	messagingInfra "local/merope/internal/modules/messaging/infra"
 	messagingService "local/merope/internal/modules/messaging/service"
@@ -62,15 +65,16 @@ type Resources struct {
 }
 
 type Handlers struct {
-	Identity     *identityTransport.IdentityHandler
-	Content      *contentTransport.ContentHandler
-	Messaging    *messagingTransport.MessagingHandler
-	Social       *socialTransport.SocialHandler
-	Lumia        *lumiaTransport.LumiaHandler
-	Developer    *developerTransport.DeveloperHandler
-	Community    *communityTransport.CommunityHandler
+	Identity      *identityTransport.IdentityHandler
+	Content       *contentTransport.ContentHandler
+	Messaging     *messagingTransport.MessagingHandler
+	Social        *socialTransport.SocialHandler
+	Lumia         *lumiaTransport.LumiaHandler
+	Developer     *developerTransport.DeveloperHandler
+	Community     *communityTransport.CommunityHandler
+	Marketplace   *marketplaceTransport.MarketplaceHandler
 	Notifications *notificationsTransport.NotificationsHandler
-	VeritasGuard socialService.VeritasContentGuard
+	VeritasGuard  socialService.VeritasContentGuard
 }
 
 func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, *Handlers, func()) {
@@ -84,6 +88,7 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	}
 	rdb := redis.New(cfg.Redis.Addr, cfg.Redis.Password)
 	queries := db.New(pgPool)
+
 	var scyllaClient *scylla.Client
 	if len(cfg.Scylla.Hosts) > 0 {
 		scyllaClient, err = scylla.New(scylla.Config{Hosts: cfg.Scylla.Hosts, Keyspace: cfg.Scylla.Keyspace, Username: cfg.Scylla.Username, Password: cfg.Scylla.Password, Consistency: cfg.Scylla.Consistency})
@@ -93,6 +98,7 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 			zapLogger.Info("ScyllaDB connected", zap.Strings("hosts", cfg.Scylla.Hosts))
 		}
 	}
+
 	var bus *nats.Client
 	bus, err = nats.New(cfg.NATS.URL)
 	if err != nil {
@@ -162,30 +168,53 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	communitySvc := communityService.NewCommunityService(communityRepo)
 	communityHandler := communityTransport.NewCommunityHandler(communitySvc, communityRepo)
 
+	marketplaceRepo := marketplaceInfra.NewPostgresMarketplaceRepository(queries)
+	marketplaceSvc := marketplaceService.NewMarketplaceService(marketplaceRepo)
+	marketplaceHandler := marketplaceTransport.NewMarketplaceHandler(marketplaceSvc)
+
 	notificationRepo := notificationsInfra.NewPostgresNotificationsRepository(queries)
 	notificationSvc := notificationsService.NewNotificationsService(notificationRepo, nil)
 	notificationHandler := notificationsTransport.NewNotificationsHandler(notificationSvc)
 
-	handlers := &Handlers{Identity: idHandler, Content: contHandler, Messaging: msgHandler, Social: socHandler, Lumia: lumHandler, Developer: developerHandler, Community: communityHandler, Notifications: notificationHandler, VeritasGuard: veritasGuard}
+	handlers := &Handlers{
+		Identity:      idHandler,
+		Content:       contHandler,
+		Messaging:     msgHandler,
+		Social:        socHandler,
+		Lumia:         lumHandler,
+		Developer:     developerHandler,
+		Community:     communityHandler,
+		Marketplace:   marketplaceHandler,
+		Notifications: notificationHandler,
+		VeritasGuard:  veritasGuard,
+	}
+
 	rbacEnforcer, err := security.NewDefaultEnforcer()
 	if err != nil {
 		log.Fatalf("failed to initialize RBAC: %v", err)
 	}
 
-	app := fiber.New(fiber.Config{DisableStartupMessage: true, BodyLimit: 4 * 1024 * 1024, ReadTimeout: 15 * time.Second, WriteTimeout: 30 * time.Second, IdleTimeout: 60 * time.Second, ErrorHandler: func(c *fiber.Ctx, err error) error {
-		status := coreErrors.ToHTTPStatus(err)
-		if status < 400 {
-			status = fiber.StatusInternalServerError
-		}
-		code := coreErrors.GetCode(err)
-		message := "request failed"
-		if status < 500 {
-			if domainErr, ok := err.(*coreErrors.DomainError); ok {
-				message = domainErr.Message
+	app := fiber.New(fiber.Config{
+		DisableStartupMessage: true,
+		BodyLimit:             4 * 1024 * 1024,
+		ReadTimeout:           15 * time.Second,
+		WriteTimeout:          30 * time.Second,
+		IdleTimeout:           60 * time.Second,
+		ErrorHandler: func(c *fiber.Ctx, err error) error {
+			status := coreErrors.ToHTTPStatus(err)
+			if status < 400 {
+				status = fiber.StatusInternalServerError
 			}
-		}
-		return c.Status(status).JSON(fiber.Map{"code": code, "message": message, "request_id": coreMiddleware.GetRequestID(c)})
-	}})
+			code := coreErrors.GetCode(err)
+			message := "request failed"
+			if status < 500 {
+				if domainErr, ok := err.(*coreErrors.DomainError); ok {
+					message = domainErr.Message
+				}
+			}
+			return c.Status(status).JSON(fiber.Map{"code": code, "message": message, "request_id": coreMiddleware.GetRequestID(c)})
+		},
+	})
 	app.Use(recover.New())
 	app.Use(coreMiddleware.RequestID())
 	app.Use(security.HTTPHardeningMiddleware())
@@ -247,6 +276,11 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	lumia := protected.Group("/lumia")
 	lumia.Post("/tip", lumHandler.Tip)
 	lumia.Get("/live", lumHandler.GetLive)
+
+	marketplace := protected.Group("/marketplace")
+	marketplace.Get("/products", marketplaceHandler.ListProducts)
+	marketplace.Post("/products", marketplaceHandler.ListProduct)
+	marketplace.Post("/orders", marketplaceHandler.Purchase)
 
 	notifications := protected.Group("/notifications")
 	notifications.Get("/activity", notificationHandler.GetActivity)
