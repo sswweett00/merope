@@ -31,7 +31,6 @@ CREATE TABLE onetime_prekeys (
 );
 
 -- 2. Nearby (PostGIS)
--- Ensure PostGIS is enabled (might require superuser, but we include it for schema completeness)
 CREATE EXTENSION IF NOT EXISTS postgis;
 
 CREATE TABLE user_locations (
@@ -44,20 +43,21 @@ CREATE TABLE user_locations (
 CREATE INDEX idx_user_locations_gist ON user_locations USING GIST (location);
 
 -- 3. Bot Platform Enhancements
+-- developer_apps is created by the developer runtime migration. Keep this
+-- table independent here so clean installs never reference a future table.
 CREATE TABLE bot_webhooks (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    bot_id UUID NOT NULL REFERENCES developer_apps(id) ON DELETE CASCADE,
+    bot_id UUID NOT NULL,
     callback_url TEXT NOT NULL,
     events TEXT[] DEFAULT '{}',
     secret_token TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+CREATE INDEX idx_bot_webhooks_bot ON bot_webhooks(bot_id, created_at DESC);
 
 -- 4. Analytics (ClickHouse is used for main analytics, but we can track simple events in Postgres for small scale)
--- Note: High-volume events go to ClickHouse directly.
 
--- 5. Finance/Escrow (Updating existing table if needed or adding helper tables)
--- existing escrow_records table is present in schema.sql, adding more details:
+-- 5. Finance/Escrow
 ALTER TABLE escrow_records ADD COLUMN IF NOT EXISTS buyer_id UUID REFERENCES users(id);
 ALTER TABLE escrow_records ADD COLUMN IF NOT EXISTS seller_id UUID REFERENCES users(id);
 ALTER TABLE escrow_records ADD COLUMN IF NOT EXISTS description TEXT;
