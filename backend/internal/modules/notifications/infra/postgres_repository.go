@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -22,7 +21,7 @@ func NewPostgresNotificationsRepository(queries *db.Queries) *PostgresNotificati
 	return &PostgresNotificationsRepository{queries: queries}
 }
 
-func parseUUID(value string) (pgtype.UUID, error) {
+func parseNotificationUUID(value string) (pgtype.UUID, error) {
 	var id pgtype.UUID
 	if err := id.Scan(strings.TrimSpace(value)); err != nil {
 		return id, fmt.Errorf("invalid uuid: %w", err)
@@ -31,14 +30,14 @@ func parseUUID(value string) (pgtype.UUID, error) {
 }
 
 func (r *PostgresNotificationsRepository) Create(ctx context.Context, n *domain.Notification) error {
-	userID, err := parseUUID(n.ReceiverID)
+	userID, err := parseNotificationUUID(n.ReceiverID)
 	if err != nil {
 		return err
 	}
 
 	var actorID *pgtype.UUID
 	if n.SenderID != nil && strings.TrimSpace(*n.SenderID) != "" {
-		id, parseErr := parseUUID(*n.SenderID)
+		id, parseErr := parseNotificationUUID(*n.SenderID)
 		if parseErr != nil {
 			return parseErr
 		}
@@ -47,7 +46,7 @@ func (r *PostgresNotificationsRepository) Create(ctx context.Context, n *domain.
 
 	var entityID *pgtype.UUID
 	if strings.TrimSpace(n.EntityID) != "" {
-		id, parseErr := parseUUID(n.EntityID)
+		id, parseErr := parseNotificationUUID(n.EntityID)
 		if parseErr != nil {
 			return parseErr
 		}
@@ -65,7 +64,7 @@ func (r *PostgresNotificationsRepository) Create(ctx context.Context, n *domain.
 
 	var id pgtype.UUID
 	if strings.TrimSpace(n.ID) != "" {
-		id, err = parseUUID(n.ID)
+		id, err = parseNotificationUUID(n.ID)
 		if err != nil {
 			return err
 		}
@@ -87,7 +86,7 @@ RETURNING created_at`, id, userID, actorID, n.Type, n.EntityType, entityID, payl
 }
 
 func (r *PostgresNotificationsRepository) GetForUser(ctx context.Context, userID string, limit, offset int32) ([]*domain.Notification, error) {
-	uid, err := parseUUID(userID)
+	uid, err := parseNotificationUUID(userID)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +128,9 @@ LIMIT $2 OFFSET $3`, uid, limit, offset)
 
 		data := map[string]interface{}{}
 		if len(payload) != 0 {
-			_ = json.Unmarshal(payload, &data)
+			if unmarshalErr := json.Unmarshal(payload, &data); unmarshalErr != nil {
+				return nil, fmt.Errorf("invalid notification payload: %w", unmarshalErr)
+			}
 		}
 
 		n := &domain.Notification{
@@ -143,7 +144,7 @@ LIMIT $2 OFFSET $3`, uid, limit, offset)
 			IsRead:         isRead,
 			CreatedAt:      createdAt.Time,
 			Category:       "social",
-			Source:         "mobile",
+			Source:         "server",
 		}
 		if senderID != nil && senderID.Valid {
 			value := util.UUIDToString(*senderID)
@@ -161,11 +162,11 @@ LIMIT $2 OFFSET $3`, uid, limit, offset)
 }
 
 func (r *PostgresNotificationsRepository) MarkAsRead(ctx context.Context, id, userID string) error {
-	nID, err := parseUUID(id)
+	nID, err := parseNotificationUUID(id)
 	if err != nil {
 		return err
 	}
-	uID, err := parseUUID(userID)
+	uID, err := parseNotificationUUID(userID)
 	if err != nil {
 		return err
 	}
@@ -177,4 +178,3 @@ WHERE id = $1 AND user_id = $2`, nID, uID)
 }
 
 var _ domain.RuntimeNotificationRepository = (*PostgresNotificationsRepository)(nil)
-var _ = time.Time{}
