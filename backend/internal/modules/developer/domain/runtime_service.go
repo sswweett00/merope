@@ -2,23 +2,39 @@ package domain
 
 import "context"
 
-// Metrics is the lightweight health payload currently exposed by the developer API.
 type Metrics struct {
 	SyncRate float64 `json:"sync_rate"`
 	Latency  float64 `json:"latency"`
 	Load     float64 `json:"load"`
 }
 
-// RuntimeDeveloperService represents the production API surface currently wired
-// by the developer HTTP transport. The broader DeveloperService contract remains
-// available for future modules without forcing partially implemented methods into
-// the live runtime.
 type RuntimeDeveloperService interface {
-	RegisterApp(context.Context, string, string) (*App, error)
-	SetupWebhook(context.Context, string, string, []string) (*Webhook, error)
-	GetAppHealth(context.Context, string) (*Metrics, error)
-	ListWebhooks(context.Context, string) ([]*Webhook, error)
-	GenerateAPIKey(context.Context, string, string, []string, int) (*APIKey, error)
+	RegisterApp(context.Context, string, string, string) (*App, error)
+	GetApp(context.Context, string) (*App, error)
+	GetApps(context.Context, string) ([]*App, error)
+	UpdateApp(context.Context, *App) error
+	DeleteApp(context.Context, string) error
+	VerifyApp(context.Context, string) error
+
+	CreateAPIKey(context.Context, string, string, string, []string, int) (*APIKey, error)
+	GetAPIKey(context.Context, string) (*APIKey, error)
 	ListAPIKeys(context.Context, string) ([]*APIKey, error)
+	UpdateAPIKey(context.Context, *APIKey) error
 	RevokeAPIKey(context.Context, string) error
+
+	CreateWebhook(context.Context, string, string, string, []string) (*Webhook, error)
+	GetWebhook(context.Context, string) (*Webhook, error)
+	ListWebhooks(context.Context, string) ([]*Webhook, error)
+	UpdateWebhook(context.Context, *Webhook) error
+	DeleteWebhook(context.Context, string) error
+	TestWebhook(context.Context, string) error
+
+	CreateBot(context.Context, string, string, string) (*Bot, error)
+	GetBot(context.Context, string) (*Bot, error)
+	ListBots(context.Context, string) ([]*Bot, error)
+	UpdateBot(context.Context, *Bot) error
+	DeleteBot(context.Context, string) error
+
+	GetMetrics(context.Context, string, string) (*DeveloperMetrics, error)
+	RunTestSuite(context.Context, string) (*TestSuiteResult, error)
 }
