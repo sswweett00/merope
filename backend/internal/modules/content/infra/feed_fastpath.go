@@ -3,7 +3,6 @@ package infra
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"local/merope/internal/core/util"
 	"local/merope/internal/modules/content/domain"
@@ -99,5 +98,3 @@ func (r *PostgresContentRepository) getStreamFast(ctx context.Context, userID st
 	}
 	return result, nil
 }
-
-var _ pgx.Rows = (pgx.Rows)(nil)
