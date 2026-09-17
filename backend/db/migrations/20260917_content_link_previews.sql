@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS link_previews (
+    post_id UUID PRIMARY KEY REFERENCES posts(id) ON DELETE CASCADE,
+    url TEXT NOT NULL,
+    title TEXT NOT NULL DEFAULT '',
+    description TEXT NOT NULL DEFAULT '',
+    image_url TEXT NOT NULL DEFAULT '',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
