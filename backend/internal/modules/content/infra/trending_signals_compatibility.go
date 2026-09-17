@@ -65,7 +65,7 @@ LIMIT $1`, limit)
 			CreatedAtUnix: createdAt.Time.Unix(),
 			LikeCount:     reactionCount,
 			CommentCount:  commentCount,
-		},)
+		})
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
