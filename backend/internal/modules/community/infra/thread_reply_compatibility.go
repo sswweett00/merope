@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"local/merope/internal/core/util"
 	"local/merope/internal/modules/community/domain"
 
 	"github.com/jackc/pgx/v5/pgtype"
@@ -29,7 +30,7 @@ RETURNING id, created_at, updated_at`,
 	var id pgtype.UUID
 	var createdAt, updatedAt pgtype.Timestamptz
 	if err := row.Scan(&id, &createdAt, &updatedAt); err != nil { return err }
-	reply.ID = id.String()
+	reply.ID = util.UUIDToString(id)
 	reply.CreatedAt = createdAt.Time
 	reply.UpdatedAt = updatedAt.Time
 	return nil
