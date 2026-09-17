@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:crypto/crypto.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class AetherAuthShieldNotifier extends AsyncNotifier<void> {
+  static String? _cachedDeviceSignature;
+
   @override
   FutureOr<void> build() async {}
 
@@ -18,10 +20,19 @@ class AetherAuthShieldNotifier extends AsyncNotifier<void> {
   }
 
   Future<String> getSecureDeviceSignature() async {
+    final cached = _cachedDeviceSignature;
+    if (cached != null) return cached;
+
     final key =
         await const FlutterSecureStorage().read(key: 'aether_apex_root');
     if (key == null) return 'unsigned';
-    return sha256.convert(utf8.encode(key)).toString().substring(0, 16);
+    final signature = sha256.convert(utf8.encode(key)).toString().substring(0, 16);
+    _cachedDeviceSignature = signature;
+    return signature;
+  }
+
+  static void invalidateCachedDeviceSignature() {
+    _cachedDeviceSignature = null;
   }
 }
 
@@ -35,6 +46,8 @@ class AetherAuthShield {
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
   );
   static final _localAuth = LocalAuthentication();
+
+  static String? _cachedRootKey;
 
   /// Apex Refinement: Biometric-Locked Identity Rotation.
   /// Automatically rotates the root identity key after X biometric checks.
@@ -54,6 +67,8 @@ class AetherAuthShield {
           encryptedSharedPreferences: true,
         ),
       );
+      _cachedRootKey = newKey;
+      AetherAuthShieldNotifier.invalidateCachedDeviceSignature();
       await _storage.write(
           key: 'aether_last_rotation', value: DateTime.now().toIso8601String());
     }
@@ -61,11 +76,19 @@ class AetherAuthShield {
 
   /// Verifies a challenge using the hardware-anchored Apex key.
   static Future<String> signApexChallenge(String challenge) async {
-    final key = await _storage.read(key: 'aether_apex_root');
+    final key = await _getRootKey();
     if (key == null) throw Exception('Identity missing');
 
     final hmac = Hmac(sha256, utf8.encode(key));
     return hmac.convert(utf8.encode(challenge)).toString();
+  }
+
+  static Future<String?> _getRootKey() async {
+    final cached = _cachedRootKey;
+    if (cached != null) return cached;
+    final key = await _storage.read(key: 'aether_apex_root');
+    _cachedRootKey = key;
+    return key;
   }
 
   static String _generateEntropy(int length) {
