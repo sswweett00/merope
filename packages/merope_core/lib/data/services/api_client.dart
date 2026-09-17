@@ -40,7 +40,10 @@ class ApiClient {
 
     if (!kIsWeb) {
       (dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
-        final client = HttpClient();
+        final client = HttpClient()
+          ..connectionTimeout = _connectTimeout
+          ..idleTimeout = const Duration(seconds: 30)
+          ..maxConnectionsPerHost = 12;
         client.badCertificateCallback =
             (X509Certificate cert, String host, int port) {
           if (expectedCertSha256 == null || expectedCertSha256.trim().isEmpty) {
@@ -77,10 +80,8 @@ class ApiClient {
     }
   }
 
-  Future<ApiResult<T>> get<T>(
-    String path, {
-    Map<String, dynamic>? queryParameters,
-  }) async {
+  Future<ApiResult<T>> get<T>(String path,
+      {Map<String, dynamic>? queryParameters}) async {
     try {
       final response = await dio.get(path, queryParameters: queryParameters);
       return ApiResult.success(response.data as T, statusCode: response.statusCode);
@@ -89,85 +90,50 @@ class ApiClient {
     }
   }
 
-  Future<ApiResult<T>> post<T>(
-    String path, {
-    dynamic data,
-    Map<String, dynamic>? queryParameters,
-  }) async {
+  Future<ApiResult<T>> post<T>(String path,
+      {dynamic data, Map<String, dynamic>? queryParameters}) async {
     try {
-      final response = await dio.post(
-        path,
-        data: data,
-        queryParameters: queryParameters,
-      );
+      final response = await dio.post(path, data: data, queryParameters: queryParameters);
       return ApiResult.success(response.data as T, statusCode: response.statusCode);
     } catch (e) {
       return ApiResult.error(e, statusCode: _statusOf(e));
     }
   }
 
-  Future<ApiResult<T>> put<T>(
-    String path, {
-    dynamic data,
-    Map<String, dynamic>? queryParameters,
-  }) async {
+  Future<ApiResult<T>> put<T>(String path,
+      {dynamic data, Map<String, dynamic>? queryParameters}) async {
     try {
-      final response = await dio.put(
-        path,
-        data: data,
-        queryParameters: queryParameters,
-      );
+      final response = await dio.put(path, data: data, queryParameters: queryParameters);
       return ApiResult.success(response.data as T, statusCode: response.statusCode);
     } catch (e) {
       return ApiResult.error(e, statusCode: _statusOf(e));
     }
   }
 
-  Future<ApiResult<T>> patch<T>(
-    String path, {
-    dynamic data,
-    Map<String, dynamic>? queryParameters,
-  }) async {
+  Future<ApiResult<T>> patch<T>(String path,
+      {dynamic data, Map<String, dynamic>? queryParameters}) async {
     try {
-      final response = await dio.patch(
-        path,
-        data: data,
-        queryParameters: queryParameters,
-      );
+      final response = await dio.patch(path, data: data, queryParameters: queryParameters);
       return ApiResult.success(response.data as T, statusCode: response.statusCode);
     } catch (e) {
       return ApiResult.error(e, statusCode: _statusOf(e));
     }
   }
 
-  Future<ApiResult<T>> delete<T>(
-    String path, {
-    dynamic data,
-    Map<String, dynamic>? queryParameters,
-  }) async {
+  Future<ApiResult<T>> delete<T>(String path,
+      {dynamic data, Map<String, dynamic>? queryParameters}) async {
     try {
-      final response = await dio.delete(
-        path,
-        data: data,
-        queryParameters: queryParameters,
-      );
+      final response = await dio.delete(path, data: data, queryParameters: queryParameters);
       return ApiResult.success(response.data as T, statusCode: response.statusCode);
     } catch (e) {
       return ApiResult.error(e, statusCode: _statusOf(e));
     }
   }
 
-  Future<ApiResult<T>> uploadMultipart<T>(
-    String path,
-    FormData data, {
-    ProgressCallback? onSendProgress,
-  }) async {
+  Future<ApiResult<T>> uploadMultipart<T>(String path, FormData data,
+      {ProgressCallback? onSendProgress}) async {
     try {
-      final response = await dio.post(
-        path,
-        data: data,
-        onSendProgress: onSendProgress,
-      );
+      final response = await dio.post(path, data: data, onSendProgress: onSendProgress);
       return ApiResult.success(response.data as T, statusCode: response.statusCode);
     } catch (e) {
       return ApiResult.error(e, statusCode: _statusOf(e));
@@ -256,6 +222,9 @@ class AuthInterceptor extends Interceptor {
   final Future<bool> Function()? onRefresh;
   bool _isRefreshing = false;
   Completer<bool>? _refreshCompleter;
+  String? _cachedToken;
+  String? _cachedAetherSignature;
+  Future<String>? _deviceSignatureFuture;
 
   @override
   void onRequest(
@@ -268,21 +237,33 @@ class AuthInterceptor extends Interceptor {
       options.headers['Authorization'] = authValue;
 
       try {
-        final signature = await AetherAuthShield.signApexChallenge(authValue);
+        String signature;
+        if (_cachedToken == token && _cachedAetherSignature != null) {
+          signature = _cachedAetherSignature!;
+        } else {
+          signature = await AetherAuthShield.signApexChallenge(authValue);
+          _cachedToken = token;
+          _cachedAetherSignature = signature;
+        }
         options.headers['X-Aether-Signature'] = signature;
 
-        final deviceSig = await AetherAuthShieldNotifier().getSecureDeviceSignature();
-        options.headers['X-Merope-Device-Sig'] = deviceSig;
+        _deviceSignatureFuture ??=
+            AetherAuthShieldNotifier().getSecureDeviceSignature();
+        options.headers['X-Merope-Device-Sig'] = await _deviceSignatureFuture!;
       } catch (_) {
         debugPrint('Security Shield: Failed to sign request');
       }
+    } else {
+      _cachedToken = null;
+      _cachedAetherSignature = null;
     }
     handler.next(options);
   }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
-    if (err.response?.statusCode == 401 && onRefresh != null) {
+    final skipRefresh = err.requestOptions.extra['skipAuthRefresh'] == true;
+    if (err.response?.statusCode == 401 && onRefresh != null && !skipRefresh) {
       if (_isRefreshing) {
         final success = await _refreshCompleter!.future;
         if (success) {
@@ -307,35 +288,28 @@ class AuthInterceptor extends Interceptor {
       }
 
       await _sessionStorage.clearSession();
+      _cachedToken = null;
+      _cachedAetherSignature = null;
     }
     handler.next(err);
   }
 
-  Future<Response> _retry(RequestOptions requestOptions) async {
-    final retryDio = Dio(
-      BaseOptions(
-        baseUrl: requestOptions.baseUrl,
-        connectTimeout: requestOptions.connectTimeout,
-        receiveTimeout: requestOptions.receiveTimeout,
-      ),
-    );
-    final token = await _sessionStorage.getToken();
-
-    final options = Options(
-      method: requestOptions.method,
-      headers: {
-        ...requestOptions.headers,
-        if (token != null) 'Authorization': 'Bearer $token',
-      },
-      responseType: requestOptions.responseType,
-    );
-
-    return retryDio.request(
-      requestOptions.path,
-      data: requestOptions.data,
-      queryParameters: requestOptions.queryParameters,
-      options: options,
-    );
+  Future<Response> _retry(RequestOptions requestOptions) {
+    return _sessionStorage.getToken().then((token) {
+      return dio.fetch(
+        requestOptions.copyWith(
+          extra: {
+            ...requestOptions.extra,
+            'skipAuthRefresh': true,
+          },
+          headers: {
+            ...requestOptions.headers,
+            if (token != null && token.isNotEmpty)
+              'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+    });
   }
 }
 
@@ -353,9 +327,7 @@ class RetryInterceptor extends Interceptor {
       if (_retryableMethods.contains(method)) {
         final attempt = (err.requestOptions.extra['retryAttempt'] as int?) ?? 0;
         if (attempt < _maxRetries) {
-          await Future<void>.delayed(
-            Duration(milliseconds: 500 * (attempt + 1)),
-          );
+          await Future<void>.delayed(Duration(milliseconds: 250 * (attempt + 1)));
           try {
             final response = await _dio.fetch(
               err.requestOptions.copyWith(
