@@ -54,6 +54,59 @@ LIMIT 1`, id).Scan(&rowID, &authorID, &username, &avatar, &content, &mediaURLs, 
 	}, nil
 }
 
+func (r *PostgresContentRepository) GetSignalsByUser(ctx context.Context, userID string, limit, offset int32) ([]*domain.Signal, error) {
+	var authorID pgtype.UUID
+	if err := authorID.Scan(strings.TrimSpace(userID)); err != nil {
+		return nil, fmt.Errorf("invalid user uuid: %w", err)
+	}
+	if limit <= 0 {
+		limit = 50
+	}
+	if offset < 0 {
+		offset = 0
+	}
+
+	rows, err := r.queries.Query(ctx, `
+SELECT p.id, p.author_id, u.username, u.avatar_url, p.content_text, p.media_urls, p.visibility, p.created_at
+FROM posts p
+JOIN users u ON u.id = p.author_id
+WHERE p.author_id = $1
+ORDER BY p.created_at DESC
+LIMIT $2 OFFSET $3`, authorID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	result := make([]*domain.Signal, 0)
+	for rows.Next() {
+		var rowID, rowAuthorID pgtype.UUID
+		var username string
+		var avatar pgtype.Text
+		var content, visibility string
+		var mediaURLs []string
+		var createdAt pgtype.Timestamptz
+		if err := rows.Scan(&rowID, &rowAuthorID, &username, &avatar, &content, &mediaURLs, &visibility, &createdAt); err != nil {
+			return nil, err
+		}
+		result = append(result, &domain.Signal{
+			ID:            util.UUIDToString(rowID),
+			AuthorID:      util.UUIDToString(rowAuthorID),
+			AuthorName:    username,
+			AuthorAvatar:  avatar.String,
+			ContentText:   content,
+			MediaURLs:     mediaURLs,
+			Visibility:    visibility,
+			CreatedAt:     createdAt.Time,
+			CreatedAtUnix: createdAt.Time.Unix(),
+		})
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 func (r *PostgresContentRepository) GetSignalsByHashtag(ctx context.Context, hashtag string, limit, offset int32) ([]*domain.Signal, error) {
 	tag := strings.TrimSpace(hashtag)
 	if tag == "" {
@@ -63,6 +116,12 @@ func (r *PostgresContentRepository) GetSignalsByHashtag(ctx context.Context, has
 		tag = "#" + tag
 	}
 	tag = strings.ToLower(tag)
+	if limit <= 0 {
+		limit = 50
+	}
+	if offset < 0 {
+		offset = 0
+	}
 
 	rows, err := r.queries.Query(ctx, `
 SELECT p.id, p.author_id, u.username, u.avatar_url, p.content_text, p.media_urls, p.visibility, p.created_at
