@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
-	"local/merope/internal/core/util"
 	"local/merope/internal/modules/content/domain"
 )
 
@@ -144,6 +143,5 @@ ORDER BY id`, poolID)
 		return nil, err
 	}
 
-	_ = util.UUIDToString(poolID)
 	return &domain.WavePoolData{Question: question, Options: options, EndsAt: endsAt.Time}, nil
 }
