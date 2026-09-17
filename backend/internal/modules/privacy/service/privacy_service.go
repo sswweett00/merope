@@ -2,15 +2,16 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"local/merope/internal/modules/privacy/domain"
 )
 
 type privacyService struct {
-	repo domain.PrivacyRepository
+	repo domain.RuntimePrivacyRepository
 }
 
-func NewPrivacyService(repo domain.PrivacyRepository) domain.PrivacyService {
+func NewPrivacyService(repo domain.RuntimePrivacyRepository) domain.RuntimePrivacyService {
 	return &privacyService{repo: repo}
 }
 
@@ -30,29 +31,13 @@ func (s *privacyService) LogoutSession(ctx context.Context, sessionID string) er
 	return s.repo.DeleteSession(ctx, sessionID)
 }
 
-func (s *privacyService) Toggle2FA(ctx context.Context, userID string, enable bool) (string, error) {
-	// Logic to enable/disable 2FA and return TOTP secret if enabling
-	return "SECRET_STUB", nil
-}
-
-func (s *privacyService) UpdatePrivacy(ctx context.Context, userID string, ghost bool, lastSeen string) error {
-	settings, _ := s.repo.GetSettings(ctx, userID)
-	if settings == nil {
-		settings = &domain.PrivacySettings{UserID: userID}
-	}
-	settings.IsGhostMode = ghost
-	settings.LastSeenVisibility = lastSeen
-	return s.repo.UpdateSettings(ctx, userID, settings)
-}
-
 func (s *privacyService) UpdateIdentityKeys(ctx context.Context, userID, deviceID string, pubKey []byte) error {
-	return s.repo.UpsertIdentityKey(ctx, userID, deviceID, pubKey)
+	return s.repo.UpsertIdentityKey(ctx, userID, deviceID, pubKey, nil)
 }
 
 func (s *privacyService) UploadPreKeys(ctx context.Context, userID, deviceID string, signedKey *domain.SignedPreKey, otKeys []domain.OneTimePreKey) error {
 	if signedKey != nil {
-		err := s.repo.UpsertSignedPreKey(ctx, userID, deviceID, signedKey.ID, signedKey.PublicKey, signedKey.Signature)
-		if err != nil {
+		if err := s.repo.UpsertSignedPreKey(ctx, userID, deviceID, signedKey.ID, signedKey.PublicKey, signedKey.Signature); err != nil {
 			return err
 		}
 	}
@@ -71,13 +56,24 @@ func (s *privacyService) GetPreKeyBundle(ctx context.Context, userID, deviceID s
 	if err != nil {
 		return nil, err
 	}
-	otKey, _ := s.repo.TakeOneTimePreKey(ctx, userID, deviceID)
+	oneTimeKey, err := s.repo.TakeOneTimePreKey(ctx, userID, deviceID)
+	if err != nil {
+		return nil, err
+	}
 
-	return &domain.PreKeyBundle{
-		UserID:        userID,
-		DeviceID:      deviceID,
-		IdentityKey:   identityKey,
-		SignedPreKey:  signedKey,
-		OneTimePreKey: otKey,
-	}, nil
+	if identityKey == nil {
+		return nil, fmt.Errorf("identity key not found")
+	}
+
+	bundle := &domain.PreKeyBundle{
+		UserID:         userID,
+		DeviceID:       deviceID,
+		IdentityKey:    identityKey.PublicKey,
+		SignedPreKey:   signedKey,
+		OneTimePreKeys: nil,
+	}
+	if oneTimeKey != nil {
+		bundle.OneTimePreKeys = []*domain.OneTimePreKey{oneTimeKey}
+	}
+	return bundle, nil
 }
