@@ -34,9 +34,7 @@ func toCommunityWireValue(v reflect.Value) interface{} {
 			if field.PkgPath != "" {
 				continue
 			}
-			name := camelCommunityField(field.Name)
-			value := v.Field(i)
-			out[name] = toCommunityWireValue(value)
+			out[camelCommunityField(field.Name)] = toCommunityWireValue(v.Field(i))
 		}
 		return out
 	case reflect.Slice, reflect.Array:
@@ -53,13 +51,10 @@ func toCommunityWireValue(v reflect.Value) interface{} {
 		iter := v.MapRange()
 		for iter.Next() {
 			key := iter.Key()
-			var keyString string
-			if key.Kind() == reflect.String {
-				keyString = key.String()
-			} else {
-				keyString = key.Interface().(string)
+			if key.Kind() != reflect.String {
+				continue
 			}
-			out[keyString] = toCommunityWireValue(iter.Value())
+			out[key.String()] = toCommunityWireValue(iter.Value())
 		}
 		return out
 	default:
@@ -77,17 +72,14 @@ func camelCommunityField(name string) string {
 	if strings.HasSuffix(name, "URL") {
 		name = strings.TrimSuffix(name, "URL") + "Url"
 	}
-	if strings.HasSuffix(name, "HTTP") {
-		name = strings.TrimSuffix(name, "HTTP") + "Http"
-	}
-	if name == "IsPrivate" || name == "IsVerified" || name == "IsJoined" {
-		return strings.ToLower(name[:2]) + name[2:]
-	}
 	if name == "EventTicketInfo" {
 		return "eventTicketInfo"
 	}
 	if name == "TicketInfo" {
 		return "ticketInfo"
+	}
+	if name == "IsPrivate" || name == "IsVerified" || name == "IsJoined" {
+		return strings.ToLower(name[:2]) + name[2:]
 	}
 	first := true
 	return strings.Map(func(r rune) rune {
@@ -134,14 +126,13 @@ func (v ContentReport) MarshalJSON() ([]byte, error) {
 	return json.Marshal(wire)
 }
 
-func (v Ticket) MarshalJSON() ([]byte, error) { return marshalCommunityWire(v) }
-func (v Subscription) MarshalJSON() ([]byte, error) { return marshalCommunityWire(v) }
-func (v Guideline) MarshalJSON() ([]byte, error) { return marshalCommunityWire(v) }
-func (v Collective) MarshalJSON() ([]byte, error) { return marshalCommunityWire(v) }
-func (v CollectiveStats) MarshalJSON() ([]byte, error) { return marshalCommunityWire(v) }
+func (v Ticket) MarshalJSON() ([]byte, error)            { return marshalCommunityWire(v) }
+func (v Subscription) MarshalJSON() ([]byte, error)     { return marshalCommunityWire(v) }
+func (v Guideline) MarshalJSON() ([]byte, error)         { return marshalCommunityWire(v) }
+func (v Collective) MarshalJSON() ([]byte, error)        { return marshalCommunityWire(v) }
+func (v CollectiveStats) MarshalJSON() ([]byte, error)   { return marshalCommunityWire(v) }
 func (v CommunitySettings) MarshalJSON() ([]byte, error) { return marshalCommunityWire(v) }
-func (v CommunityStats) MarshalJSON() ([]byte, error) { return marshalCommunityWire(v) }
-func (v Event) MarshalJSON() ([]byte, error) { return marshalCommunityWire(v) }
-func (v EventTicketInfo) MarshalJSON() ([]byte, error) { return marshalCommunityWire(v) }
+func (v CommunityStats) MarshalJSON() ([]byte, error)    { return marshalCommunityWire(v) }
+func (v Event) MarshalJSON() ([]byte, error)             { return marshalCommunityWire(v) }
+func (v EventTicketInfo) MarshalJSON() ([]byte, error)   { return marshalCommunityWire(v) }
 func (v MemberPreferences) MarshalJSON() ([]byte, error) { return marshalCommunityWire(v) }
-func (v Subscription) UnmarshalJSON(data []byte) error { type alias Subscription; return json.Unmarshal(data, (*alias)(&v)) }
