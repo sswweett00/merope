@@ -16,7 +16,7 @@ type developerService struct {
 	repo domain.DeveloperRepository
 }
 
-func NewDeveloperService(repo domain.DeveloperRepository) domain.DeveloperService {
+func NewDeveloperService(repo domain.DeveloperRepository) domain.RuntimeDeveloperService {
 	return &developerService{repo: repo}
 }
 
@@ -126,7 +126,9 @@ func (s *developerService) RevokeAPIKey(ctx context.Context, keyID string) error
 
 func generateID(length int) string {
 	bytes := make([]byte, length)
-	rand.Read(bytes)
+	if _, err := rand.Read(bytes); err != nil {
+		panic(fmt.Errorf("crypto/rand unavailable: %w", err))
+	}
 	return strings.ToUpper(fmt.Sprintf("%x", bytes))[:length]
 }
 
