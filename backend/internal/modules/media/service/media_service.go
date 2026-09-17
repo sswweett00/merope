@@ -139,7 +139,7 @@ func bilinearResize(src image.Image, width, height int) *image.RGBA {
 			c01 := color.NRGBAModel.Convert(src.At(sb.Min.X+x0, sb.Min.Y+y1)).(color.NRGBA); c11 := color.NRGBAModel.Convert(src.At(sb.Min.X+x1, sb.Min.Y+y1)).(color.NRGBA)
 			blend := func(a, b uint8, t float64) uint8 { return uint8(float64(a)*(1-t) + float64(b)*t + 0.5) }
 			r0, r1 := blend(c00.R,c10.R,fx), blend(c01.R,c11.R,fx); g0, g1 := blend(c00.G,c10.G,fx), blend(c01.G,c11.G,fx); b0, b1 := blend(c00.B,c10.B,fx), blend(c01.B,c11.B,fx); a0, a1 := blend(c00.A,c10.A,fx), blend(c01.A,c11.A,fx)
-			dst.Set(image.Pt(x,y), color.NRGBA{R: blend(r0,r1,fy), G: blend(g0,g1,fy), B: blend(b0,b1,fy), A: blend(a0,a1,fy)})
+			dst.Set(x,y, color.NRGBA{R: blend(r0,r1,fy), G: blend(g0,g1,fy), B: blend(b0,b1,fy), A: blend(a0,a1,fy)})
 		}
 	}
 	return dst
