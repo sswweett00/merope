@@ -116,6 +116,20 @@ WHERE cm.community_id = $1`
 	return members, nil
 }
 
+func (r *postgresCommunityRepository) LeaveCommunity(ctx context.Context, commID, userID string) error {
+	var cid, uid pgtype.UUID
+	if err := cid.Scan(strings.TrimSpace(commID)); err != nil {
+		return fmt.Errorf("invalid community uuid: %w", err)
+	}
+	if err := uid.Scan(strings.TrimSpace(userID)); err != nil {
+		return fmt.Errorf("invalid user uuid: %w", err)
+	}
+	_, err := r.queries.Exec(ctx, `
+DELETE FROM community_members
+WHERE community_id = $1 AND user_id = $2 AND role <> 'banned'`, cid, uid)
+	return err
+}
+
 func (r *postgresCommunityRepository) GetTrendingCommunities(ctx context.Context, limit int32) ([]*domain.Community, error) {
 	if limit <= 0 || limit > 100 {
 		limit = 20
