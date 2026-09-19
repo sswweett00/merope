@@ -17,7 +17,11 @@ func AuthMiddleware(secret string, rdb *redis.Client) fiber.Handler {
 		if err != nil {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 		}
-		if IsTokenBlacklisted(c.Context(), rdb, claims.ID) {
+		blacklisted, blacklistErr := CheckTokenBlacklist(c.Context(), rdb, claims.ID)
+		if blacklistErr != nil {
+			return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"error": "Authentication state unavailable"})
+		}
+		if blacklisted {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 		}
 		if claims.Fingerprint != "" && GenerateFingerprint(c.IP(), c.Get("User-Agent")) != claims.Fingerprint {
