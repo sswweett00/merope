@@ -48,6 +48,65 @@ func (r *PostgresFinanceRepository) GetWallet(ctx context.Context, userID string
 	}, nil
 }
 
+func (r *PostgresFinanceRepository) GetUserTransactions(ctx context.Context, userID string, limit, offset int32) ([]*domain.Transaction, error) {
+	if r.pool == nil {
+		return nil, fmt.Errorf("postgres pool is required")
+	}
+	uid, err := parseFinanceUUID(userID)
+	if err != nil {
+		return nil, err
+	}
+	if limit <= 0 {
+		limit = 25
+	}
+	if limit > 100 {
+		limit = 100
+	}
+	if offset < 0 {
+		offset = 0
+	}
+
+	rows, err := r.pool.Query(ctx, `SELECT id, sender_wallet_id, receiver_wallet_id, amount, tx_type, status, reference, created_at
+		FROM transactions
+		WHERE sender_wallet_id = $1 OR receiver_wallet_id = $1
+		ORDER BY created_at DESC, id DESC
+		LIMIT $2 OFFSET $3`, uid, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	result := make([]*domain.Transaction, 0, limit)
+	for rows.Next() {
+		var (
+			id, senderID, receiverID pgtype.UUID
+			amount                  int32
+			txType, status, ref     string
+			createdAt               pgtype.Timestamptz
+		)
+		if err := rows.Scan(&id, &senderID, &receiverID, &amount, &txType, &status, &ref, &createdAt); err != nil {
+			return nil, err
+		}
+		result = append(result, &domain.Transaction{
+			ID:         util.UUIDToString(id),
+			SenderID:   util.UUIDToString(senderID),
+			ReceiverID: util.UUIDToString(receiverID),
+			Amount:     int64(amount),
+			Currency:   "TRY",
+			Type:       txType,
+			Status:     status,
+			Metadata: map[string]interface{}{
+				"reference": ref,
+			},
+			CreatedAt: createdAt.Time,
+		})
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 func (r *PostgresFinanceRepository) Transfer(ctx context.Context, senderID, receiverID string, amount int64, tType string, entityType, entityID *string) error {
 	if amount <= 0 {
 		return fmt.Errorf("amount must be positive")
