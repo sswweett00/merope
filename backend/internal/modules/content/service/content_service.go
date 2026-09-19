@@ -185,6 +185,22 @@ func (s *contentService) AmplifySignal(ctx context.Context, userID, signalID str
 	return err
 }
 
+func (s *contentService) RemoveResonance(ctx context.Context, userID, signalID string) error {
+	if userID == "" || signalID == "" {
+		return fmt.Errorf("invalid resonance removal request")
+	}
+	if err := s.repo.RemoveResonance(ctx, userID, signalID); err != nil {
+		return err
+	}
+	if s.bus != nil {
+		_ = s.bus.Publish(ctx, "content.resonance.removed", events.Event{
+			Type: "SIGNAL_RESONANCE_REMOVED",
+			Payload: map[string]interface{}{"user_id": userID, "signal_id": signalID},
+		})
+	}
+	return nil
+}
+
 func (s *contentService) AddNode(ctx context.Context, signalID, authorID string, parentID *string, text string) (*domain.Node, error) {
 	sanitizedText := security.SanitizeHTML(text)
 	return s.repo.CreateNode(ctx, signalID, authorID, parentID, sanitizedText)
