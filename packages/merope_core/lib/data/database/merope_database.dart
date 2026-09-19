@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
-import 'merope_database_io.dart';
+import 'merope_database_io.dart'
+    if (dart.library.html) 'merope_database_web.dart';
 
 part 'merope_database.g.dart';
 
