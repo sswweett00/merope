@@ -46,7 +46,7 @@ type SocialRepository interface {
 	RespondToFollowRequest(ctx context.Context, followerID, followingID, status string) error
 	GetFollowRequests(ctx context.Context, userID string) ([]*FollowRequest, error)
 	GetSuggestedUsers(ctx context.Context, userID string, limit int) ([]*domain.User, error)
-	SearchUsers(ctx context.Context, query string) ([]*domain.User, error)
+	SearchUsers(ctx context.Context, viewerID, query string) ([]*domain.User, error)
 	CreateReport(ctx context.Context, r *Report) error
 	CreateCircle(ctx context.Context, ownerID, name string) (string, error)
 	AddCircleMember(ctx context.Context, circleID, userID string) error
