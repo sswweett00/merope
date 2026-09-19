@@ -420,7 +420,6 @@ class SocialApiService {
   }
 }
 
-
 String _visibilityFor(PostPrivacy privacy) {
   switch (privacy) {
     case PostPrivacy.public:

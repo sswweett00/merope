@@ -78,7 +78,9 @@ class _MFAScreenState extends ConsumerState<MFAScreen> {
                     context.go('/');
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(result.error ?? 'MFA verification failed.')),
+                      SnackBar(
+                          content:
+                              Text(result.error ?? 'MFA verification failed.')),
                     );
                   }
                 },

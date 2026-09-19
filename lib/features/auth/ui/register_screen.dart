@@ -85,10 +85,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     setState(() => _isSubmitting = true);
     try {
       final user = await ref.read(authRepositoryProvider).register(
-        username: username,
-        email: email,
-        password: password,
-      );
+            username: username,
+            email: email,
+            password: password,
+          );
       if (!mounted) return;
       setState(() => _isSubmitting = false);
       if (user != null) {
