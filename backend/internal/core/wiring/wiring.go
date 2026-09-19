@@ -355,7 +355,16 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 			orchestrator.Stop()
 		}
 		if bus != nil {
-			bus.Conn.Drain()
+			drainDone := make(chan error, 1)
+			go func() { drainDone <- bus.Conn.Drain() }()
+			select {
+			case err := <-drainDone:
+				if err != nil {
+					zapLogger.Warn("NATS drain failed", zap.Error(err))
+				}
+			case <-time.After(3 * time.Second):
+				zapLogger.Warn("NATS drain timed out; closing connection")
+			}
 			bus.Conn.Close()
 		}
 		if rdb != nil {
