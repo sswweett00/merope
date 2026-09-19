@@ -77,8 +77,9 @@ func (h *SocialHandler) Profile(c *fiber.Ctx) error {
 }
 
 func (h *SocialHandler) Search(c *fiber.Ctx) error {
+	userID, _ := c.Locals("user_id").(string)
 	query := c.Query("q", "")
-	users, err := h.service.GlobalSearch(c.Context(), query)
+	users, err := h.service.GlobalSearch(c.Context(), userID, query)
 	if err != nil {
 		return writeSocialError(c, err)
 	}
