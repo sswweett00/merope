@@ -439,3 +439,20 @@ func (h *ContentHandler) GetComments(c *fiber.Ctx) error {
 	}
 	return c.JSON(fiber.Map{"comments": dtos})
 }
+
+func (h *ContentHandler) GetPostAnalytics(c *fiber.Ctx) error {
+	userID := c.Locals("user_id").(string)
+	post, err := h.requireVisiblePost(c, c.Params("id"), userID)
+	if err != nil {
+		return c.Status(errors.ToHTTPStatus(err)).JSON(fiber.Map{"code": errors.GetCode(err), "message": "Unable to process request"})
+	}
+	return c.JSON(fiber.Map{
+		"totalViews": post.ViewCount,
+		"totalLikes": post.LikeCount,
+		"totalComments": post.CommentCount,
+		"totalShares": post.ShareCount,
+		"totalBookmarks": 0,
+		"engagementRate": 0,
+		"dailyMetrics": []interface{}{},
+	})
+}
