@@ -8,4 +8,6 @@ type RuntimeFinanceRepository interface {
 	CreateEscrow(context.Context, *EscrowRecord) error
 	GetEscrow(context.Context, string) (*EscrowRecord, error)
 	UpdateEscrowStatus(context.Context, string, string) error
+	ReleaseEscrow(context.Context, string) error
+	RefundEscrow(context.Context, string) error
 }
