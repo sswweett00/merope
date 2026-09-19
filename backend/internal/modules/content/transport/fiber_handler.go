@@ -5,6 +5,7 @@ import (
 	"local/merope/internal/core/security"
 	"local/merope/internal/core/errors"
 	"strconv"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -15,6 +16,24 @@ type ContentHandler struct {
 
 func NewContentHandler(service domain.ContentService) *ContentHandler {
 	return &ContentHandler{service: service}
+}
+
+func (h *ContentHandler) requireVisiblePost(c *fiber.Ctx, postID, viewerID string) (*domain.Signal, error) {
+	if strings.TrimSpace(postID) == "" || strings.TrimSpace(viewerID) == "" {
+		return nil, fiber.ErrBadRequest
+	}
+	post, err := h.service.GetSignal(c.Context(), postID)
+	if err != nil {
+		return nil, err
+	}
+	if post == nil {
+		return nil, fiber.ErrNotFound
+	}
+	visibility := strings.ToLower(strings.TrimSpace(post.Visibility))
+	if post.AuthorID != viewerID && visibility != "" && visibility != "public" {
+		return nil, fiber.ErrForbidden
+	}
+	return post, nil
 }
 
 func (h *ContentHandler) CreatePost(c *fiber.Ctx) error {
@@ -185,19 +204,16 @@ func (h *ContentHandler) Feed(c *fiber.Ctx) error {
 }
 
 func (h *ContentHandler) GetPost(c *fiber.Ctx) error {
-	postID := c.Params("id")
-	post, err := h.service.GetSignal(c.Context(), postID)
+	userID := c.Locals("user_id").(string)
+	post, err := h.requireVisiblePost(c, c.Params("id"), userID)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"code":    errors.GetCode(err),
-			"message": "Unable to process request",
-		})
-	}
-	if post == nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"code":    errors.ErrNotFound,
-			"message": "Post not found",
-		})
+		status := errors.ToHTTPStatus(err)
+		if err == fiber.ErrNotFound {
+			status = fiber.StatusNotFound
+		} else if err == fiber.ErrForbidden {
+			status = fiber.StatusForbidden
+		}
+		return c.Status(status).JSON(fiber.Map{"code": errors.GetCode(err), "message": "Unable to process request"})
 	}
 	return c.JSON(toMeropeSignalDTO(post))
 }
@@ -257,6 +273,9 @@ func (h *ContentHandler) DeletePost(c *fiber.Ctx) error {
 func (h *ContentHandler) DeleteComment(c *fiber.Ctx) error {
 	userID := c.Locals("user_id").(string)
 	postID := c.Params("id")
+	if _, err := h.requireVisiblePost(c, postID, userID); err != nil {
+		return c.Status(errors.ToHTTPStatus(err)).JSON(fiber.Map{"code": errors.GetCode(err), "message": "Unable to process request"})
+	}
 	commentID := c.Params("comment_id")
 	comments, err := h.service.GetSignalNodes(c.Context(), postID)
 	if err != nil {
@@ -285,6 +304,9 @@ func (h *ContentHandler) DeleteComment(c *fiber.Ctx) error {
 func (h *ContentHandler) React(c *fiber.Ctx) error {
 	userID := c.Locals("user_id").(string)
 	postID := c.Params("id")
+	if _, err := h.requireVisiblePost(c, postID, userID); err != nil {
+		return c.Status(errors.ToHTTPStatus(err)).JSON(fiber.Map{"code": errors.GetCode(err), "message": "Unable to process request"})
+	}
 
 	if err := h.service.AmplifySignal(c.Context(), userID, postID, 1); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -299,6 +321,9 @@ func (h *ContentHandler) React(c *fiber.Ctx) error {
 func (h *ContentHandler) Like(c *fiber.Ctx) error {
 	userID := c.Locals("user_id").(string)
 	signalID := c.Params("id")
+	if _, err := h.requireVisiblePost(c, signalID, userID); err != nil {
+		return c.Status(errors.ToHTTPStatus(err)).JSON(fiber.Map{"code": errors.GetCode(err), "message": "Unable to process request"})
+	}
 	if err := h.service.AmplifySignal(c.Context(), userID, signalID, 1); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
@@ -311,6 +336,9 @@ func (h *ContentHandler) Like(c *fiber.Ctx) error {
 func (h *ContentHandler) Unlike(c *fiber.Ctx) error {
 	userID := c.Locals("user_id").(string)
 	signalID := c.Params("id")
+	if _, err := h.requireVisiblePost(c, signalID, userID); err != nil {
+		return c.Status(errors.ToHTTPStatus(err)).JSON(fiber.Map{"code": errors.GetCode(err), "message": "Unable to process request"})
+	}
 	if err := h.service.AmplifySignal(c.Context(), userID, signalID, -1); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
@@ -323,6 +351,9 @@ func (h *ContentHandler) Unlike(c *fiber.Ctx) error {
 func (h *ContentHandler) Repost(c *fiber.Ctx) error {
 	userID := c.Locals("user_id").(string)
 	signalID := c.Params("id")
+	if _, err := h.requireVisiblePost(c, signalID, userID); err != nil {
+		return c.Status(errors.ToHTTPStatus(err)).JSON(fiber.Map{"code": errors.GetCode(err), "message": "Unable to process request"})
+	}
 	if err := h.service.ShareSignal(c.Context(), userID, signalID); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
@@ -335,6 +366,9 @@ func (h *ContentHandler) Repost(c *fiber.Ctx) error {
 func (h *ContentHandler) AddComment(c *fiber.Ctx) error {
 	userID := c.Locals("user_id").(string)
 	postID := c.Params("id")
+	if _, err := h.requireVisiblePost(c, postID, userID); err != nil {
+		return c.Status(errors.ToHTTPStatus(err)).JSON(fiber.Map{"code": errors.GetCode(err), "message": "Unable to process request"})
+	}
 	type request struct {
 		Text     string  `json:"text"`
 		ParentID *string `json:"parent_id"`
@@ -360,7 +394,11 @@ func (h *ContentHandler) AddComment(c *fiber.Ctx) error {
 }
 
 func (h *ContentHandler) GetComments(c *fiber.Ctx) error {
+	userID := c.Locals("user_id").(string)
 	postID := c.Params("id")
+	if _, err := h.requireVisiblePost(c, postID, userID); err != nil {
+		return c.Status(errors.ToHTTPStatus(err)).JSON(fiber.Map{"code": errors.GetCode(err), "message": "Unable to process request"})
+	}
 	comments, err := h.service.GetSignalNodes(c.Context(), postID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
