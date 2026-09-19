@@ -7,6 +7,7 @@ import 'package:merope_ui/theme/theme_provider.dart';
 import 'package:merope_ui/widgets/merope_card.dart';
 import 'package:merope_ui/widgets/merope_button.dart';
 import 'package:merope_ui/utils/merope_haptics.dart';
+import 'package:merope_core/data/services/api_client.dart';
 import '../logic/wallet_logic.dart';
 import '../logic/catalyst_logic.dart';
 import '../domain/models/transaction_model.dart';
@@ -371,46 +372,90 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
   }
 
   void _showSendSheet(BuildContext context, MeropeColorTokens tokens) {
+    final recipientController = TextEditingController();
+    final amountController = TextEditingController();
     showModalBottomSheet(
         context: context,
+        isScrollControlled: true,
         backgroundColor: tokens.surface,
         builder: (ctx) {
-          return Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(mainAxisSize: MainAxisSize.min, children: [
-              Text('Send TRY',
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: tokens.textPrimary)),
-              const SizedBox(height: 16),
-              TextField(
-                  decoration: InputDecoration(
-                      labelText: 'Recipient',
-                      hintText: 'Enter account ID',
-                      labelStyle: TextStyle(color: tokens.textSecondary))),
-              const SizedBox(height: 12),
-              TextField(
-                  decoration: InputDecoration(
-                      labelText: 'Amount',
-                      hintText: '0.00',
-                      labelStyle: TextStyle(color: tokens.textSecondary)),
-                  keyboardType: TextInputType.number),
-              const SizedBox(height: 24),
-              SizedBox(
-                  width: double.infinity,
-                  child: MeropeButton(
-                      text: 'Confirm Send',
-                      onPressed: () {
-                        MeropeHaptics.heavyImpact();
-                        Navigator.pop(ctx);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text('Transfer initiated')));
-                      })),
-            ]),
+          var submitting = false;
+          return StatefulBuilder(
+            builder: (ctx, setModalState) => Padding(
+              padding: EdgeInsets.only(
+                left: 24,
+                right: 24,
+                top: 24,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+              ),
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                Text('Send TRY',
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: tokens.textPrimary)),
+                const SizedBox(height: 16),
+                TextField(
+                    controller: recipientController,
+                    decoration: InputDecoration(
+                        labelText: 'Recipient',
+                        hintText: 'Enter account ID',
+                        labelStyle: TextStyle(color: tokens.textSecondary))),
+                const SizedBox(height: 12),
+                TextField(
+                    controller: amountController,
+                    decoration: InputDecoration(
+                        labelText: 'Amount',
+                        hintText: '0',
+                        labelStyle: TextStyle(color: tokens.textSecondary)),
+                    keyboardType: TextInputType.number),
+                const SizedBox(height: 24),
+                SizedBox(
+                    width: double.infinity,
+                    child: MeropeButton(
+                        text: submitting ? 'Sending...' : 'Confirm Send',
+                        onPressed: submitting
+                            ? null
+                            : () async {
+                                final recipient = recipientController.text.trim();
+                                final amount = int.tryParse(amountController.text.trim());
+                                if (recipient.isEmpty || amount == null || amount <= 0) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Enter a valid recipient and amount')),
+                                  );
+                                  return;
+                                }
+                                setModalState(() => submitting = true);
+                                MeropeHaptics.heavyImpact();
+                                final result = await ApiClient().post<dynamic>(
+                                  '/finance/transfer',
+                                  data: {
+                                    'receiver_id': recipient,
+                                    'amount': amount,
+                                  },
+                                );
+                                if (!ctx.mounted) return;
+                                if (result.isError) {
+                                  setModalState(() => submitting = false);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Transfer failed')),
+                                  );
+                                  return;
+                                }
+                                Navigator.pop(ctx);
+                                ref.invalidate(walletControllerProvider);
+                                ref.invalidate(transactionsProvider);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Transfer completed')),
+                                );
+                              })),
+              ]),
+            ),
           );
-        });
+        }).whenComplete(() {
+      recipientController.dispose();
+      amountController.dispose();
+    });
   }
 
   void _showReceiveSheet(BuildContext context, MeropeColorTokens tokens) {
