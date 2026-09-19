@@ -62,7 +62,7 @@ class NotificationsScreen extends ConsumerWidget {
 class _Header extends StatelessWidget {
   final MeropeColorTokens tokens;
   final VoidCallback onClear;
-  final VoidCallback onMarkAll;
+  final Future<void> Function() onMarkAll;
   final int unread;
   const _Header(
       {required this.tokens,
@@ -107,7 +107,9 @@ class _Header extends StatelessWidget {
             ),
           ),
           TextButton(
-            onPressed: onMarkAll,
+            onPressed: () {
+              onMarkAll();
+            },
             child: Text('Read All', style: TextStyle(color: tokens.primary)),
           ),
           TextButton(
@@ -144,7 +146,7 @@ class _EmptyNotifications extends StatelessWidget {
 class _NotificationItem extends StatelessWidget {
   final MeropeNotification notification;
   final MeropeColorTokens tokens;
-  final VoidCallback onRead;
+  final Future<void> Function() onRead;
 
   const _NotificationItem(
       {required this.notification, required this.tokens, required this.onRead});
@@ -170,7 +172,9 @@ class _NotificationItem extends StatelessWidget {
           ),
           subtitle: Text(notification.timestamp,
               style: TextStyle(color: tokens.textSecondary, fontSize: 12)),
-          onTap: onRead,
+          onTap: () {
+            onRead();
+          },
           trailing: notification.type == MeropeNotificationType.sync
               ? TextButton(
                   onPressed: () {
