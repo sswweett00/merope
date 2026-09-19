@@ -76,6 +76,10 @@ func (s *HighPerformanceContentService) BroadcastSignal(ctx context.Context, sig
 	return signal, nil
 }
 
+func (s *HighPerformanceContentService) CanViewSignal(ctx context.Context, viewerID, signalID string) (bool, error) {
+	return s.pgRepo.CanViewSignal(ctx, viewerID, signalID)
+}
+
 func (s *HighPerformanceContentService) PinSignal(ctx context.Context, signalID string, pinned bool) error {
 	if err := s.pgRepo.UpdateSignalStatus(ctx, signalID, pinned, false, false); err != nil { return err }
 	if s.scyllaRepo != nil {
