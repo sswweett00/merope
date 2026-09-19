@@ -3,7 +3,7 @@ services:
     image: postgres:16-alpine
     environment:
       POSTGRES_USER: merope_user
-      POSTGRES_PASSWORD: ${{POSTGRES_PASSWORD:-merope_dev_password}}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-merope_dev_password}
       POSTGRES_DB: merope_db
       POSTGRES_INITDB_ARGS: "-E UTF8 --locale=C"
     ports:
@@ -66,8 +66,8 @@ services:
     image: minio/minio:latest
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: ${{MINIO_ROOT_USER:-merope_admin}}
-      MINIO_ROOT_PASSWORD: ${{MINIO_ROOT_PASSWORD:-merope_dev_minio_password}}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-merope_admin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-merope_dev_minio_password}
       MINIO_DEFAULT_BUCKETS: merope-media
     ports:
       - "9000:9000"
@@ -91,7 +91,7 @@ services:
     environment:
       CLICKHOUSE_DB: merope_audit
       CLICKHOUSE_USER: merope
-      CLICKHOUSE_PASSWORD: ${{CLICKHOUSE_PASSWORD:-merope_dev_clickhouse_password}}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-merope_dev_clickhouse_password}
       CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
     ports:
       - "8123:8123"
@@ -161,15 +161,15 @@ services:
     environment:
       ENV: development
       PORT: 8080
-      DATABASE_URL: postgres://merope_user:${{POSTGRES_PASSWORD:-merope_dev_password}}@postgres:5432/merope_db?sslmode=disable
-      JWT_SECRET: ${JWT_SECRET:-change-me-to-a-strong-secret-at-least-32-chars}
+      DATABASE_URL: postgres://merope_user:${POSTGRES_PASSWORD:-merope_dev_password}@postgres:5432/merope_db?sslmode=disable
+      JWT_SECRET: ${JWT_SECRET:-merope_development_secret_change_me_0123456789}
       NATS_URL: nats://nats:4222
       REDIS_ADDR: redis:6379
       REDIS_PASSWORD: ""
       STORAGE_ENDPOINT: http://minio:9000
       STORAGE_REGION: us-east-1
-      STORAGE_ACCESS_KEY: ${{MINIO_ROOT_USER:-merope_admin}}
-      STORAGE_SECRET_KEY: ${{MINIO_ROOT_PASSWORD:-merope_dev_minio_password}}
+      STORAGE_ACCESS_KEY: ${MINIO_ROOT_USER:-merope_admin}
+      STORAGE_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-merope_dev_minio_password}
       STORAGE_BUCKET: merope-media
       STORAGE_PUBLIC_URL_PREFIX: http://localhost:9000/merope-media
       CLICKHOUSE_ADDR: clickhouse:9000
