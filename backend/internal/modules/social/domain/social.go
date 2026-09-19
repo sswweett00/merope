@@ -60,7 +60,7 @@ type SocialService interface {
 	GetMutualFriends(ctx context.Context, userA, userB string) ([]*domain.User, error)
 	GetFollowers(ctx context.Context, userID string) ([]*domain.User, error)
 	GetFollowing(ctx context.Context, userID string) ([]*domain.User, error)
-	GlobalSearch(ctx context.Context, query string) ([]*domain.User, error)
+	GlobalSearch(ctx context.Context, viewerID, query string) ([]*domain.User, error)
 	ReportContent(ctx context.Context, reporterID, targetID, targetType, reason string) error
 	CreatePrivacyCircle(ctx context.Context, ownerID, name string, members []string) (string, error)
 }
