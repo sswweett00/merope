@@ -127,7 +127,7 @@ class AuthRepository implements IAuthRepository {
       final data = response.data;
       if (data == null) return null;
 
-      if (data['requires_mfa'] == true) {
+      if (data['requires_mfa'] == true || data['mfa_required'] == true) {
         final challenge = MfaChallenge(
           challengeId: data['challenge_id'] as String,
           method: data['mfa_method'] as String? ?? 'totp',
@@ -344,6 +344,52 @@ class AuthRepository implements IAuthRepository {
       }
     }
     return true;
+  }
+
+  Future<bool> hasPendingMfaChallenge() async {
+    return (await _secureStorage.read(key: 'mfa_challenge')) != null;
+  }
+
+  Future<MfaVerificationResult> verifyPendingMfa(String code) async {
+    final raw = await _secureStorage.read(key: 'mfa_challenge');
+    if (raw == null) {
+      return const MfaVerificationResult(
+        success: false,
+        error: 'MFA challenge expired or is missing.',
+      );
+    }
+    try {
+      final challenge = MfaChallenge.fromJson(
+        jsonDecode(raw) as Map<String, dynamic>,
+      );
+      final response = await _apiClient.post<Map<String, dynamic>>(
+        '/auth/mfa/verify',
+        data: {
+          'challenge_id': challenge.challengeId,
+          'code': code,
+        },
+      );
+      final data = response.data;
+      if (data == null || data['success'] != true) {
+        return MfaVerificationResult(
+          success: false,
+          error: data?['message']?.toString() ?? 'Invalid MFA code',
+        );
+      }
+      final user = await _processAuthResponse(data);
+      await _secureStorage.delete(key: 'mfa_challenge');
+      return MfaVerificationResult(
+        success: true,
+        token: data['token'] as String?,
+        refreshToken: data['refresh_token'] as String?,
+        expiresIn: data['expires_in'] as int?,
+        user: user,
+      );
+    } on MeropeAPIException catch (e) {
+      return MfaVerificationResult(success: false, error: e.message);
+    } catch (e) {
+      return MfaVerificationResult(success: false, error: e.toString());
+    }
   }
 
   Future<AuthUser?> refreshSession() async {
