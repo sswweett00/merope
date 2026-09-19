@@ -84,6 +84,7 @@ type MessagingRepository interface {
 	UpdateMessage(ctx context.Context, messageID, senderID, content string) (*ChatMessage, error)
 	DeleteMessage(ctx context.Context, messageID, senderID string) error
 	GetMessages(ctx context.Context, roomID string, limit, offset int32) ([]*ChatMessage, error)
+	GetMessageByID(ctx context.Context, messageID string) (*ChatMessage, error)
 	SearchMessages(ctx context.Context, roomID, query string) ([]*ChatMessage, error)
 	GetUserRooms(ctx context.Context, userID string) ([]*ChatRoom, error)
 	CacheUserRooms(ctx context.Context, userID string, rooms []*ChatRoom) error
