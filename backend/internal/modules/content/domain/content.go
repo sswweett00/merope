@@ -76,6 +76,7 @@ type ContentRepository interface {
 	GetSignalsByHashtag(ctx context.Context, hashtag string, limit, offset int32) ([]*Signal, error)
 	GetTrendingSignals(ctx context.Context, limit int32) ([]*Signal, error)
 	AddResonance(ctx context.Context, userID, signalID string, amplitude int) error
+	RemoveResonance(ctx context.Context, userID, signalID string) error
 	UpdateSignalStatus(ctx context.Context, signalID string, pinned, archived, draft bool) error
 	UpdateSignal(ctx context.Context, s *Signal) error
 	DeleteSignal(ctx context.Context, signalID string) error
@@ -145,6 +146,7 @@ type ContentService interface {
 	GetTrendingContent(ctx context.Context, limit int32) ([]*Signal, error)
 	SearchContent(ctx context.Context, query string, page int32) ([]*Signal, error)
 	AmplifySignal(ctx context.Context, userID, signalID string, amplitude int) error
+	RemoveResonance(ctx context.Context, userID, signalID string) error
 	PinSignal(ctx context.Context, signalID string, pinned bool) error
 	ArchiveSignal(ctx context.Context, signalID string, archived bool) error
 	ShareSignal(ctx context.Context, userID, signalID string) error
