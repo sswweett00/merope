@@ -10,6 +10,7 @@ import (
 	"local/merope/internal/modules/messaging/domain"
 	"local/merope/internal/core/util"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -167,6 +168,55 @@ func (r *PostgresMessagingRepository) mapMessage(dbMsg *db.ChatMessage) *domain.
 		CreatedAt:   dbMsg.CreatedAt.Time,
 		UpdatedAt:   dbMsg.UpdatedAt.Time,
 	}
+}
+
+func (r *PostgresMessagingRepository) GetMessageByID(ctx context.Context, messageID string) (*domain.ChatMessage, error) {
+	var mid pgtype.UUID
+	if err := mid.Scan(strings.TrimSpace(messageID)); err != nil {
+		return nil, fmt.Errorf("invalid message id: %w", err)
+	}
+
+	var (
+		id, roomID, authorID pgtype.UUID
+		content, messageType sql.NullString
+		encryptedPayload sql.NullString
+		isEncrypted, isDeleted bool
+		expiresAt pgtype.Timestamptz
+	)
+	err := r.pool.QueryRow(ctx, `
+SELECT id, room_id, author_id, content, encrypted_payload, message_type,
+       is_encrypted, is_deleted, expires_at
+FROM chat_messages
+WHERE id = $1
+ORDER BY created_at DESC
+LIMIT 1`, mid).Scan(
+		&id, &roomID, &authorID, &content, &encryptedPayload, &messageType,
+		&isEncrypted, &isDeleted, &expiresAt,
+	)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, fmt.Errorf("message not found")
+		}
+		return nil, err
+	}
+
+	msg := &domain.ChatMessage{
+		ID:         util.UUIDToString(id),
+		RoomID:     util.UUIDToString(roomID),
+		SenderID:   util.UUIDToString(authorID),
+		Content:    content.String,
+		MessageType: messageType.String,
+		IsEncrypted: isEncrypted,
+		IsDeleted:   isDeleted,
+	}
+	if encryptedPayload.Valid {
+		payload := encryptedPayload.String
+		msg.EncryptedPayload = &payload
+	}
+	if expiresAt.Valid {
+		msg.ExpiresAt = &expiresAt.Time
+	}
+	return msg, nil
 }
 
 func (r *PostgresMessagingRepository) GetMessages(ctx context.Context, roomID string, limit, offset int32) ([]*domain.ChatMessage, error) {
