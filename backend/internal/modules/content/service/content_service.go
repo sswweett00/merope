@@ -26,6 +26,9 @@ func NewContentService(repo domain.ContentRepository, bus events.Publisher, veri
 }
 
 func (s *contentService) BroadcastSignal(ctx context.Context, signal *domain.Signal, pool *domain.WavePoolData) (*domain.Signal, error) {
+	if signal == nil || signal.AuthorID == "" {
+		return nil, fmt.Errorf("signal author is required")
+	}
 	signal.ContentText = security.SanitizeHTML(signal.ContentText)
 	signal.UpdatedAt = time.Now()
 	signal.CreatedAtUnix = time.Now().Unix()
@@ -88,12 +91,14 @@ func (s *contentService) BroadcastSignal(ctx context.Context, signal *domain.Sig
 		})
 	}
 
-	g.Go(func() error {
-		return s.bus.Publish(gCtx, "content.signal.broadcasted", events.Event{
-			Type:    "SIGNAL_BROADCASTED",
-			Payload: signal,
+	if s.bus != nil {
+		g.Go(func() error {
+			return s.bus.Publish(gCtx, "content.signal.broadcasted", events.Event{
+				Type:    "SIGNAL_BROADCASTED",
+				Payload: signal,
+			})
 		})
-	})
+	}
 
 	if err := g.Wait(); err != nil {
 		return nil, err
@@ -162,8 +167,11 @@ func (s *contentService) AmplifySignal(ctx context.Context, userID, signalID str
 		}
 	}
 
+	if amplitude <= 0 {
+		return fmt.Errorf("amplitude must be positive")
+	}
 	err := s.repo.AddResonance(ctx, userID, signalID, amplitude)
-	if err == nil {
+	if err == nil && s.bus != nil {
 		_ = s.bus.Publish(ctx, "content.resonance.amplified", events.Event{
 			Type: "SIGNAL_AMPLIFIED",
 			Payload: map[string]interface{}{
@@ -218,25 +226,29 @@ func (s *contentService) SearchContent(ctx context.Context, query string, page i
 }
 
 func (s *contentService) ShareSignal(ctx context.Context, userID, signalID string) error {
-	// Increment share count
-	// In a real implementation, this would update the signal's share_count
-	_ = s.repo.UpdateSignalMetrics(ctx, signalID, 0, 0, 1)
-
-	_ = s.bus.Publish(ctx, "content.signal.shared", events.Event{
-		Type: "SIGNAL_SHARED",
-		Payload: map[string]interface{}{
-			"user_id":   userID,
-			"signal_id": signalID,
-		},
-	})
-
+	if userID == "" || signalID == "" {
+		return fmt.Errorf("invalid share request")
+	}
+	if err := s.repo.UpdateSignalMetrics(ctx, signalID, 0, 0, 1); err != nil {
+		return err
+	}
+	if s.bus != nil {
+		_ = s.bus.Publish(ctx, "content.signal.shared", events.Event{
+			Type: "SIGNAL_SHARED",
+			Payload: map[string]interface{}{
+				"user_id":   userID,
+				"signal_id": signalID,
+			},
+		})
+	}
 	return nil
 }
 
 func (s *contentService) ViewSignal(ctx context.Context, userID, signalID string) error {
-	// Increment view count
-	_ = s.repo.UpdateSignalMetrics(ctx, signalID, 1, 0, 0)
-	return nil
+	if userID == "" || signalID == "" {
+		return fmt.Errorf("invalid view request")
+	}
+	return s.repo.UpdateSignalMetrics(ctx, signalID, 1, 0, 0)
 }
 
 func (s *contentService) UpdateSignal(ctx context.Context, sig *domain.Signal) error {
