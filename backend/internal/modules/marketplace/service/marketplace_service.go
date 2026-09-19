@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"local/merope/internal/modules/marketplace/domain"
 )
@@ -16,6 +17,18 @@ func NewMarketplaceService(repo domain.RuntimeMarketplaceRepository) domain.Runt
 }
 
 func (s *marketplaceService) PostProduct(ctx context.Context, p *domain.Product) error {
+	if p == nil || p.SellerID == "" {
+		return fmt.Errorf("seller and product are required")
+	}
+	if p.Price <= 0 {
+		return fmt.Errorf("product price must be positive")
+	}
+	if p.StockQuantity < 0 {
+		return fmt.Errorf("stock quantity cannot be negative")
+	}
+	if strings.TrimSpace(p.Name) == "" {
+		return fmt.Errorf("product name is required")
+	}
 	return s.repo.CreateProduct(ctx, p)
 }
 
@@ -60,8 +73,9 @@ func (s *marketplaceService) Purchase(ctx context.Context, buyerID string, produ
 		return nil, fmt.Errorf("product IDs and quantities must have matching non-empty length")
 	}
 
-	var total int32
+	var total int64
 	items := make([]domain.OrderItem, 0, len(productIDs))
+	const maxInt32 = int64(1<<31 - 1)
 	for i, pid := range productIDs {
 		if quantities[i] <= 0 {
 			return nil, fmt.Errorf("quantity must be positive")
@@ -73,10 +87,17 @@ func (s *marketplaceService) Purchase(ctx context.Context, buyerID string, produ
 		if prod == nil || !prod.IsActive {
 			return nil, fmt.Errorf("product %s is unavailable", pid)
 		}
+		if prod.Price <= 0 {
+			return nil, fmt.Errorf("product %s has an invalid price", pid)
+		}
 		if prod.StockQuantity > 0 && prod.StockQuantity < quantities[i] {
 			return nil, fmt.Errorf("insufficient stock for product %s", pid)
 		}
-		total += prod.Price * quantities[i]
+		lineTotal := int64(prod.Price) * int64(quantities[i])
+		if lineTotal <= 0 || total > maxInt32-lineTotal {
+			return nil, fmt.Errorf("order total exceeds supported amount")
+		}
+		total += lineTotal
 		items = append(items, domain.OrderItem{
 			ProductID: pid,
 			ProductName: prod.Name,
@@ -88,7 +109,7 @@ func (s *marketplaceService) Purchase(ctx context.Context, buyerID string, produ
 
 	order := &domain.Order{
 		BuyerID: buyerID,
-		TotalAmount: total,
+		TotalAmount: int32(total),
 		Status: "pending",
 		ShippingAddress: domain.ShippingAddress{FullName: buyerID, AddressLine1: address},
 		Items: items,
