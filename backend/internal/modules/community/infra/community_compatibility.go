@@ -73,6 +73,45 @@ GROUP BY c.id, c.owner_id, c.name, c.slug, c.description, c.avatar_url, c.banner
 	return &c, nil
 }
 
+func (r *postgresCommunityRepository) UpdateCommunity(ctx context.Context, commID string, updates *domain.Community) error {
+	if updates == nil {
+		return fmt.Errorf("community updates are required")
+	}
+	var id pgtype.UUID
+	if err := id.Scan(strings.TrimSpace(commID)); err != nil {
+		return fmt.Errorf("invalid community uuid: %w", err)
+	}
+	name := strings.TrimSpace(updates.Name)
+	if name == "" {
+		return fmt.Errorf("community name is required")
+	}
+	category := strings.TrimSpace(updates.Category)
+	if category == "" {
+		category = "general"
+	}
+	tags := updates.Tags
+	if tags == nil {
+		tags = []string{}
+	}
+	rules := updates.Rules
+	if rules == nil {
+		rules = []string{}
+	}
+	_, err := r.queries.Exec(ctx, `
+UPDATE communities
+SET name = $2,
+    description = $3,
+    avatar_url = $4,
+    banner_url = $5,
+    is_private = $6,
+    category = $7,
+    tags = $8,
+    rules = $9,
+    updated_at = NOW()
+WHERE id = $1`, id, name, updates.Description, updates.AvatarURL, updates.BannerURL, updates.IsPrivate, category, tags, rules)
+	return err
+}
+
 func (r *postgresCommunityRepository) GetCommunityBySlug(ctx context.Context, slug string) (*domain.Community, error) {
 	slug = strings.TrimSpace(slug)
 	if slug == "" {
