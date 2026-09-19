@@ -29,7 +29,7 @@ func (h *VaultHandler) StoreItem(c *fiber.Ctx) error {
 
 	item, err := h.service.SecureStore(c.Context(), userID, req.Title, req.EncryptedData, req.ItemType)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "operation failed"})
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
@@ -44,7 +44,7 @@ func (h *VaultHandler) ListItems(c *fiber.Ctx) error {
 
 	items, err := h.service.ListItems(c.Context(), userID)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "operation failed"})
 	}
 
 	return c.JSON(fiber.Map{"items": items})
