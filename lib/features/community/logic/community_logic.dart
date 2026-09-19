@@ -1,12 +1,11 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:merope_core/data/database/database_provider.dart';
 import '../domain/models/community_model.dart';
 import '../repository/community_repository.dart';
+import '../data/repositories/community_remote_repository.dart';
 
 final communityRepositoryProvider = Provider<ICommunityRepository>((ref) {
-  final db = ref.watch(meropeDatabaseProvider);
-  return DriftCommunityRepository(db);
+  return ApiCommunityRepository();
 });
 
 // Community List Controller
