@@ -71,6 +71,41 @@ func (r *PostgresContentRepository) GetStream(ctx context.Context, userID string
 	return res, nil
 }
 
+func (r *PostgresContentRepository) CanViewSignal(ctx context.Context, viewerID, signalID string) (bool, error) {
+	var viewer, signal pgtype.UUID
+	if err := viewer.Scan(viewerID); err != nil {
+		return false, fmt.Errorf("invalid viewer uuid: %w", err)
+	}
+	if err := signal.Scan(signalID); err != nil {
+		return false, fmt.Errorf("invalid signal uuid: %w", err)
+	}
+	var visible bool
+	err := r.queries.QueryRow(ctx, `
+SELECT EXISTS (
+	SELECT 1
+	FROM posts p
+	WHERE p.id = $1
+	  AND p.is_archived = FALSE
+	  AND (
+		p.author_id = $2
+		OR p.visibility = 'public'
+		OR (
+			p.visibility = 'followers'
+			AND EXISTS (
+				SELECT 1 FROM follows f
+				WHERE f.follower_id = $2
+				  AND f.following_id = p.author_id
+				  AND f.status = 'accepted'
+			)
+		)
+	  )
+)`, signal, viewer).Scan(&visible)
+	if err != nil {
+		return false, err
+	}
+	return visible, nil
+}
+
 func (r *PostgresContentRepository) AddResonance(ctx context.Context, userID, targetID string, amplitude int) error {
 	var uid, tid pgtype.UUID
 	if err := uid.Scan(userID); err != nil {
