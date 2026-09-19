@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:merope_core/security/biometric_provider.dart';
+import 'package:merope_core/data/services/api_client.dart';
 
 enum EscrowStage { created, funded, shipped, delivered, completed }
 
@@ -81,7 +81,6 @@ class MeropeEscrow {
 
 class EscrowDetails extends FamilyAsyncNotifier<MeropeEscrow, String> {
   final Map<String, MeropeEscrow> _cache = {};
-  final Map<String, StreamController<MeropeEscrow>> _wsControllers = {};
 
   @override
   FutureOr<MeropeEscrow> build(String arg) async {
@@ -93,86 +92,41 @@ class EscrowDetails extends FamilyAsyncNotifier<MeropeEscrow, String> {
   }
 
   Future<MeropeEscrow> _fetchFromApi(String id) async {
-    await Future.delayed(const Duration(milliseconds: 600));
-    final now = DateTime.now();
+    final result = await ApiClient().get<dynamic>('/finance/escrow/$id');
+    if (result.isError || result.data is! Map) {
+      throw StateError('Failed to load escrow');
+    }
+    final map = Map<String, dynamic>.from(result.data as Map);
+    final status = (map['Status'] ?? map['status'] ?? 'held').toString().toLowerCase();
+    final stage = switch (status) {
+      'created' => EscrowStage.created,
+      'funded' || 'held' => EscrowStage.funded,
+      'shipped' => EscrowStage.shipped,
+      'delivered' => EscrowStage.delivered,
+      'completed' || 'released' => EscrowStage.completed,
+      _ => EscrowStage.funded,
+    };
+    final amount = map['Amount'] ?? map['amount'] ?? 0;
+    final created = DateTime.tryParse('${map['CreatedAt'] ?? map['createdAt'] ?? ''}') ?? DateTime.now();
+    final updated = DateTime.tryParse('${map['UpdatedAt'] ?? map['updatedAt'] ?? ''}') ?? created;
     return MeropeEscrow(
-      id: id,
-      amount: '250.00 MRO',
-      currency: 'MRO',
-      seller: 'CreativeNode_X',
-      description: 'Digital Asset - Nebula Bundle',
-      status: 'Held',
-      stage: EscrowStage.funded,
-      createdAt: now.subtract(const Duration(days: 2)),
-      updatedAt: now,
+      id: (map['ID'] ?? map['id'] ?? id).toString(),
+      amount: '${amount ?? 0}',
+      currency: (map['Currency'] ?? map['currency'] ?? 'MRO').toString(),
+      seller: (map['SellerID'] ?? map['sellerId'] ?? '').toString(),
+      description: (map['Description'] ?? map['description'] ?? '').toString(),
+      status: status,
+      stage: stage,
+      createdAt: created,
+      updatedAt: updated,
       parties: [
-        EscrowParty(id: 'me', name: 'CurrentUser', role: 'buyer'),
-        EscrowParty(
-            id: 'CreativeNode_X', name: 'CreativeNode_X', role: 'seller'),
+        EscrowParty(id: (map['BuyerID'] ?? map['buyerId'] ?? '').toString(), name: 'Buyer', role: 'buyer'),
+        EscrowParty(id: (map['SellerID'] ?? map['sellerId'] ?? '').toString(), name: 'Seller', role: 'seller'),
       ],
-      items: [
-        EscrowItem(
-            id: 'item_1', title: 'Nebula Bundle', price: 250.0, imageUrl: null)
-      ],
-      historyLog: [
-        EscrowHistoryEntry(
-            id: 'h1',
-            action: 'created',
-            performedBy: 'me',
-            timestamp: now.subtract(const Duration(days: 2))),
-        EscrowHistoryEntry(
-            id: 'h2',
-            action: 'funded',
-            performedBy: 'me',
-            timestamp: now.subtract(const Duration(days: 1))),
-      ],
-      autoReleaseAt: now.add(const Duration(days: 7)),
+      items: const [],
+      historyLog: const [],
+      autoReleaseAt: DateTime.tryParse('${map['ReleaseAt'] ?? map['releaseAt'] ?? ''}'),
       receiptUrl: null,
-    );
-  }
-
-  void _listenWebSocket(String arg) {
-    final wsUrl = const String.fromEnvironment('ESCROW_WS_URL',
-        defaultValue: 'wss://api.merope.app/ws/escrow');
-    final channel = WebSocketChannel.connect(Uri.parse('$wsUrl/$arg'));
-    final controller = StreamController<MeropeEscrow>();
-    _wsControllers[arg] = controller;
-    channel.stream.listen(
-      (data) {
-        try {
-          final updated = _cache[arg];
-          if (updated != null) {
-            final newEscrow = MeropeEscrow(
-              id: updated.id,
-              amount: updated.amount,
-              currency: updated.currency,
-              seller: updated.seller,
-              description: updated.description,
-              status: 'Updated',
-              stage: updated.stage,
-              createdAt: updated.createdAt,
-              updatedAt: DateTime.now(),
-              parties: updated.parties,
-              items: updated.items,
-              historyLog: [
-                ...updated.historyLog,
-                EscrowHistoryEntry(
-                    id: 'ws_${DateTime.now().millisecondsSinceEpoch}',
-                    action: 'updated',
-                    performedBy: 'system',
-                    timestamp: DateTime.now())
-              ],
-              disputeReason: updated.disputeReason,
-              autoReleaseAt: updated.autoReleaseAt,
-              receiptUrl: updated.receiptUrl,
-            );
-            _cache[arg] = newEscrow;
-            controller.add(newEscrow);
-          }
-        } catch (_) {}
-      },
-      onError: (e) => controller.addError(e),
-      onDone: () => controller.close(),
     );
   }
 
@@ -187,33 +141,32 @@ class EscrowDetails extends FamilyAsyncNotifier<MeropeEscrow, String> {
       state = AsyncValue.data(current);
       return;
     }
-    await Future.delayed(const Duration(seconds: 1));
-    final newEscrow = MeropeEscrow(
-      id: current.id,
-      amount: current.amount,
-      currency: current.currency,
-      seller: current.seller,
-      description: current.description,
-      status: 'Released',
-      stage: EscrowStage.completed,
-      createdAt: current.createdAt,
-      updatedAt: DateTime.now(),
-      parties: current.parties,
-      items: current.items,
-      historyLog: [
-        ...current.historyLog,
-        EscrowHistoryEntry(
-            id: 'rel_${DateTime.now().millisecondsSinceEpoch}',
-            action: 'released',
-            performedBy: 'me',
-            timestamp: DateTime.now())
-      ],
-      disputeReason: current.disputeReason,
-      autoReleaseAt: current.autoReleaseAt,
-      receiptUrl: current.receiptUrl,
+    final result = await ApiClient().post<dynamic>(
+      '/finance/escrow/${current.id}/release',
     );
-    _cache[current.id] = newEscrow;
-    state = AsyncValue.data(newEscrow);
+    if (result.isError) {
+      state = AsyncValue.data(current);
+      throw StateError('Failed to release escrow');
+    }
+    final updated = await _fetchFromApi(current.id);
+    _cache[current.id] = updated;
+    state = AsyncValue.data(updated);
+  }
+
+  Future<void> refundPayment() async {
+    final current = state.value;
+    if (current == null) return;
+    state = const AsyncValue.loading();
+    final result = await ApiClient().post<dynamic>(
+      '/finance/escrow/${current.id}/refund',
+    );
+    if (result.isError) {
+      state = AsyncValue.data(current);
+      throw StateError('Failed to refund escrow');
+    }
+    final updated = await _fetchFromApi(current.id);
+    _cache[current.id] = updated;
+    state = AsyncValue.data(updated);
   }
 
   Future<void> openDispute(String reason, {String? evidenceUrl}) async {
