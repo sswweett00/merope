@@ -29,8 +29,11 @@ func (h *ContentHandler) requireVisiblePost(c *fiber.Ctx, postID, viewerID strin
 	if post == nil {
 		return nil, fiber.ErrNotFound
 	}
-	visibility := strings.ToLower(strings.TrimSpace(post.Visibility))
-	if post.AuthorID != viewerID && visibility != "" && visibility != "public" {
+	visible, err := h.service.CanViewSignal(c.Context(), viewerID, postID)
+	if err != nil {
+		return nil, err
+	}
+	if !visible {
 		return nil, fiber.ErrForbidden
 	}
 	return post, nil
