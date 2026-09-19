@@ -22,6 +22,7 @@ class ApiClient {
   Future<bool> Function()? refreshCallback;
 
   static const Duration _connectTimeout = Duration(seconds: 15);
+  static const Duration _sendTimeout = Duration(seconds: 20);
   static const Duration _receiveTimeout = Duration(seconds: 20);
 
   Future<void> init({String? baseUrl, String? expectedCertSha256}) async {
@@ -29,6 +30,7 @@ class ApiClient {
       BaseOptions(
         baseUrl: baseUrl ?? 'https://api.merope.enterprise:8443',
         connectTimeout: _connectTimeout,
+        sendTimeout: _sendTimeout,
         receiveTimeout: _receiveTimeout,
         headers: const {
           'Content-Type': 'application/json',
@@ -72,8 +74,8 @@ class ApiClient {
       dio.interceptors.add(
         LogInterceptor(
           request: true,
-          requestBody: true,
-          responseBody: true,
+          requestBody: false,
+          responseBody: false,
           responseHeader: true,
           error: true,
         ),
