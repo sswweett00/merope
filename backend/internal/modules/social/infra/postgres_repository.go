@@ -20,6 +20,42 @@ func NewPostgresSocialRepository(queries *db.Queries) *PostgresSocialRepository 
     return &PostgresSocialRepository{queries: queries}
 }
 
+func (r *PostgresSocialRepository) CanViewProfile(ctx context.Context, viewerID, targetID string) (bool, error) {
+	var viewer, target pgtype.UUID
+	if err := viewer.Scan(viewerID); err != nil {
+		return false, fmt.Errorf("invalid viewer uuid: %w", err)
+	}
+	if err := target.Scan(targetID); err != nil {
+		return false, fmt.Errorf("invalid target uuid: %w", err)
+	}
+	var visible bool
+	err := r.queries.QueryRow(ctx, `
+SELECT EXISTS (
+	SELECT 1
+	FROM users u
+	WHERE u.id = $1
+	  AND (
+		u.id = $2
+		OR COALESCE(u.is_private, FALSE) = FALSE
+		OR EXISTS (
+			SELECT 1 FROM follows f
+			WHERE f.follower_id = $2
+			  AND f.following_id = $1
+			  AND f.status = 'accepted'
+		)
+	  )
+	  AND NOT EXISTS (
+		SELECT 1 FROM blocks b
+		WHERE (b.blocker_id = $2 AND b.blocked_id = $1)
+		   OR (b.blocker_id = $1 AND b.blocked_id = $2)
+	  )
+)`, target, viewer).Scan(&visible)
+	if err != nil {
+		return false, err
+	}
+	return visible, nil
+}
+
 func (r *PostgresSocialRepository) Follow(ctx context.Context, followerID, followingID string) error {
     var fID, tID pgtype.UUID
     if err := fID.Scan(followerID); err != nil {
