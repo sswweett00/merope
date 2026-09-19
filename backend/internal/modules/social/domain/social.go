@@ -39,6 +39,7 @@ type SocialRepository interface {
 	GetFollowers(ctx context.Context, userID string) ([]*domain.User, error)
 	GetFollowing(ctx context.Context, userID string) ([]*domain.User, error)
 	GetMutuals(ctx context.Context, userA, userB string) ([]*domain.User, error)
+	CanViewProfile(ctx context.Context, viewerID, targetID string) (bool, error)
 	Block(ctx context.Context, blockerID, blockedID string) error
 	Unblock(ctx context.Context, blockerID, blockedID string) error
 	IsBlocked(ctx context.Context, userA, userB string) (bool, error)
@@ -54,7 +55,7 @@ type SocialRepository interface {
 }
 
 type SocialService interface {
-	GetProfile(ctx context.Context, userID string) (*PublicProfile, error)
+	GetProfile(ctx context.Context, viewerID, userID string) (*PublicProfile, error)
 	Follow(ctx context.Context, followerID, followingID string) error
 	Unfollow(ctx context.Context, followerID, followingID string) error
 	GetMutualFriends(ctx context.Context, userA, userB string) ([]*domain.User, error)
