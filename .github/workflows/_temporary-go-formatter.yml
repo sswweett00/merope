@@ -1,0 +1,46 @@
+name: Temporary Go Formatter
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temporary-go-formatter-main
+  cancel-in-progress: true
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.x'
+          cache: true
+          cache-dependency-path: backend/go.sum
+      - name: Install lint tools
+        run: |
+          go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.2
+      - name: Apply format fixes
+        run: |
+          golangci-lint fmt ./...
+      - name: Apply safe linter fixes
+        run: |
+          golangci-lint run --fix ./... || true
+      - name: Commit formatter changes
+        run: |
+          if git diff --quiet; then
+            echo "No formatting changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "chore: normalize Go formatting"
+          git push
