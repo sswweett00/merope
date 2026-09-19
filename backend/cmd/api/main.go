@@ -7,9 +7,9 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"strings"
 	"sync/atomic"
 	"time"
-	"strings"
 
 	"github.com/gofiber/fiber/v2"
 
