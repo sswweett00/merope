@@ -2,8 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:drift/drift.dart';
-import 'package:merope_core/data/database/merope_database.dart';
 import 'package:merope_core/data/services/api_client.dart';
 import 'package:merope_core/security/biometric_provider.dart';
 import 'package:merope_core/security/session_storage.dart';
@@ -94,18 +92,15 @@ class MfaVerificationResult {
 class AuthRepository implements IAuthRepository {
   final ApiClient _apiClient;
   final SessionStorage _sessionStorage;
-  final MeropeDatabase _database;
   final FlutterSecureStorage _secureStorage;
   final BiometricAuth _biometricAuth;
 
   AuthRepository({
     required ApiClient apiClient,
     required SessionStorage sessionStorage,
-    required MeropeDatabase database,
     required BiometricAuth biometricAuth,
   })  : _apiClient = apiClient,
         _sessionStorage = sessionStorage,
-        _database = database,
         _secureStorage = const FlutterSecureStorage(),
         _biometricAuth = biometricAuth {
     _apiClient.refreshCallback = () async {
@@ -396,44 +391,9 @@ class AuthRepository implements IAuthRepository {
       );
     }
 
-    await _syncUserToDatabase(user);
-
     return user;
   }
 
-  Future<void> _syncUserToDatabase(AuthUser user) async {
-    try {
-      final existing = await (_database.select(_database.users)
-            ..where((t) => t.id.equals(user.id)))
-          .getSingleOrNull();
-
-      if (existing != null) {
-        await (_database.update(_database.users)
-              ..where((t) => t.id.equals(user.id)))
-            .write(
-          UsersCompanion(
-            username: Value(user.username),
-            email: Value(user.email),
-            avatarUrl: Value(user.avatarUrl),
-          ),
-        );
-      } else {
-        await _database.into(_database.users).insert(
-              UsersCompanion.insert(
-                id: user.id,
-                username: user.username,
-                email: user.email,
-                passwordHash: 'PBKDF2:HIDDEN', // Placeholder for local vault
-                avatarUrl: Value(user.avatarUrl),
-                createdAt: DateTime.now(),
-                updatedAt: DateTime.now(),
-              ),
-            );
-      }
-    } catch (_) {
-      // DB sync failure should not block auth flow
-    }
-  }
 
   Map<String, dynamic> _getDeviceInfo() {
     return {
@@ -447,7 +407,6 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository(
     apiClient: ApiClient(),
     sessionStorage: SessionStorage(),
-    database: MeropeDatabase(),
     biometricAuth: BiometricAuth(),
   );
 });
