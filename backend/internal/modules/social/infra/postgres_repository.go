@@ -176,8 +176,16 @@ func (r *PostgresSocialRepository) GetSuggestedUsers(ctx context.Context, userID
     return res, nil
 }
 
-func (r *PostgresSocialRepository) SearchUsers(ctx context.Context, query string) ([]*idDomain.User, error) {
-    users, err := r.queries.SearchUsers(ctx, db.SearchUsersParams{Column1: pgtype.Text{String: query, Valid: true}, ID: pgtype.UUID{}, Limit: 20})
+func (r *PostgresSocialRepository) SearchUsers(ctx context.Context, viewerID, query string) ([]*idDomain.User, error) {
+    var viewer pgtype.UUID
+    if err := viewer.Scan(viewerID); err != nil {
+        return nil, fmt.Errorf("invalid uuid viewerID: %w", err)
+    }
+    users, err := r.queries.SearchUsers(ctx, db.SearchUsersParams{
+        Column1: pgtype.Text{String: query, Valid: true},
+        ID:      viewer,
+        Limit:   20,
+    })
     if err != nil {
         return nil, err
     }
