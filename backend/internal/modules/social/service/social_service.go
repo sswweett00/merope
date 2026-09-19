@@ -137,15 +137,19 @@ func (s *socialService) GetSuggestions(ctx context.Context, userID string) ([]*d
 }
 
 func (s *socialService) GlobalSearch(ctx context.Context, query string) ([]*domain.User, error) {
+    return s.globalSearchForViewer(ctx, "", query)
+}
+
+func (s *socialService) globalSearchForViewer(ctx context.Context, viewerID, query string) ([]*domain.User, error) {
     normalizedQuery := strings.ToLower(strings.TrimSpace(query))
     if len(normalizedQuery) < 2 || len(normalizedQuery) > 80 {
         return nil, fmt.Errorf("search query must be between 2 and 80 characters")
     }
-    cacheKey := fmt.Sprintf("search:%s", normalizedQuery)
+    cacheKey := fmt.Sprintf("search:%s:%s", viewerID, normalizedQuery)
     if cached, ok := s.searchCache.Get(cacheKey); ok {
         return cached, nil
     }
-    users, err := s.repo.SearchUsers(ctx, normalizedQuery)
+    users, err := s.repo.SearchUsers(ctx, viewerID, normalizedQuery)
     if err == nil {
         s.searchCache.Put(cacheKey, users)
     }
