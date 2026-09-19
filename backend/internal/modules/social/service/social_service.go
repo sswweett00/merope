@@ -3,6 +3,7 @@ package service
 import (
     "context"
     "fmt"
+    "strings"
 
     "local/merope/internal/core/security"
     "local/merope/internal/core/util"
@@ -26,6 +27,31 @@ func NewSocialService(repo socialDomain.SocialRepository, idService domain.Ident
         searchCache:  util.NewLRUCache[string, []*domain.User](500),
         veritasGuard: veritasGuard,
     }
+}
+
+func (s *socialService) GetProfile(ctx context.Context, userID string) (*socialDomain.PublicProfile, error) {
+    userID = strings.TrimSpace(userID)
+    if userID == "" {
+        return nil, fmt.Errorf("user id is required")
+    }
+    exported, err := s.idService.ExportData(ctx, userID)
+    if err != nil {
+        return nil, err
+    }
+    user, ok := exported["user"].(*domain.User)
+    if !ok || user == nil {
+        return nil, fmt.Errorf("user not found")
+    }
+    return &socialDomain.PublicProfile{
+        ID:          user.ID,
+        Username:    user.Username,
+        DisplayName: user.DisplayName,
+        Bio:         user.Bio,
+        AvatarURL:   user.AvatarURL,
+        IsVerified:  user.IsVerified,
+        IsPrivate:   user.IsPrivate,
+        CreatedAt:   user.CreatedAt,
+    }, nil
 }
 
 func (s *socialService) Follow(ctx context.Context, followerID, followingID string) error {
@@ -111,14 +137,15 @@ func (s *socialService) GetSuggestions(ctx context.Context, userID string) ([]*d
 }
 
 func (s *socialService) GlobalSearch(ctx context.Context, query string) ([]*domain.User, error) {
-    if len(query) < 2 || len(query) > 80 {
+    normalizedQuery := strings.ToLower(strings.TrimSpace(query))
+    if len(normalizedQuery) < 2 || len(normalizedQuery) > 80 {
         return nil, fmt.Errorf("search query must be between 2 and 80 characters")
     }
-    cacheKey := fmt.Sprintf("search:%s", query)
+    cacheKey := fmt.Sprintf("search:%s", normalizedQuery)
     if cached, ok := s.searchCache.Get(cacheKey); ok {
         return cached, nil
     }
-    users, err := s.repo.SearchUsers(ctx, query)
+    users, err := s.repo.SearchUsers(ctx, normalizedQuery)
     if err == nil {
         s.searchCache.Put(cacheKey, users)
     }
