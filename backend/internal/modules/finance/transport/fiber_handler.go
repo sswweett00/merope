@@ -22,7 +22,7 @@ func (h *FinanceHandler) GetBalance(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "operation failed"})
 	}
-	return c.JSON(fiber.Map{"balance": balance})
+	return c.JSON(fiber.Map{"balance": balance, "currency": "TRY"})
 }
 
 func (h *FinanceHandler) Tip(c *fiber.Ctx) error {
