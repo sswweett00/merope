@@ -14,6 +14,7 @@ class NotificationsScreen extends ConsumerWidget {
     final themeState = ref.watch(themeProvider);
     final tokens = themeState.currentTokens;
     final notificationsAsync = ref.watch(notificationsListProvider);
+    final unreadAsync = ref.watch(notificationsUnreadCountProvider);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -21,8 +22,15 @@ class NotificationsScreen extends ConsumerWidget {
         children: [
           _Header(
               tokens: tokens,
+              unread: unreadAsync.value ?? 0,
               onClear: () =>
-                  ref.read(notificationsListProvider.notifier).clearAll()),
+                  ref.read(notificationsListProvider.notifier).clearAll(),
+              onMarkAll: () async {
+                await ref
+                    .read(notificationsListProvider.notifier)
+                    .markAllRead();
+                ref.invalidate(notificationsListProvider);
+              }),
           Expanded(
             child: notificationsAsync.when(
               data: (notifications) => notifications.isEmpty
@@ -32,7 +40,13 @@ class NotificationsScreen extends ConsumerWidget {
                       itemCount: notifications.length,
                       itemBuilder: (context, index) {
                         return _NotificationItem(
-                            notification: notifications[index], tokens: tokens);
+                            notification: notifications[index],
+                            tokens: tokens,
+                            onRead: () async {
+                              await ref
+                                  .read(notificationsListProvider.notifier)
+                                  .markRead(notifications[index].id);
+                            });
                       },
                     ),
               loading: () => const Center(child: CircularProgressIndicator()),
@@ -48,7 +62,13 @@ class NotificationsScreen extends ConsumerWidget {
 class _Header extends StatelessWidget {
   final MeropeColorTokens tokens;
   final VoidCallback onClear;
-  const _Header({required this.tokens, required this.onClear});
+  final VoidCallback onMarkAll;
+  final int unread;
+  const _Header(
+      {required this.tokens,
+      required this.onClear,
+      required this.onMarkAll,
+      required this.unread});
 
   @override
   Widget build(BuildContext context) {
@@ -58,20 +78,41 @@ class _Header extends StatelessWidget {
         border: Border(bottom: BorderSide(color: tokens.border, width: 0.5)),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            'Signal Center',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: tokens.textPrimary,
-              letterSpacing: -0.5,
+          Expanded(
+            child: Row(
+              children: [
+                Text(
+                  'Signal Center',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: tokens.textPrimary,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                if (unread > 0) ...[
+                  const SizedBox(width: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: tokens.primary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(99),
+                    ),
+                    child: Text('$unread unread',
+                        style: TextStyle(color: tokens.primary, fontSize: 12)),
+                  ),
+                ],
+              ],
             ),
           ),
           TextButton(
+            onPressed: onMarkAll,
+            child: Text('Read All', style: TextStyle(color: tokens.primary)),
+          ),
+          TextButton(
             onPressed: onClear,
-            child: Text('Clear All', style: TextStyle(color: tokens.primary)),
+            child: Text('Clear', style: TextStyle(color: tokens.primary)),
           ),
         ],
       ),
@@ -103,8 +144,10 @@ class _EmptyNotifications extends StatelessWidget {
 class _NotificationItem extends StatelessWidget {
   final MeropeNotification notification;
   final MeropeColorTokens tokens;
+  final VoidCallback onRead;
 
-  const _NotificationItem({required this.notification, required this.tokens});
+  const _NotificationItem(
+      {required this.notification, required this.tokens, required this.onRead});
 
   @override
   Widget build(BuildContext context) {
@@ -127,6 +170,7 @@ class _NotificationItem extends StatelessWidget {
           ),
           subtitle: Text(notification.timestamp,
               style: TextStyle(color: tokens.textSecondary, fontSize: 12)),
+          onTap: onRead,
           trailing: notification.type == MeropeNotificationType.sync
               ? TextButton(
                   onPressed: () {
