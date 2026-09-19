@@ -2,11 +2,13 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"local/merope/internal/core/events"
 	"local/merope/internal/core/security"
 	"local/merope/internal/modules/content/domain"
+	socialService "local/merope/internal/modules/social/service"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -15,6 +17,7 @@ type ContentMirrorRepository interface {
 	UpdateSignalStatus(context.Context, string, bool, bool, bool) error
 	GetStream(context.Context, string, int32, int32) ([]*domain.Signal, error)
 	AddResonance(context.Context, string, string, int) error
+	RemoveResonance(context.Context, string, string) error
 	CreateNode(context.Context, string, string, *string, string) (*domain.Node, error)
 	GetNodesForSignal(context.Context, string) ([]*domain.Node, error)
 }
@@ -22,16 +25,32 @@ type ContentMirrorRepository interface {
 type HighPerformanceContentService struct {
 	pgRepo     domain.ContentRepository
 	scyllaRepo ContentMirrorRepository
-	bus        events.Publisher
+	bus          events.Publisher
+	veritasGuard socialService.VeritasContentGuard
 }
 
-func NewHighPerformanceContentService(pgRepo domain.ContentRepository, scyllaRepo ContentMirrorRepository, bus events.Publisher) domain.ContentService {
-	return &HighPerformanceContentService{pgRepo: pgRepo, scyllaRepo: scyllaRepo, bus: bus}
+func NewHighPerformanceContentService(pgRepo domain.ContentRepository, scyllaRepo ContentMirrorRepository, bus events.Publisher, veritasGuard socialService.VeritasContentGuard) domain.ContentService {
+	return &HighPerformanceContentService{pgRepo: pgRepo, scyllaRepo: scyllaRepo, bus: bus, veritasGuard: veritasGuard}
 }
 
 func (s *HighPerformanceContentService) BroadcastSignal(ctx context.Context, signal *domain.Signal, pool *domain.WavePoolData) (*domain.Signal, error) {
+	if signal == nil || signal.AuthorID == "" {
+		return nil, fmt.Errorf("signal author is required")
+	}
 	signal.ContentText = security.SanitizeHTML(signal.ContentText)
+	if s.veritasGuard != nil {
+		if s.veritasGuard.DetectBotPattern(ctx, signal.AuthorID, signal.ContentText) {
+			return nil, fmt.Errorf("signal rejected: bot pattern detected")
+		}
+		original, originalID, _ := s.veritasGuard.VerifyOriginality(ctx, signal.AuthorID, signal.ContentText)
+		if !original {
+			return nil, fmt.Errorf("signal rejected: duplicate content detected (Original ID: %s)", originalID)
+		}
+	}
 	if err := s.pgRepo.CreateSignal(ctx, signal); err != nil { return nil, err }
+	if s.veritasGuard != nil {
+		_ = s.veritasGuard.MarkContentProvenance(ctx, signal.ID, signal.AuthorID)
+	}
 
 	g, gCtx := errgroup.WithContext(ctx)
 	g.Go(func() error {
@@ -107,3 +126,27 @@ func (s *HighPerformanceContentService) GetSignalNodes(ctx context.Context, sign
 }
 
 func (s *HighPerformanceContentService) Vote(ctx context.Context, poolID, optionID, userID string) error { return s.pgRepo.VoteWave(ctx, poolID, optionID, userID) }
+
+
+func (s *HighPerformanceContentService) RemoveResonance(ctx context.Context, userID, signalID string) error {
+	if userID == "" || signalID == "" {
+		return fmt.Errorf("invalid resonance removal request")
+	}
+	if err := s.pgRepo.RemoveResonance(ctx, userID, signalID); err != nil {
+		return err
+	}
+	if s.scyllaRepo != nil {
+		if err := s.scyllaRepo.RemoveResonance(ctx, userID, signalID); err != nil {
+			log.Printf("[ScyllaDB] Failed to mirror resonance removal for signal %s: %v", signalID, err)
+		}
+	}
+	if s.bus != nil {
+		if err := s.bus.Publish(ctx, "content.resonance.removed", events.Event{
+			Type: "SIGNAL_RESONANCE_REMOVED",
+			Payload: map[string]interface{}{"user_id": userID, "signal_id": signalID},
+		}); err != nil {
+			log.Printf("[NATS] Failed to publish resonance removal for signal %s: %v", signalID, err)
+		}
+	}
+	return nil
+}
