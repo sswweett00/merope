@@ -239,6 +239,10 @@ func (s *contentService) GetSignal(ctx context.Context, signalID string) (*domai
 	return s.repo.GetSignalByID(ctx, signalID)
 }
 
+func (s *contentService) CanViewSignal(ctx context.Context, viewerID, signalID string) (bool, error) {
+	return s.repo.CanViewSignal(ctx, viewerID, signalID)
+}
+
 func (s *contentService) GetUserSignals(ctx context.Context, userID string, page int32) ([]*domain.Signal, error) {
 	limit := int32(50)
 	offset := page * limit
