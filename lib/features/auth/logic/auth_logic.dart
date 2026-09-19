@@ -118,9 +118,9 @@ class AuthController extends StateNotifier<AuthState> {
     return false;
   }
 
-  void logout() {
-    _ref.read(authApiServiceProvider).logout();
+  Future<void> logout() async {
     state = const AuthState();
+    await _ref.read(authApiServiceProvider).logout();
   }
 
   void clearError() {
