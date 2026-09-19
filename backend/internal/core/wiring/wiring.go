@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
@@ -258,6 +259,30 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	app.Use(security.AnomalyDetectorMiddleware(anomalyDetector))
 	app.Use(cors.New(cors.Config{AllowOrigins: cfg.CORSAllowedOrigins, AllowHeaders: "Origin, Content-Type, Accept, Authorization, X-Request-ID, Idempotency-Key", AllowMethods: "GET,HEAD,POST,PUT,PATCH,DELETE,OPTIONS", AllowCredentials: false}))
 	app.Use(security.GlobalLimit(rdb.Conn))
+
+	app.Get("/ws", func(c *fiber.Ctx) error {
+		token := strings.TrimSpace(c.Query("token"))
+		if token == "" {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+		}
+		claims, err := security.ValidateToken(token, cfg.JWTSecret)
+		if err != nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+		}
+		blacklisted, err := security.CheckTokenBlacklist(c.Context(), rdb.Conn, claims.ID)
+		if err != nil || blacklisted {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+		}
+		if claims.Fingerprint != "" && security.GenerateFingerprint(c.IP(), c.Get("User-Agent")) != claims.Fingerprint {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+		}
+		if !websocket.IsWebSocketUpgrade(c) {
+			return fiber.ErrUpgradeRequired
+		}
+		return websocket.New(func(conn *websocket.Conn) {
+			wsHub.Serve(&realtime.Client{UserID: claims.UserID, Conn: conn})
+		})(c)
+	})
 
 	api := app.Group("/api/v10")
 	auth := api.Group("/auth")
