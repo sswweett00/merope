@@ -3,8 +3,9 @@ package infra
 import (
 	"context"
 	"database/sql"
-	"time"
+	"fmt"
 	"strings"
+	"time"
 	"local/merope/internal/database/db"
 	"local/merope/internal/modules/messaging/domain"
 	"local/merope/internal/core/util"
