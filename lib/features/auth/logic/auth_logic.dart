@@ -70,7 +70,7 @@ class AuthController extends StateNotifier<AuthState> {
         return false;
       }
 
-      final sig = await shield.getSecureDeviceSignature();
+      await shield.getSecureDeviceSignature();
       MeropeLogger.info('Session successfully bound to the current device');
 
       state = state.copyWith(
