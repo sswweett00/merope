@@ -72,6 +72,7 @@ type ContentRepository interface {
 	CreateSignal(ctx context.Context, s *Signal) error
 	GetStream(ctx context.Context, userID string, limit, offset int32) ([]*Signal, error)
 	GetSignalByID(ctx context.Context, signalID string) (*Signal, error)
+	CanViewSignal(ctx context.Context, viewerID, signalID string) (bool, error)
 	GetSignalsByUser(ctx context.Context, userID string, limit, offset int32) ([]*Signal, error)
 	GetSignalsByHashtag(ctx context.Context, hashtag string, limit, offset int32) ([]*Signal, error)
 	GetTrendingSignals(ctx context.Context, limit int32) ([]*Signal, error)
@@ -141,6 +142,7 @@ type ContentService interface {
 	BroadcastSignal(ctx context.Context, signal *Signal, pool *WavePoolData) (*Signal, error)
 	GetResonanceStream(ctx context.Context, userID string, page int32) ([]*Signal, error)
 	GetSignal(ctx context.Context, signalID string) (*Signal, error)
+	CanViewSignal(ctx context.Context, viewerID, signalID string) (bool, error)
 	GetUserSignals(ctx context.Context, userID string, page int32) ([]*Signal, error)
 	GetHashtagSignals(ctx context.Context, hashtag string, page int32) ([]*Signal, error)
 	GetTrendingContent(ctx context.Context, limit int32) ([]*Signal, error)
