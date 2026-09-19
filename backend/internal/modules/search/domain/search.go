@@ -50,6 +50,7 @@ type SearchRepository interface {
 type SearchService interface {
 	UniversalSearch(ctx context.Context, userID, query string) ([]*SearchResult, error)
 	GetRecentHistory(ctx context.Context, userID string) ([]*SearchHistory, error)
+	GetInterests(ctx context.Context, userID string) ([]string, error)
 	UpdateInterests(ctx context.Context, userID string, interests []string) error
 	SuggestPeople(ctx context.Context, userID string) ([]*SearchResult, error)
 	GetAutocomplete(ctx context.Context, query string, limit int) ([]*SearchResult, error)
