@@ -2,6 +2,7 @@ package nats
 
 import (
 	"fmt"
+
 	"github.com/nats-io/nats.go"
 )
 
@@ -18,6 +19,7 @@ func New(url string) (*Client, error) {
 
 	js, err := nc.JetStream()
 	if err != nil {
+		nc.Close()
 		return nil, fmt.Errorf("failed to get jetstream context: %w", err)
 	}
 
