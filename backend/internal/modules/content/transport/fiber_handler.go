@@ -339,7 +339,7 @@ func (h *ContentHandler) Unlike(c *fiber.Ctx) error {
 	if _, err := h.requireVisiblePost(c, signalID, userID); err != nil {
 		return c.Status(errors.ToHTTPStatus(err)).JSON(fiber.Map{"code": errors.GetCode(err), "message": "Unable to process request"})
 	}
-	if err := h.service.AmplifySignal(c.Context(), userID, signalID, -1); err != nil {
+	if err := h.service.RemoveResonance(c.Context(), userID, signalID); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
 			"message": "Unable to process request",
