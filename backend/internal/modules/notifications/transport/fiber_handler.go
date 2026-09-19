@@ -47,3 +47,38 @@ func (h *NotificationsHandler) ClearAll(c *fiber.Ctx) error {
 	}
 	return c.SendStatus(fiber.StatusNoContent)
 }
+
+
+func (h *NotificationsHandler) UnreadCount(c *fiber.Ctx) error {
+	userID, ok := c.Locals("user_id").(string)
+	if !ok || userID == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "authentication required"})
+	}
+	count, err := h.service.GetUnreadCount(c.Context(), userID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to load unread count"})
+	}
+	return c.JSON(fiber.Map{"count": count})
+}
+
+func (h *NotificationsHandler) MarkRead(c *fiber.Ctx) error {
+	userID, ok := c.Locals("user_id").(string)
+	if !ok || userID == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "authentication required"})
+	}
+	if err := h.service.MarkAsRead(c.Context(), c.Params("id"), userID); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to mark notification"})
+	}
+	return c.SendStatus(fiber.StatusNoContent)
+}
+
+func (h *NotificationsHandler) MarkAllRead(c *fiber.Ctx) error {
+	userID, ok := c.Locals("user_id").(string)
+	if !ok || userID == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "authentication required"})
+	}
+	if err := h.service.MarkAllAsRead(c.Context(), userID); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to mark notifications"})
+	}
+	return c.SendStatus(fiber.StatusNoContent)
+}
