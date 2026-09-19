@@ -128,10 +128,24 @@ func (s *socialService) GetFollowing(ctx context.Context, viewerID, userID strin
 }
 
 func (s *socialService) RequestFollow(ctx context.Context, followerID, followingID string) error {
-    if followerID == "" || followingID == "" || followerID == followingID {
-        return fmt.Errorf("invalid follow request")
-    }
-    return s.repo.SendFollowRequest(ctx, followerID, followingID)
+	if followerID == "" || followingID == "" || followerID == followingID {
+		return fmt.Errorf("invalid follow request")
+	}
+	privateAccount, err := s.repo.IsPrivateUser(ctx, followingID)
+	if err != nil {
+		return err
+	}
+	if !privateAccount {
+		return fmt.Errorf("follow requests are only valid for private accounts")
+	}
+	blocked, err := s.repo.IsBlocked(ctx, followerID, followingID)
+	if err != nil {
+		return err
+	}
+	if blocked {
+		return socialDomain.ErrPrivateAccount
+	}
+	return s.repo.SendFollowRequest(ctx, followerID, followingID)
 }
 
 func (s *socialService) HandleFollowRequest(ctx context.Context, viewerID, followerID, status string) error {
@@ -153,8 +167,8 @@ func (s *socialService) HandleFollowRequest(ctx context.Context, viewerID, follo
     return s.repo.Follow(ctx, followerID, followingID)
 }
 
-func (s *socialService) ListFollowRequests(ctx context.Context, userID string) ([]*socialDomain.FollowRequest, error) {
-    return s.repo.GetFollowRequests(ctx, userID)
+func (s *socialService) GetFollowRequests(ctx context.Context, userID string) ([]*socialDomain.FollowRequest, error) {
+	return s.repo.GetFollowRequests(ctx, userID)
 }
 
 func (s *socialService) GetSuggestions(ctx context.Context, userID string) ([]*domain.User, error) {
