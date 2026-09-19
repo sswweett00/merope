@@ -76,7 +76,7 @@ func (s *socialService) Follow(ctx context.Context, followerID, followingID stri
     if s.veritasGuard != nil && s.veritasGuard.TrackInteraction(ctx, followerID, followingID, "follow") {
         return fmt.Errorf("excessive follow activity detected")
     }
-    return s.repo.Follow(ctx, followerID, viewerID)
+    return s.repo.Follow(ctx, followerID, followingID)
 }
 
 func (s *socialService) hydrateUsers(ctx context.Context, basicUsers []*domain.User) []*domain.User {
@@ -164,7 +164,7 @@ func (s *socialService) HandleFollowRequest(ctx context.Context, viewerID, follo
     if status != "accepted" {
         return nil
     }
-    return s.repo.Follow(ctx, followerID, followingID)
+    return s.repo.Follow(ctx, followerID, viewerID)
 }
 
 func (s *socialService) GetFollowRequests(ctx context.Context, userID string) ([]*socialDomain.FollowRequest, error) {
