@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"sync/atomic"
 	"time"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 
@@ -50,11 +51,17 @@ func main() {
 		if resources.Redis == nil || resources.Redis.Conn.Ping(checkCtx).Err() != nil {
 			checks["redis"] = "unavailable"
 		}
+		natsRequired := strings.EqualFold(cfg.Env, "production")
 		if resources.NATS == nil || resources.NATS.Conn == nil || !resources.NATS.Conn.IsConnected() {
-			checks["nats"] = "unavailable"
+			if natsRequired {
+				checks["nats"] = "unavailable"
+			} else {
+				checks["nats"] = "optional_unavailable"
+			}
 		}
 
-		ready := checks["postgres"] == "ok" && checks["redis"] == "ok" && checks["nats"] == "ok"
+		natsReady := checks["nats"] == "ok" || !natsRequired
+		ready := checks["postgres"] == "ok" && checks["redis"] == "ok" && natsReady
 		status := fiber.StatusOK
 		readiness := "ready"
 		if !ready {
