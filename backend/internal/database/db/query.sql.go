@@ -1435,7 +1435,7 @@ SELECT p.id, p.tenant_id, p.author_id, p.co_author_id, p.content_text, p.media_u
 FROM posts p
 JOIN users u ON p.author_id = u.id
 WHERE p.published_at <= NOW() AND p.is_archived = FALSE
-  AND (p.author_id IN (SELECT f.following_id FROM follows f WHERE f.follower_id = $1) OR p.visibility = 'public')
+  AND (p.author_id IN (SELECT f.following_id FROM follows f WHERE f.follower_id = $1 AND f.status = 'accepted') OR p.visibility = 'public')
 ORDER BY p.published_at DESC
 LIMIT $2 OFFSET $3
 `
