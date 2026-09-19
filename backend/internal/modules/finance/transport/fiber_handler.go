@@ -147,3 +147,19 @@ func (h *FinanceHandler) UnlockContent(c *fiber.Ctx) error {
 	}
 	return c.JSON(fiber.Map{"message": "Content unlocked"})
 }
+
+
+func (h *FinanceHandler) Transfer(c *fiber.Ctx) error {
+	senderID := c.Locals("user_id").(string)
+	var req struct {
+		ReceiverID string `json:\"receiver_id\"`
+		Amount     int64  `json:\"amount\"`
+	}
+	if err := c.BodyParser(&req); err != nil || req.ReceiverID == "" || req.Amount <= 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid transfer"})
+	}
+	if err := h.service.TransferFunds(c.Context(), senderID, req.ReceiverID, req.Amount); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "operation failed"})
+	}
+	return c.JSON(fiber.Map{"message": "Transfer completed"})
+}
