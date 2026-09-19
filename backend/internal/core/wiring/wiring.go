@@ -415,6 +415,9 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	search.Get("", searchHandler.Search)
 	search.Get("/autocomplete", searchHandler.Autocomplete)
 	search.Get("/trending", searchHandler.GetTrending)
+	search.Get("/history", searchHandler.GetHistory)
+	search.Get("/interests", searchHandler.GetInterests)
+	search.Post("/interests", searchHandler.UpdateInterests)
 	search.Post("/location", searchHandler.UpdateLocation)
 	search.Get("/nearby", searchHandler.GetNearby)
 
