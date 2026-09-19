@@ -88,7 +88,7 @@ SELECT p.*, u.username as author_username, u.avatar_url as author_avatar
 FROM posts p
 JOIN users u ON p.author_id = u.id
 WHERE p.published_at <= NOW() AND p.is_archived = FALSE
-  AND (p.author_id IN (SELECT f.following_id FROM follows f WHERE f.follower_id = $1) OR p.visibility = 'public')
+  AND (p.author_id IN (SELECT f.following_id FROM follows f WHERE f.follower_id = $1 AND f.status = 'accepted') OR p.visibility = 'public')
 ORDER BY p.published_at DESC
 LIMIT $2 OFFSET $3;
 
