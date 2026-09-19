@@ -119,12 +119,23 @@ func BlacklistToken(ctx context.Context, rdb *redis.Client, tokenID string, expi
 	return rdb.Set(ctx, "bl:"+tokenID, "1", expiration).Err()
 }
 
-func IsTokenBlacklisted(ctx context.Context, rdb *redis.Client, tokenID string) bool {
+func CheckTokenBlacklist(ctx context.Context, rdb *redis.Client, tokenID string) (bool, error) {
 	if rdb == nil || tokenID == "" {
-		return true
+		return true, fmt.Errorf("redis and token id are required")
 	}
 	val, err := rdb.Get(ctx, "bl:"+tokenID).Result()
-	return err == nil && val == "1"
+	if err == redis.Nil {
+		return false, nil
+	}
+	if err != nil {
+		return true, fmt.Errorf("check token blacklist: %w", err)
+	}
+	return val == "1", nil
+}
+
+func IsTokenBlacklisted(ctx context.Context, rdb *redis.Client, tokenID string) bool {
+	blacklisted, err := CheckTokenBlacklist(ctx, rdb, tokenID)
+	return err != nil || blacklisted
 }
 
 func GenerateAPIKey() (string, error) {
