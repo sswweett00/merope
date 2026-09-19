@@ -133,22 +133,47 @@ func (s *messagingService) SearchMessages(ctx context.Context, roomID, query str
 }
 
 func (s *messagingService) ForwardMessage(ctx context.Context, messageID, fromUserID, toRoomID string) (*domain.ChatMessage, error) {
-	messages, err := s.repo.GetMessages(ctx, toRoomID, 1, 0)
+	original, err := s.repo.GetMessageByID(ctx, messageID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get messages: %w", err)
+		return nil, fmt.Errorf("load source message: %w", err)
 	}
-	var original *domain.ChatMessage
-	for _, m := range messages {
-		if m.ID == messageID {
-			original = m
-			break
-		}
-	}
-	if original == nil {
+	if original == nil || original.ID == "" {
 		return nil, fmt.Errorf("message not found")
 	}
-	forwarded := &domain.ChatMessage{RoomID: toRoomID, SenderID: fromUserID, Content: original.Content, MessageType: original.MessageType, ForwardedFromID: &messageID}
+	if original.IsDeleted || (original.ExpiresAt != nil && original.ExpiresAt.Before(time.Now().UTC())) {
+		return nil, fmt.Errorf("message is no longer available")
+	}
+	if original.IsEncrypted || original.EncryptedPayload != nil {
+		return nil, fmt.Errorf("encrypted messages must be re-encrypted by the client before forwarding")
+	}
+
+	rooms, err := s.repo.GetUserRooms(ctx, fromUserID)
+	if err != nil {
+		return nil, fmt.Errorf("verify room membership: %w", err)
+	}
+	if !hasRoom(rooms, original.RoomID) || !hasRoom(rooms, toRoomID) {
+		return nil, fmt.Errorf("user must belong to both source and target rooms")
+	}
+
+	forwarded := &domain.ChatMessage{
+		RoomID:         toRoomID,
+		SenderID:       fromUserID,
+		Content:        original.Content,
+		MessageType:    original.MessageType,
+		VoiceURL:       original.VoiceURL,
+		FileURL:        original.FileURL,
+		ForwardedFromID: &original.ID,
+	}
 	return s.repo.SendMessage(ctx, forwarded)
+}
+
+func hasRoom(rooms []*domain.ChatRoom, roomID string) bool {
+	for _, room := range rooms {
+		if room != nil && room.ID == roomID {
+			return true
+		}
+	}
+	return false
 }
 
 func (s *messagingService) PinMessage(ctx context.Context, roomID, messageID string) error {
