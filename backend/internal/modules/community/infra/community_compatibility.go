@@ -10,6 +10,37 @@ import (
 	"local/merope/internal/modules/community/domain"
 )
 
+func (r *postgresCommunityRepository) CanViewCommunity(ctx context.Context, viewerID, communityID string) (bool, error) {
+	var uid, cid pgtype.UUID
+	if err := uid.Scan(strings.TrimSpace(viewerID)); err != nil {
+		return false, fmt.Errorf("invalid viewer uuid: %w", err)
+	}
+	if err := cid.Scan(strings.TrimSpace(communityID)); err != nil {
+		return false, fmt.Errorf("invalid community uuid: %w", err)
+	}
+	var visible bool
+	if err := r.queries.QueryRow(ctx, `
+SELECT EXISTS (
+	SELECT 1
+	FROM communities c
+	WHERE c.id = $1
+	  AND (
+		c.is_private = FALSE
+		OR c.owner_id = $2
+		OR EXISTS (
+			SELECT 1
+			FROM community_members cm
+			WHERE cm.community_id = $1
+			  AND cm.user_id = $2
+			  AND cm.role <> 'banned'
+		)
+	  )
+)`, cid, uid).Scan(&visible); err != nil {
+		return false, err
+	}
+	return visible, nil
+}
+
 func (r *postgresCommunityRepository) GetCommunity(ctx context.Context, commID string) (*domain.Community, error) {
 	var id pgtype.UUID
 	if err := id.Scan(strings.TrimSpace(commID)); err != nil {
