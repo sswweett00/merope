@@ -171,6 +171,7 @@ type ThreadReply struct {
 type CommunityRepository interface {
 	CreateCommunity(context.Context, *Community) error
 	GetCommunity(context.Context, string) (*Community, error)
+	CanViewCommunity(context.Context, string, string) (bool, error)
 	GetCommunityBySlug(context.Context, string) (*Community, error)
 	UpdateCommunity(context.Context, string, *Community) error
 	DeleteCommunity(context.Context, string) error
