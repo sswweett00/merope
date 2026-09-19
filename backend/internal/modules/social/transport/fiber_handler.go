@@ -19,7 +19,7 @@ func NewSocialHandler(service domain.SocialService) *SocialHandler {
 func writeSocialError(c *fiber.Ctx, err error) error {
 	status := fiber.StatusInternalServerError
 	message := "social operation failed"
-	if stdErrors.Is(err, domain.ErrProfileForbidden) {
+	if stdErrors.Is(err, domain.ErrProfileForbidden) || stdErrors.Is(err, domain.ErrPrivateAccount) {
 		status = fiber.StatusForbidden
 		message = "forbidden"
 	} else if err == fiber.ErrUnauthorized {
@@ -60,6 +60,40 @@ func (h *SocialHandler) Unfollow(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"message": "Unfollowed successfully"})
 }
 
+func (h *SocialHandler) RequestFollow(c *fiber.Ctx) error {
+	followerID, _ := c.Locals("user_id").(string)
+	followingID := c.Params("id")
+	if err := h.service.RequestFollow(c.Context(), followerID, followingID); err != nil {
+		return writeSocialError(c, err)
+	}
+	return c.JSON(fiber.Map{"message": "Follow request sent"})
+}
+
+func (h *SocialHandler) ListFollowRequests(c *fiber.Ctx) error {
+	userID, _ := c.Locals("user_id").(string)
+	requests, err := h.service.GetFollowRequests(c.Context(), userID)
+	if err != nil {
+		return writeSocialError(c, err)
+	}
+	return c.JSON(fiber.Map{"requests": requests})
+}
+
+func (h *SocialHandler) RespondFollowRequest(c *fiber.Ctx) error {
+	viewerID, _ := c.Locals("user_id").(string)
+	followerID := c.Params("id")
+	status := c.Query("status")
+	if status == "" {
+		var req struct{ Status string `json:"status"` }
+		if err := c.BodyParser(&req); err == nil {
+			status = req.Status
+		}
+	}
+	if err := h.service.HandleFollowRequest(c.Context(), viewerID, followerID, status); err != nil {
+		return writeSocialError(c, err)
+	}
+	return c.JSON(fiber.Map{"message": "Follow request updated"})
+}
+
 func (h *SocialHandler) Mutuals(c *fiber.Ctx) error {
 	userID := c.Locals("user_id").(string)
 	otherID := c.Query("other_id")
@@ -92,8 +126,9 @@ func (h *SocialHandler) Search(c *fiber.Ctx) error {
 }
 
 func (h *SocialHandler) Followers(c *fiber.Ctx) error {
-	userID := c.Params("id")
-	users, err := h.service.GetFollowers(c.Context(), userID)
+	targetID := c.Params("id")
+	viewerID, _ := c.Locals("user_id").(string)
+	users, err := h.service.GetFollowers(c.Context(), viewerID, targetID)
 	if err != nil {
 		return writeSocialError(c, err)
 	}
@@ -101,8 +136,9 @@ func (h *SocialHandler) Followers(c *fiber.Ctx) error {
 }
 
 func (h *SocialHandler) Following(c *fiber.Ctx) error {
-	userID := c.Params("id")
-	users, err := h.service.GetFollowing(c.Context(), userID)
+	targetID := c.Params("id")
+	viewerID, _ := c.Locals("user_id").(string)
+	users, err := h.service.GetFollowing(c.Context(), viewerID, targetID)
 	if err != nil {
 		return writeSocialError(c, err)
 	}
