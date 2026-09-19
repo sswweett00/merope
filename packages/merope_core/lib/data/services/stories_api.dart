@@ -89,7 +89,7 @@ class StoriesApiService {
         'file': await MultipartFile.fromFile(file.path),
       });
       final response = await _apiClient.post<Map<String, dynamic>>(
-        '/stories/upload',
+        '/content/media/upload',
         data: formData,
       );
 
