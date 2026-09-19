@@ -81,10 +81,17 @@ func (r *PostgresFinanceRepository) Transfer(ctx context.Context, senderID, rece
 		return err
 	}
 
-	if _, err := tx.Exec(ctx,
-		`UPDATE wallets SET balance = balance + $2, updated_at = NOW() WHERE user_id = $1`,
+	var creditedBalance int64
+	if err := tx.QueryRow(ctx,
+		`UPDATE wallets
+		 SET balance = balance + $2, updated_at = NOW()
+		 WHERE user_id = $1
+		 RETURNING balance`,
 		rid, amount,
-	); err != nil {
+	).Scan(&creditedBalance); err != nil {
+		if err == pgx.ErrNoRows {
+			return fmt.Errorf("receiver wallet not found")
+		}
 		return fmt.Errorf("credit receiver wallet: %w", err)
 	}
 
@@ -226,10 +233,17 @@ func (r *PostgresFinanceRepository) ReleaseEscrow(ctx context.Context, escrowID 
 		return err
 	}
 
-	if _, err := tx.Exec(ctx,
-		`UPDATE wallets SET balance = balance + $2, updated_at = NOW() WHERE user_id = $1`,
+	var sellerBalance int64
+	if err := tx.QueryRow(ctx,
+		`UPDATE wallets
+		 SET balance = balance + $2, updated_at = NOW()
+		 WHERE user_id = $1
+		 RETURNING balance`,
 		sellerID, amount,
-	); err != nil { return fmt.Errorf("credit seller wallet: %w", err) }
+	).Scan(&sellerBalance); err != nil {
+		if err == pgx.ErrNoRows { return fmt.Errorf("seller wallet not found") }
+		return fmt.Errorf("credit seller wallet: %w", err)
+	}
 
 	if _, err := tx.Exec(ctx,
 		`INSERT INTO transactions (sender_wallet_id, receiver_wallet_id, amount, tx_type, status, reference)
@@ -262,10 +276,17 @@ func (r *PostgresFinanceRepository) RefundEscrow(ctx context.Context, escrowID s
 		return err
 	}
 
-	if _, err := tx.Exec(ctx,
-		`UPDATE wallets SET balance = balance + $2, updated_at = NOW() WHERE user_id = $1`,
+	var buyerBalance int64
+	if err := tx.QueryRow(ctx,
+		`UPDATE wallets
+		 SET balance = balance + $2, updated_at = NOW()
+		 WHERE user_id = $1
+		 RETURNING balance`,
 		buyerID, amount,
-	); err != nil { return fmt.Errorf("refund buyer wallet: %w", err) }
+	).Scan(&buyerBalance); err != nil {
+		if err == pgx.ErrNoRows { return fmt.Errorf("buyer wallet not found") }
+		return fmt.Errorf("refund buyer wallet: %w", err)
+	}
 
 	if _, err := tx.Exec(ctx,
 		`INSERT INTO transactions (sender_wallet_id, receiver_wallet_id, amount, tx_type, status, reference)
