@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:web_socket_channel/web_socket_channel.dart';
-import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/status.dart' as status;
 
 enum ConnectionStatus { disconnected, connecting, connected, error }
@@ -37,7 +36,6 @@ class RealtimeMessage {
 class RealtimeClient {
   static const Duration _reconnectBaseDelay = Duration(milliseconds: 500);
   static const Duration _reconnectMaxDelay = Duration(seconds: 10);
-  static const Duration _pingInterval = Duration(seconds: 30);
 
   final String baseUrl;
   final String token;
@@ -66,7 +64,7 @@ class RealtimeClient {
 
     // Don't auto-connect if no token provided
     if (token.isNotEmpty) {
-      connect();
+      unawaited(connect());
     }
   }
 
@@ -107,27 +105,32 @@ class RealtimeClient {
         .toSet();
   }
 
-  void connect() {
+  Future<void> connect() async {
     if (_isDisposed || _isConnected) return;
 
+    WebSocketChannel? channel;
     try {
       final wsUrl = _buildWsUrl();
-      _channel = IOWebSocketChannel.connect(
-        Uri.parse(wsUrl),
-        pingInterval: _pingInterval,
-        connectTimeout: const Duration(seconds: 10),
-      );
+      channel = WebSocketChannel.connect(Uri.parse(wsUrl));
+      await channel.ready.timeout(const Duration(seconds: 10));
+      if (_isDisposed) {
+        await channel.sink.close(status.goingAway);
+        return;
+      }
 
+      _channel = channel;
       _isConnected = true;
       _reconnectAttempts = 0;
 
-      _channel!.stream.listen(
+      channel.stream.listen(
         _onData,
         onError: _onError,
         onDone: _onDone,
         cancelOnError: false,
       );
-    } catch (e) {
+    } catch (_) {
+      await channel?.sink.close(status.goingAway);
+      _isConnected = false;
       _scheduleReconnect();
     }
   }
@@ -172,6 +175,10 @@ class RealtimeClient {
           break;
       }
 
+      _messageBuffer.add(msg);
+      if (_messageBuffer.length > 100) {
+        _messageBuffer.removeAt(0);
+      }
       _eventController.add(msg);
     } catch (e) {
       // ignore parse errors
@@ -197,7 +204,7 @@ class RealtimeClient {
     _reconnectTimer?.cancel();
     _reconnectTimer = Timer(cappedDelay, () {
       if (!_isConnected && !_isDisposed) {
-        connect();
+        unawaited(connect());
       }
     });
   }
