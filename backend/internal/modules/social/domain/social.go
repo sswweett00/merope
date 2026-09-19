@@ -2,9 +2,12 @@ package domain
 
 import (
 	"context"
+	"errors"
 	"local/merope/internal/modules/identity/domain"
 	"time"
 )
+
+var ErrProfileForbidden = errors.New("profile access denied")
 
 type FollowRequest struct {
 	FollowerID  string
