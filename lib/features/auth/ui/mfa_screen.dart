@@ -6,6 +6,7 @@ import 'package:merope_ui/theme/tokens/merope_tokens.dart';
 import 'package:merope_ui/widgets/merope_button.dart';
 import 'package:merope_ui/widgets/merope_text_field.dart';
 import 'package:merope_ui/utils/merope_haptics.dart';
+import '../repository/auth_repository.dart';
 
 class MFAScreen extends ConsumerStatefulWidget {
   const MFAScreen({super.key});
@@ -60,13 +61,25 @@ class _MFAScreenState extends ConsumerState<MFAScreen> {
               const SizedBox(height: MeropeTokens.space24),
               MeropeButton(
                 text: 'Verify and Sync',
-                onPressed: () {
-                  if (_codeController.text.length == 6) {
-                    MeropeHaptics.trigger(MeropeTokens.hapticHeavy);
+                onPressed: () async {
+                  final code = _codeController.text.trim();
+                  if (code.length != 6) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Enter the 6-digit code.')),
+                    );
+                    return;
+                  }
+                  MeropeHaptics.trigger(MeropeTokens.hapticHeavy);
+                  final result = await ref
+                      .read(authRepositoryProvider)
+                      .verifyPendingMfa(code);
+                  if (!mounted) return;
+                  if (result.success) {
                     context.go('/');
                   } else {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                        content: Text('Invalid code sequence.')));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(result.error ?? 'MFA verification failed.')),
+                    );
                   }
                 },
                 style: MeropeButtonStyle.primary,
