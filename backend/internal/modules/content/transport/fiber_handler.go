@@ -395,7 +395,28 @@ func (h *ContentHandler) AddComment(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(comment)
+	return c.Status(fiber.StatusCreated).JSON(toMeropeCommentDTO(comment))
+}
+
+func toMeropeCommentDTO(n *domain.Node) MeropeSignalDTO {
+	if n == nil {
+		return MeropeSignalDTO{}
+	}
+	return MeropeSignalDTO{
+		ID: n.ID,
+		Author: MeropeAuthor{
+			ID: n.AuthorID,
+			Username: n.AuthorName,
+			DisplayName: n.AuthorName,
+			AvatarURL: n.AuthorAvatar,
+		},
+		Content: n.Content,
+		Media: []interface{}{},
+		Resonances: []MeropeResonance{},
+		Layers: []interface{}{},
+		Cards: []interface{}{},
+		CreatedAt: n.CreatedAt.Unix(),
+	}
 }
 
 func (h *ContentHandler) GetComments(c *fiber.Ctx) error {
@@ -412,5 +433,9 @@ func (h *ContentHandler) GetComments(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.JSON(fiber.Map{"comments": comments})
+	dtos := make([]MeropeSignalDTO, len(comments))
+	for i, comment := range comments {
+		dtos[i] = toMeropeCommentDTO(comment)
+	}
+	return c.JSON(fiber.Map{"comments": dtos})
 }
