@@ -2629,6 +2629,12 @@ SELECT id, username, display_name, avatar_url, bio
 FROM users
 WHERE (username ILIKE '%' || $1 || '%' OR display_name ILIKE '%' || $1 || '%')
   AND id != $2
+  AND NOT EXISTS (
+      SELECT 1
+      FROM blocks b
+      WHERE (b.blocker_id = $2 AND b.blocked_id = users.id)
+         OR (b.blocker_id = users.id AND b.blocked_id = $2)
+  )
 ORDER BY display_name
 LIMIT $3
 `
