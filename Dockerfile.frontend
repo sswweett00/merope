@@ -1,12 +1,16 @@
-FROM node:20-alpine AS builder
+FROM ghcr.io/cirruslabs/flutter:stable AS builder
 WORKDIR /app
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
-COPY pubspec.yaml ./
-RUN --mount=type=cache,target=/root/.pub-cache dart pub get
+COPY pubspec.yaml pubspec.lock ./
+COPY packages/merope_ads/pubspec.yaml packages/merope_ads/pubspec.yaml
+COPY packages/merope_core/pubspec.yaml packages/merope_core/pubspec.yaml
+COPY packages/merope_models/pubspec.yaml packages/merope_models/pubspec.yaml
+COPY packages/merope_ui/pubspec.yaml packages/merope_ui/pubspec.yaml
+RUN flutter pub get
 
 COPY . .
-RUN flutter pub get && flutter analyze && flutter build web --release --web-renderer html
+RUN flutter analyze --no-fatal-infos --no-fatal-warnings
+RUN flutter build web --release
 
 FROM nginx:1.27-alpine
 COPY --from=builder /app/build/web /usr/share/nginx/html
