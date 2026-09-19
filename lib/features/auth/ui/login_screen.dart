@@ -82,6 +82,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       final user = await authRepo.login(email: email, password: password);
       if (user != null && mounted) {
         context.go('/');
+      } else if (await authRepo.hasPendingMfaChallenge() && mounted) {
+        context.go('/mfa-setup');
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Invalid email or password')),
