@@ -32,6 +32,10 @@ func (r *ScyllaContentRepository) AddResonance(ctx context.Context, userID, sign
 	return r.toggleReaction(ctx, signalID, userID, "resonance", true)
 }
 
+func (r *ScyllaContentRepository) RemoveResonance(ctx context.Context, userID, signalID string) error {
+	return r.toggleReaction(ctx, signalID, userID, "resonance", false)
+}
+
 func (r *ScyllaContentRepository) UpdateSignalStatus(ctx context.Context, signalID string, pinned, archived, draft bool) error {
 	sid, err := uuid.Parse(signalID)
 	if err != nil {
