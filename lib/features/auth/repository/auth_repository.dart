@@ -353,7 +353,7 @@ class AuthRepository implements IAuthRepository {
   Future<MfaVerificationResult> verifyPendingMfa(String code) async {
     final raw = await _secureStorage.read(key: 'mfa_challenge');
     if (raw == null) {
-      return const MfaVerificationResult(
+      return MfaVerificationResult(
         success: false,
         error: 'MFA challenge expired or is missing.',
       );
