@@ -136,11 +136,7 @@ func (s *socialService) GetSuggestions(ctx context.Context, userID string) ([]*d
     return users, err
 }
 
-func (s *socialService) GlobalSearch(ctx context.Context, query string) ([]*domain.User, error) {
-    return s.globalSearchForViewer(ctx, "", query)
-}
-
-func (s *socialService) globalSearchForViewer(ctx context.Context, viewerID, query string) ([]*domain.User, error) {
+func (s *socialService) GlobalSearch(ctx context.Context, viewerID, query string) ([]*domain.User, error) {
     normalizedQuery := strings.ToLower(strings.TrimSpace(query))
     if len(normalizedQuery) < 2 || len(normalizedQuery) > 80 {
         return nil, fmt.Errorf("search query must be between 2 and 80 characters")
