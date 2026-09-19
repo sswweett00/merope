@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"local/merope/internal/core/events"
 	"local/merope/internal/core/security"
@@ -45,7 +46,10 @@ func (s *messagingService) CreateGroupChat(ctx context.Context, name string, use
 func (s *messagingService) SendMessage(ctx context.Context, msg *domain.ChatMessage) (*domain.ChatMessage, error) {
 	msg.Content = security.SanitizeHTML(msg.Content)
 
-	isE2EE, _ := s.e2eeRepo.GetE2EEStatus(ctx, msg.RoomID)
+	isE2EE, err := s.e2eeRepo.GetE2EEStatus(ctx, msg.RoomID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to determine room E2EE state: %w", err)
+	}
 	if isE2EE && msg.EncryptedPayload != nil {
 		msg.Content = ""
 		msg.IsEncrypted = true
@@ -67,17 +71,18 @@ func (s *messagingService) SendMessage(ctx context.Context, msg *domain.ChatMess
 		return nil, err
 	}
 
-	if isE2EE {
+	if isE2EE && s.e2eeBus != nil {
 		_ = s.e2eeBus.Publish(ctx, "e2ee.message.sent", events.Event{
 			Type:    "E2EE_MESSAGE_SENT",
 			Payload: sentMsg,
 		})
 	}
-
-	_ = s.bus.Publish(ctx, "chat.message.sent", events.Event{
-		Type:    "MESSAGE_SENT",
-		Payload: sentMsg,
-	})
+	if s.bus != nil {
+		_ = s.bus.Publish(ctx, "chat.message.sent", events.Event{
+			Type:    "MESSAGE_SENT",
+			Payload: sentMsg,
+		})
+	}
 
 	return sentMsg, nil
 }
@@ -85,7 +90,7 @@ func (s *messagingService) SendMessage(ctx context.Context, msg *domain.ChatMess
 func (s *messagingService) EditMessage(ctx context.Context, messageID, senderID, content string) (*domain.ChatMessage, error) {
 	sanitizedContent := security.SanitizeHTML(content)
 	msg, err := s.repo.UpdateMessage(ctx, messageID, senderID, sanitizedContent)
-	if err == nil {
+	if err == nil && s.bus != nil {
 		_ = s.bus.Publish(ctx, "chat.message.edited", events.Event{Type: "MESSAGE_EDITED", Payload: msg})
 	}
 	return msg, err
@@ -93,7 +98,7 @@ func (s *messagingService) EditMessage(ctx context.Context, messageID, senderID,
 
 func (s *messagingService) DeleteMessage(ctx context.Context, messageID, senderID string) error {
 	err := s.repo.DeleteMessage(ctx, messageID, senderID)
-	if err == nil {
+	if err == nil && s.bus != nil {
 		_ = s.bus.Publish(ctx, "chat.message.deleted", events.Event{Type: "MESSAGE_DELETED", Payload: map[string]string{"message_id": messageID}})
 	}
 	return err
@@ -101,16 +106,19 @@ func (s *messagingService) DeleteMessage(ctx context.Context, messageID, senderI
 
 func (s *messagingService) AddReaction(ctx context.Context, messageID, userID, emoji string) error {
 	err := s.repo.AddReaction(ctx, messageID, userID, emoji)
-	if err == nil {
+	if err == nil && s.bus != nil {
 		_ = s.bus.Publish(ctx, "chat.reaction.added", events.Event{Type: "REACTION_ADDED", Payload: map[string]string{"message_id": messageID, "user_id": userID, "emoji": emoji}})
 	}
 	return err
 }
 
 func (s *messagingService) MuteRoom(ctx context.Context, userID, roomID string, durationMinutes int) error {
+	if durationMinutes > 30*24*60 {
+		return fmt.Errorf("mute duration cannot exceed 30 days")
+	}
 	var until *string
 	if durationMinutes > 0 {
-		t := fmt.Sprintf("NOW() + INTERVAL '%d minutes'", durationMinutes)
+		t := time.Now().UTC().Add(time.Duration(durationMinutes) * time.Minute).Format(time.RFC3339Nano)
 		until = &t
 	}
 	return s.repo.MuteRoom(ctx, userID, roomID, until)
@@ -148,12 +156,15 @@ func (s *messagingService) PinMessage(ctx context.Context, roomID, messageID str
 }
 
 func (s *messagingService) SendTypingIndicator(ctx context.Context, roomID, userID string) error {
+	if s.bus == nil {
+		return nil
+	}
 	return s.bus.Publish(ctx, "chat.typing", events.Event{Type: "TYPING", Payload: map[string]string{"room_id": roomID, "user_id": userID}})
 }
 
 func (s *messagingService) MarkAsRead(ctx context.Context, messageID, userID string) error {
 	err := s.repo.MarkRead(ctx, messageID, userID)
-	if err == nil {
+	if err == nil && s.bus != nil {
 		_ = s.bus.Publish(ctx, "chat.read", events.Event{Type: "READ_RECEIPT", Payload: map[string]string{"message_id": messageID, "user_id": userID}})
 	}
 	return err
@@ -205,6 +216,9 @@ func (s *messagingService) RecordKeyRotation(ctx context.Context, roomID, userID
 }
 
 func (s *messagingService) UpdateFlowState(ctx context.Context, state *domain.FlowState) error {
+	if s.bus == nil {
+		return nil
+	}
 	return s.bus.Publish(ctx, "flow.state.updated", events.Event{Type: "FLOW_STATE_UPDATED", Payload: state})
 }
 
