@@ -1,6 +1,8 @@
 package transport
 
 import (
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 
 	"local/merope/internal/modules/finance/domain"
@@ -80,7 +82,33 @@ func (h *FinanceHandler) GetTransactions(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "operation failed"})
 	}
-	return c.JSON(fiber.Map{"transactions": transactions, "page": page, "limit": limit})
+	items := make([]fiber.Map, 0, len(transactions))
+	for _, tx := range transactions {
+		txType := "credit"
+		if tx.SenderID == userID {
+			txType = "debit"
+		}
+		if tx.Type == "refund" || tx.Type == "escrow_refund" {
+			txType = "refund"
+		}
+		if tx.Type == "fee" {
+			txType = "fee"
+		}
+		items = append(items, fiber.Map{
+			"id":                 tx.ID,
+			"amount":             float64(tx.Amount),
+			"transaction_type":  txType,
+			"created_at":         tx.CreatedAt.UTC().Format(time.RFC3339),
+			"description":       tx.Type,
+			"transaction_status": tx.Status,
+			"currency":           tx.Currency,
+			"fee":                float64(tx.Fee),
+			"from_account_id":    tx.SenderID,
+			"to_account_id":      tx.ReceiverID,
+			"metadata":           tx.Metadata,
+		})
+	}
+	return c.JSON(fiber.Map{"transactions": items, "page": page, "limit": limit})
 }
 
 func (h *FinanceHandler) GetEscrow(c *fiber.Ctx) error {
