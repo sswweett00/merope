@@ -3,6 +3,7 @@ package infra
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
@@ -44,5 +45,23 @@ func (r *postgresCommunityRepository) ReportContent(ctx context.Context, reporte
 INSERT INTO content_reports (
 	reporter_id, target_type, target_id, reason, details, status, priority, created_at
 ) VALUES ($1, $2, $3, $4, '', 'open', 0, NOW())`, reporter, contentType, target, reason)
+	return err
+}
+ 
+func (r *postgresCommunityRepository) ResolveReport(ctx context.Context, reportID, resolution string) error {
+	var id pgtype.UUID
+	if err := id.Scan(strings.TrimSpace(reportID)); err != nil {
+		return fmt.Errorf("invalid report uuid: %w", err)
+	}
+	resolution = strings.TrimSpace(resolution)
+	if resolution == "" {
+		return fmt.Errorf("resolution is required")
+	}
+	_, err := r.queries.Exec(ctx, `
+UPDATE content_reports
+SET status = 'resolved',
+    details = CONCAT(COALESCE(details, ''), CASE WHEN COALESCE(details, '') = '' THEN '' ELSE E'\n' END, 'Resolution: ', $2),
+    resolved_at = NOW()
+WHERE id = $1`, id, resolution)
 	return err
 }
