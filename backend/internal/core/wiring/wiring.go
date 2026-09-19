@@ -133,7 +133,7 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	contentRepo := contentInfra.NewPostgresContentRepository(queries)
 	var contService contentDomain.ContentService
 	if scyllaClient != nil {
-		contService = contentService.NewHighPerformanceContentService(contentRepo, contentInfra.NewScyllaContentRepository(scyllaClient), bus)
+		contService = contentService.NewHighPerformanceContentService(contentRepo, contentInfra.NewScyllaContentRepository(scyllaClient), bus, veritasGuard)
 	} else {
 		contService = contentService.NewContentService(contentRepo, bus, veritasGuard, idService)
 	}
