@@ -394,7 +394,6 @@ class AuthRepository implements IAuthRepository {
     return user;
   }
 
-
   Map<String, dynamic> _getDeviceInfo() {
     return {
       'platform': 'flutter',
