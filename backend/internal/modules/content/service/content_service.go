@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"strings"
 	"local/merope/internal/core/events"
 	"local/merope/internal/core/security"
 	"local/merope/internal/modules/content/domain"
@@ -25,11 +26,29 @@ func NewContentService(repo domain.ContentRepository, bus events.Publisher, veri
 	return &contentService{repo: repo, bus: bus, veritasGuard: veritasGuard, idService: idService}
 }
 
+func normalizeVisibility(value string) (string, error) {
+	value = strings.ToLower(strings.TrimSpace(value))
+	if value == "" {
+		return "public", nil
+	}
+	switch value {
+	case "public", "followers", "private":
+		return value, nil
+	default:
+		return "", fmt.Errorf("invalid visibility")
+	}
+}
+
 func (s *contentService) BroadcastSignal(ctx context.Context, signal *domain.Signal, pool *domain.WavePoolData) (*domain.Signal, error) {
 	if signal == nil || signal.AuthorID == "" {
 		return nil, fmt.Errorf("signal author is required")
 	}
 	signal.ContentText = security.SanitizeHTML(signal.ContentText)
+	visibility, err := normalizeVisibility(signal.Visibility)
+	if err != nil {
+		return nil, err
+	}
+	signal.Visibility = visibility
 	signal.UpdatedAt = time.Now()
 	signal.CreatedAtUnix = time.Now().Unix()
 
