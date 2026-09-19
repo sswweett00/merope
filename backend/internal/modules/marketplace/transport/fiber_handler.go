@@ -32,10 +32,13 @@ func (h *MarketplaceHandler) ListProduct(c *fiber.Ctx) error {
 	if req.Price < 0 || req.StockQuantity < 0 {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid product values"})
 	}
-	userIDValue := c.Locals("user_id")
-	if userID, ok := userIDValue.(string); ok && userID != "" && strings.TrimSpace(req.SellerID) == "" {
-		req.SellerID = userID
+	userID, ok := c.Locals("user_id").(string)
+	if !ok || strings.TrimSpace(userID) == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "authentication required"})
 	}
+	// Seller ownership is derived from the authenticated principal; never trust
+	// a client-provided seller_id for product creation.
+	req.SellerID = strings.TrimSpace(userID)
 	if err := h.service.PostProduct(c.Context(), &req); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to list product"})
 	}
