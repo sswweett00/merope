@@ -49,15 +49,11 @@ func (s *financeService) GetBalance(ctx context.Context, userID string) (int64, 
 }
 
 func (s *financeService) InitiateEscrow(ctx context.Context, buyerID, sellerID string, amount int64, description string) (*financeDomain.EscrowRecord, error) {
+	if buyerID == "" || sellerID == "" || buyerID == sellerID {
+		return nil, fmt.Errorf("invalid escrow participants")
+	}
 	if amount <= 0 {
 		return nil, fmt.Errorf("amount must be positive")
-	}
-	w, err := s.repo.GetWallet(ctx, buyerID)
-	if err != nil {
-		return nil, err
-	}
-	if w.Balance < amount {
-		return nil, fmt.Errorf("insufficient balance")
 	}
 
 	escrow := &financeDomain.EscrowRecord{
@@ -81,10 +77,10 @@ func (s *financeService) ReleaseEscrow(ctx context.Context, escrowID, userID str
 	if escrow.BuyerID != userID {
 		return fmt.Errorf("only buyer can release escrow")
 	}
-	if err := s.repo.Transfer(ctx, escrow.BuyerID, escrow.SellerID, escrow.Amount, "escrow_release", nil, &escrow.ID); err != nil {
-		return err
+	if escrow.Status != "held" {
+		return fmt.Errorf("escrow is not releasable")
 	}
-	return s.repo.UpdateEscrowStatus(ctx, escrowID, "released")
+	return s.repo.ReleaseEscrow(ctx, escrowID)
 }
 
 func (s *financeService) RefundEscrow(ctx context.Context, escrowID, userID string) error {
@@ -95,5 +91,8 @@ func (s *financeService) RefundEscrow(ctx context.Context, escrowID, userID stri
 	if escrow.SellerID != userID {
 		return fmt.Errorf("only seller can refund")
 	}
-	return s.repo.UpdateEscrowStatus(ctx, escrowID, "refunded")
+	if escrow.Status != "held" {
+		return fmt.Errorf("escrow is not refundable")
+	}
+	return s.repo.RefundEscrow(ctx, escrowID)
 }
