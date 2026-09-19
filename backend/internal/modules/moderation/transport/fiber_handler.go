@@ -1,10 +1,11 @@
 package transport
 
 import (
-	"local/merope/internal/modules/moderation/domain"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
+
+	"local/merope/internal/modules/moderation/domain"
 )
 
 type ModerationHandler struct {

@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgxpool"
+
 	"local/merope/internal/database/db"
 	ai_domain "local/merope/internal/modules/ai/domain"
-
-	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type PostgresAIRepository struct {
@@ -116,10 +116,10 @@ func (r *PostgresAIRepository) GetUserVector(ctx context.Context, userID string)
 	}
 
 	return &ai_domain.UserProfileVector{
-		UserID:          uuid.UUID(userIDCol.Bytes).String(),
-		Interests:       interests,
+		UserID:           uuid.UUID(userIDCol.Bytes).String(),
+		Interests:        interests,
 		EngagementVector: engagementVector,
-		LastUpdated:     lastUpdated.Time,
+		LastUpdated:      lastUpdated.Time,
 	}, nil
 }
 

@@ -3,16 +3,17 @@ package service
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
+	"time"
+
+	"golang.org/x/sync/errgroup"
+
 	"local/merope/internal/core/events"
 	"local/merope/internal/core/security"
 	"local/merope/internal/modules/content/domain"
 	identityDomain "local/merope/internal/modules/identity/domain"
 	socialService "local/merope/internal/modules/social/service"
-	"regexp"
-	"time"
-
-	"golang.org/x/sync/errgroup"
 )
 
 type contentService struct {
@@ -213,7 +214,7 @@ func (s *contentService) RemoveResonance(ctx context.Context, userID, signalID s
 	}
 	if s.bus != nil {
 		_ = s.bus.Publish(ctx, "content.resonance.removed", events.Event{
-			Type: "SIGNAL_RESONANCE_REMOVED",
+			Type:    "SIGNAL_RESONANCE_REMOVED",
 			Payload: map[string]interface{}{"user_id": userID, "signal_id": signalID},
 		})
 	}

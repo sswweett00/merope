@@ -19,9 +19,9 @@ type Client struct {
 }
 
 type SearchHit struct {
-	Index string          `json:"_index"`
-	ID    string          `json:"_id"`
-	Score float64         `json:"_score"`
+	Index  string          `json:"_index"`
+	ID     string          `json:"_id"`
+	Score  float64         `json:"_score"`
 	Source json.RawMessage `json:"_source"`
 }
 
@@ -36,12 +36,12 @@ type SearchResponse struct {
 }
 
 type Suggestion struct {
-	Text   string `json:"text"`
-	Offset int    `json:"offset"`
-	Length int    `json:"length"`
+	Text    string `json:"text"`
+	Offset  int    `json:"offset"`
+	Length  int    `json:"length"`
 	Options []struct {
-		Text  string `json:"text"`
-		Score float64 `json:"_score"`
+		Text   string  `json:"text"`
+		Score  float64 `json:"_score"`
 		Source struct {
 			ID    string `json:"id"`
 			Title string `json:"title"`
@@ -57,7 +57,7 @@ func NewClient(addresses []string, username, password string) (*Client, error) {
 		Password:  password,
 		Transport: &http.Transport{
 			MaxIdleConnsPerHost: 100,
-			IdleConnTimeout:    60 * time.Second,
+			IdleConnTimeout:     60 * time.Second,
 		},
 	}
 
@@ -164,8 +164,8 @@ func (c *Client) Suggest(ctx context.Context, index, field, text string, size in
 			"suggestions": map[string]interface{}{
 				"prefix": text,
 				"completion": map[string]interface{}{
-					"field":   field + "_suggest",
-					"size":    size,
+					"field":           field + "_suggest",
+					"size":            size,
 					"skip_duplicates": true,
 					"fuzzy": map[string]interface{}{
 						"fuzziness": "AUTO",
@@ -201,9 +201,9 @@ func (c *Client) FuzzySearch(ctx context.Context, index string, query map[string
 	fuzzyQuery := map[string]interface{}{
 		"query": map[string]interface{}{
 			"multi_match": map[string]interface{}{
-				"query":     query["q"].(string),
-				"fields":    []string{"title^3", "content^2", "subtitle^1"},
-				"fuzziness": "AUTO",
+				"query":         query["q"].(string),
+				"fields":        []string{"title^3", "content^2", "subtitle^1"},
+				"fuzziness":     "AUTO",
 				"prefix_length": 2,
 			},
 		},

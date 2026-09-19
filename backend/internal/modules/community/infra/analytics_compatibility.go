@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
+
 	"local/merope/internal/core/util"
 	"local/merope/internal/modules/community/domain"
 )
@@ -118,7 +119,6 @@ WHERE user_id = $1 AND created_at >= NOW() - $2::interval`, uid, window.String()
 		LastActiveAt:   lastActivity.Time,
 	}, nil
 }
-
 
 func (r *postgresCommunityRepository) UpdateCommunityStats(ctx context.Context, communityID string) error {
 	var cid pgtype.UUID

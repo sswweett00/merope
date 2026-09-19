@@ -1,13 +1,14 @@
 package transport
 
 import (
-	"local/merope/internal/modules/messaging/domain"
-	"local/merope/internal/core/errors"
-	"local/merope/internal/core/pool"
 	"strconv"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+
+	"local/merope/internal/core/errors"
+	"local/merope/internal/core/pool"
+	"local/merope/internal/modules/messaging/domain"
 )
 
 type MessagingHandler struct {
@@ -155,17 +156,17 @@ func (h *MessagingHandler) SendMessage(c *fiber.Ctx) error {
 	}
 
 	msg := &domain.ChatMessage{
-		RoomID:          roomID,
-		SenderID:        senderID,
-		Content:         req.Content,
+		RoomID:           roomID,
+		SenderID:         senderID,
+		Content:          req.Content,
 		EncryptedPayload: req.EncryptedPayload,
-		ParentID:        req.ParentID,
-		IsEncrypted:     req.Encrypt,
-		MessageType:     mType,
-		VoiceURL:        req.VoiceURL,
-		FileURL:         req.FileURL,
-		IsBurnOnRead:    req.BurnOnRead,
-		ExpiresAt:       expiresAt,
+		ParentID:         req.ParentID,
+		IsEncrypted:      req.Encrypt,
+		MessageType:      mType,
+		VoiceURL:         req.VoiceURL,
+		FileURL:          req.FileURL,
+		IsBurnOnRead:     req.BurnOnRead,
+		ExpiresAt:        expiresAt,
 	}
 
 	sent, err := h.service.SendMessage(c.Context(), msg)

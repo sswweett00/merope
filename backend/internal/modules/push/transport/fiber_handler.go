@@ -3,9 +3,9 @@ package transport
 import (
 	"fmt"
 
-	"local/merope/internal/modules/push/domain"
-
 	"github.com/gofiber/fiber/v2"
+
+	"local/merope/internal/modules/push/domain"
 )
 
 type PushHandler struct {
@@ -66,12 +66,12 @@ func (h *PushHandler) GetDevices(c *fiber.Ctx) error {
 	safeDevices := make([]map[string]string, 0, len(devices))
 	for _, d := range devices {
 		safeDevices = append(safeDevices, map[string]string{
-			"id":         d.ID,
-			"platform":   d.Platform,
-			"device_id":  d.DeviceID,
+			"id":          d.ID,
+			"platform":    d.Platform,
+			"device_id":   d.DeviceID,
 			"app_version": d.AppVersion,
-			"is_active":  fmt.Sprintf("%t", d.IsActive),
-			"created_at": d.CreatedAt,
+			"is_active":   fmt.Sprintf("%t", d.IsActive),
+			"created_at":  d.CreatedAt,
 		})
 	}
 	return c.JSON(fiber.Map{"devices": safeDevices})

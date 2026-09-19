@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"local/merope/internal/core/util"
 	"github.com/jackc/pgx/v5/pgtype"
+
+	"local/merope/internal/core/util"
 )
 
 func (r *postgresCommunityRepository) DeleteCommunity(ctx context.Context, communityID string) error {

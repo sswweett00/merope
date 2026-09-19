@@ -13,23 +13,23 @@ const (
 )
 
 type User struct {
-	ID                  string             `json:"id"`
-	SystemType          SystemType         `json:"system_type"`
-	Username            string             `json:"username"`
-	DisplayName         string             `json:"display_name"`
-	Bio                 string             `json:"bio"`
-	Email               string             `json:"email"`
-	PasswordHash        string             `json:"-"`
-	AvatarURL           string             `json:"avatar_url"`
-	IsVerified          bool               `json:"is_verified"`
-	MFAEnabled          bool               `json:"mfa_enabled"`
-	MFASecret           string             `json:"-"`
-	LastSeenAt          time.Time          `json:"last_seen_at"`
-	IsOnline            bool               `json:"is_online"`
-	IsPrivate           bool               `json:"is_private"`
-	ProfileLock         bool               `json:"profile_lock"`
-	FailedLoginAttempts int                `json:"failed_login_attempts"`
-	LockedUntil         *time.Time         `json:"locked_until"`
+	ID                  string     `json:"id"`
+	SystemType          SystemType `json:"system_type"`
+	Username            string     `json:"username"`
+	DisplayName         string     `json:"display_name"`
+	Bio                 string     `json:"bio"`
+	Email               string     `json:"email"`
+	PasswordHash        string     `json:"-"`
+	AvatarURL           string     `json:"avatar_url"`
+	IsVerified          bool       `json:"is_verified"`
+	MFAEnabled          bool       `json:"mfa_enabled"`
+	MFASecret           string     `json:"-"`
+	LastSeenAt          time.Time  `json:"last_seen_at"`
+	IsOnline            bool       `json:"is_online"`
+	IsPrivate           bool       `json:"is_private"`
+	ProfileLock         bool       `json:"profile_lock"`
+	FailedLoginAttempts int        `json:"failed_login_attempts"`
+	LockedUntil         *time.Time `json:"locked_until"`
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`

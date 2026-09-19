@@ -2,9 +2,11 @@ package infra
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+
 	"local/merope/internal/database/db"
 	"local/merope/internal/modules/push/domain"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type PostgresPushRepository struct {

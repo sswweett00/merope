@@ -7,9 +7,9 @@ package discovery
 import "context"
 
 type RecommendationRequest struct {
-	UserID       string
+	UserID        string
 	ProfileVector []float32
-	Limit        int32
+	Limit         int32
 }
 
 type RecommendedItem struct {

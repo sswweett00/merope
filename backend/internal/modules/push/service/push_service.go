@@ -11,8 +11,8 @@ import (
 )
 
 type pushService struct {
-	tokenRepo pushDomain.PushRepository
-	notifRepo domain.RuntimeNotificationRepository
+	tokenRepo  pushDomain.PushRepository
+	notifRepo  domain.RuntimeNotificationRepository
 	dispatcher func(ctx context.Context, token, title, body string, data map[string]string, priority string) error
 }
 
@@ -34,13 +34,13 @@ func (s *pushService) RegisterDevice(ctx context.Context, userID, token, platfor
 	}
 
 	pt := &pushDomain.PushToken{
-		UserID: userID,
-		Token: tokenHash,
+		UserID:     userID,
+		Token:      tokenHash,
 		TokenPlain: token,
-		Platform: platform,
-		DeviceID: deviceID,
-		IsActive: true,
-		CreatedAt: time.Now().Format(time.RFC3339),
+		Platform:   platform,
+		DeviceID:   deviceID,
+		IsActive:   true,
+		CreatedAt:  time.Now().Format(time.RFC3339),
 	}
 	return s.tokenRepo.SaveToken(ctx, pt)
 }
@@ -54,9 +54,9 @@ func (s *pushService) Dispatch(ctx context.Context, userID, title, body string, 
 		if err := s.notifRepo.Create(ctx, &domain.Notification{
 			ReceiverID: userID,
 			EntityType: "push",
-			Type: "push",
-			IsRead: false,
-			CreatedAt: time.Now(),
+			Type:       "push",
+			IsRead:     false,
+			CreatedAt:  time.Now(),
 		}); err != nil {
 			return err
 		}
@@ -72,12 +72,12 @@ func (s *pushService) Dispatch(ctx context.Context, userID, title, body string, 
 
 	priority := "high"
 	pn := &pushDomain.PushNotification{
-		UserID: userID,
-		Title: title,
-		Body: body,
-		Data: data,
-		Priority: priority,
-		Status: "pending",
+		UserID:    userID,
+		Title:     title,
+		Body:      body,
+		Data:      data,
+		Priority:  priority,
+		Status:    "pending",
 		CreatedAt: time.Now().Format(time.RFC3339),
 	}
 	if err := s.tokenRepo.CreateNotification(ctx, pn); err != nil {

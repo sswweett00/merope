@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/jackc/pgx/v5/pgtype"
+
 	"local/merope/internal/core/util"
 	"local/merope/internal/modules/community/domain"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func (r *postgresCommunityRepository) CreateCollective(ctx context.Context, coll *domain.Collective) error {

@@ -7,6 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
+
 	"local/merope/internal/core/util"
 	"local/merope/internal/database/db"
 	"local/merope/internal/modules/marketplace/domain"

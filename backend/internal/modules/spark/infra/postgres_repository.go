@@ -3,13 +3,14 @@ package infra
 import (
 	"context"
 
+	"github.com/jackc/pgx/v5/pgtype"
+
 	"local/merope/internal/core/util"
 	"local/merope/internal/database/db"
 	sparkDomain "local/merope/internal/modules/spark/domain"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type PostgresSparkRepository struct { queries *db.Queries }
+type PostgresSparkRepository struct{ queries *db.Queries }
 
 func NewPostgresSparkRepository(queries *db.Queries) *PostgresSparkRepository {
 	return &PostgresSparkRepository{queries: queries}

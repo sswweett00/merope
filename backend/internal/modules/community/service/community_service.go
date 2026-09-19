@@ -8,6 +8,7 @@ import (
 	"unicode"
 
 	"github.com/google/uuid"
+
 	"local/merope/internal/core/security"
 	"local/merope/internal/modules/community/domain"
 )

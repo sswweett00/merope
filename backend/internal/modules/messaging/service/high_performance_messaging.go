@@ -6,14 +6,14 @@ import (
 	"log/slog"
 	"time"
 
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
+
 	"local/merope/internal/core/events"
 	"local/merope/internal/core/security"
 	"local/merope/internal/core/worker"
 	"local/merope/internal/modules/messaging/domain"
-
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
 )
 
 var tracer = otel.Tracer("messaging-service")

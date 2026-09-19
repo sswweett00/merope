@@ -16,7 +16,7 @@ func AnomalyDetectorMiddleware(detector AnomalyDetector) fiber.Handler {
 			suspicious, reason := detector.AnalyzePayload(c.Context(), userID, string(payload))
 			if suspicious {
 				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-					"error": "suspicious request detected",
+					"error":  "suspicious request detected",
 					"reason": reason,
 				})
 			}

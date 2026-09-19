@@ -2,9 +2,11 @@ package audit
 
 import (
 	"context"
+
 	"github.com/ClickHouse/clickhouse-go/v2/lib/driver"
-	"local/merope/internal/core/logger"
 	"go.uber.org/zap"
+
+	"local/merope/internal/core/logger"
 )
 
 type ClickHouseAuditor struct {

@@ -62,8 +62,8 @@ func (g *veritasContentGuard) MarkContentProvenance(ctx context.Context, postID,
 	_ = g.bus.Publish(ctx, "veritas.provenance.marked", events.Event{
 		Type: "VERITAS_PROVENANCE_MARKED",
 		Payload: map[string]interface{}{
-			"post_id":  postID,
-			"owner_id": ownerID,
+			"post_id":   postID,
+			"owner_id":  ownerID,
 			"marked_at": time.Now(),
 		},
 	})

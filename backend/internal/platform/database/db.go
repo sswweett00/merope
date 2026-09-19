@@ -37,11 +37,11 @@ func NewEnterpriseDB(ctx context.Context, pgConnString string, redisAddr string)
 
 	// Configure Redis Client
 	rdb := redis.NewClient(&redis.Options{
-			Addr:         redisAddr,
-			Password:     "", // Set in production via env
-			DB:           0,
-			PoolSize:     100,
-			MinIdleConns: 10,
+		Addr:         redisAddr,
+		Password:     "", // Set in production via env
+		DB:           0,
+		PoolSize:     100,
+		MinIdleConns: 10,
 	})
 
 	if err := rdb.Ping(ctx).Err(); err != nil {

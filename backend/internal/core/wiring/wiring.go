@@ -4,31 +4,26 @@ import (
 	"context"
 	"errors"
 	"log"
-	"strings"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 
 	"local/merope/internal/core/config"
 	coreErrors "local/merope/internal/core/errors"
 	coreMiddleware "local/merope/internal/core/middleware"
-	"local/merope/internal/platform/s3"
 	"local/merope/internal/core/realtime"
 	"local/merope/internal/core/security"
 	"local/merope/internal/core/worker"
 	"local/merope/internal/database"
 	"local/merope/internal/database/db"
-	"local/merope/internal/platform/nats"
-	"local/merope/internal/platform/redis"
-	"local/merope/internal/platform/scylla"
-
 	communityInfra "local/merope/internal/modules/community/infra"
 	communityService "local/merope/internal/modules/community/service"
 	communityTransport "local/merope/internal/modules/community/transport"
@@ -39,6 +34,9 @@ import (
 	developerInfra "local/merope/internal/modules/developer/infra"
 	developerService "local/merope/internal/modules/developer/service"
 	developerTransport "local/merope/internal/modules/developer/transport"
+	financeInfra "local/merope/internal/modules/finance/infra"
+	financeService "local/merope/internal/modules/finance/service"
+	financeTransport "local/merope/internal/modules/finance/transport"
 	identityInfra "local/merope/internal/modules/identity/infra"
 	identityService "local/merope/internal/modules/identity/service"
 	identityTransport "local/merope/internal/modules/identity/transport"
@@ -52,24 +50,25 @@ import (
 	messagingInfra "local/merope/internal/modules/messaging/infra"
 	messagingService "local/merope/internal/modules/messaging/service"
 	messagingTransport "local/merope/internal/modules/messaging/transport"
+	moderationInfra "local/merope/internal/modules/moderation/infra"
+	moderationService "local/merope/internal/modules/moderation/service"
+	moderationTransport "local/merope/internal/modules/moderation/transport"
 	notificationsInfra "local/merope/internal/modules/notifications/infra"
 	notificationsService "local/merope/internal/modules/notifications/service"
 	notificationsTransport "local/merope/internal/modules/notifications/transport"
 	searchInfra "local/merope/internal/modules/search/infra"
 	searchService "local/merope/internal/modules/search/service"
 	searchTransport "local/merope/internal/modules/search/transport"
-	vaultInfra "local/merope/internal/modules/vault/infra"
-	vaultService "local/merope/internal/modules/vault/service"
-	vaultTransport "local/merope/internal/modules/vault/transport"
-	financeInfra "local/merope/internal/modules/finance/infra"
-	financeService "local/merope/internal/modules/finance/service"
-	financeTransport "local/merope/internal/modules/finance/transport"
-	moderationInfra "local/merope/internal/modules/moderation/infra"
-	moderationService "local/merope/internal/modules/moderation/service"
-	moderationTransport "local/merope/internal/modules/moderation/transport"
 	socialInfra "local/merope/internal/modules/social/infra"
 	socialService "local/merope/internal/modules/social/service"
 	socialTransport "local/merope/internal/modules/social/transport"
+	vaultInfra "local/merope/internal/modules/vault/infra"
+	vaultService "local/merope/internal/modules/vault/service"
+	vaultTransport "local/merope/internal/modules/vault/transport"
+	"local/merope/internal/platform/nats"
+	"local/merope/internal/platform/redis"
+	"local/merope/internal/platform/s3"
+	"local/merope/internal/platform/scylla"
 )
 
 type Resources struct {
@@ -414,13 +413,19 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 
 	content.Post("/media/upload", func(c *fiber.Ctx) error {
 		file, err := c.FormFile("file")
-		if err != nil { return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "file is required"}) }
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "file is required"})
+		}
 		reader, err := file.Open()
-		if err != nil { return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid file"}) }
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid file"})
+		}
 		defer reader.Close()
 		ext := filepath.Ext(file.Filename)
 		key := "media/" + uuid.NewString() + ext
-		if _, err := storageClient.Upload(c.Context(), key, reader, file.Header.Get("Content-Type")); err != nil { return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "media upload failed"}) }
+		if _, err := storageClient.Upload(c.Context(), key, reader, file.Header.Get("Content-Type")); err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "media upload failed"})
+		}
 		url := strings.TrimRight(cfg.Storage.PublicURLPrefix, "/") + "/" + key
 		return c.Status(fiber.StatusCreated).JSON(fiber.Map{"url": url, "media_url": url, "media_id": strings.TrimSuffix(uuid.NewString(), "")})
 	})
@@ -430,7 +435,9 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	})
 	cleanup := func() {
 		zapLogger.Info("shutting down API")
-		if wsHub != nil { wsHub.Stop() }
+		if wsHub != nil {
+			wsHub.Stop()
+		}
 		if orchestrator != nil {
 			orchestrator.Stop()
 		}

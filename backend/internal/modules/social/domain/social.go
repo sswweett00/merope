@@ -3,8 +3,9 @@ package domain
 import (
 	"context"
 	"errors"
-	"local/merope/internal/modules/identity/domain"
 	"time"
+
+	"local/merope/internal/modules/identity/domain"
 )
 
 var ErrProfileForbidden = errors.New("profile access denied")

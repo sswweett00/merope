@@ -6,13 +6,14 @@ import (
 	"fmt"
 	"strings"
 	"time"
-	"local/merope/internal/database/db"
-	"local/merope/internal/modules/messaging/domain"
-	"local/merope/internal/core/util"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgxpool"
+
+	"local/merope/internal/core/util"
+	"local/merope/internal/database/db"
+	"local/merope/internal/modules/messaging/domain"
 )
 
 type PostgresMessagingRepository struct {
@@ -79,13 +80,13 @@ func (r *PostgresMessagingRepository) SendMessage(ctx context.Context, msg *doma
 	}
 
 	dbMsg, err := r.queries.CreateChatMessage(ctx, db.CreateChatMessageParams{
-		RoomID:          rid,
-		AuthorID:        aid,
-		ParentID:        pid,
-		Content:         msg.Content,
-		MessageType:     msg.MessageType,
-		VoiceUrl:        pgtype.Text{String: msg.VoiceURL, Valid: msg.VoiceURL != ""},
-		IsEncrypted:     msg.IsEncrypted,
+		RoomID:      rid,
+		AuthorID:    aid,
+		ParentID:    pid,
+		Content:     msg.Content,
+		MessageType: msg.MessageType,
+		VoiceUrl:    pgtype.Text{String: msg.VoiceURL, Valid: msg.VoiceURL != ""},
+		IsEncrypted: msg.IsEncrypted,
 	})
 	if err != nil {
 		return nil, err
@@ -177,11 +178,11 @@ func (r *PostgresMessagingRepository) GetMessageByID(ctx context.Context, messag
 	}
 
 	var (
-		id, roomID, authorID pgtype.UUID
-		content, messageType sql.NullString
-		encryptedPayload sql.NullString
+		id, roomID, authorID   pgtype.UUID
+		content, messageType   sql.NullString
+		encryptedPayload       sql.NullString
 		isEncrypted, isDeleted bool
-		expiresAt pgtype.Timestamptz
+		expiresAt              pgtype.Timestamptz
 	)
 	err := r.pool.QueryRow(ctx, `
 SELECT id, room_id, author_id, content, encrypted_payload, message_type,
@@ -201,10 +202,10 @@ LIMIT 1`, mid).Scan(
 	}
 
 	msg := &domain.ChatMessage{
-		ID:         util.UUIDToString(id),
-		RoomID:     util.UUIDToString(roomID),
-		SenderID:   util.UUIDToString(authorID),
-		Content:    content.String,
+		ID:          util.UUIDToString(id),
+		RoomID:      util.UUIDToString(roomID),
+		SenderID:    util.UUIDToString(authorID),
+		Content:     content.String,
 		MessageType: messageType.String,
 		IsEncrypted: isEncrypted,
 		IsDeleted:   isDeleted,

@@ -1,9 +1,9 @@
 package transport
 
 import (
-	"local/merope/internal/modules/privacy/domain"
-
 	"github.com/gofiber/fiber/v2"
+
+	"local/merope/internal/modules/privacy/domain"
 )
 
 type PrivacyHandler struct {
@@ -16,7 +16,9 @@ func NewPrivacyHandler(service domain.RuntimePrivacyService) *PrivacyHandler {
 
 func (h *PrivacyHandler) SetGhostMode(c *fiber.Ctx) error {
 	sessionID := c.Locals("session_id").(string)
-	var req struct { Active bool `json:"active"` }
+	var req struct {
+		Active bool `json:"active"`
+	}
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
 	}
@@ -38,7 +40,10 @@ func (h *PrivacyHandler) CheckVisibility(c *fiber.Ctx) error {
 
 func (h *PrivacyHandler) UpdateIdentityKeys(c *fiber.Ctx) error {
 	userID := c.Locals("user_id").(string)
-	var req struct { DeviceID string `json:"device_id"`; PublicKey []byte `json:"public_key"` }
+	var req struct {
+		DeviceID  string `json:"device_id"`
+		PublicKey []byte `json:"public_key"`
+	}
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
 	}
@@ -54,8 +59,8 @@ func (h *PrivacyHandler) UpdateIdentityKeys(c *fiber.Ctx) error {
 func (h *PrivacyHandler) UploadPreKeys(c *fiber.Ctx) error {
 	userID := c.Locals("user_id").(string)
 	var req struct {
-		DeviceID string `json:"device_id"`
-		SignedKey *domain.SignedPreKey `json:"signed_pre_key"`
+		DeviceID    string                 `json:"device_id"`
+		SignedKey   *domain.SignedPreKey   `json:"signed_pre_key"`
 		OneTimeKeys []domain.OneTimePreKey `json:"one_time_pre_keys"`
 	}
 	if err := c.BodyParser(&req); err != nil {

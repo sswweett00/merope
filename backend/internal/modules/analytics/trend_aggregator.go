@@ -8,6 +8,7 @@ import (
 
 	"github.com/nats-io/nats.go"
 	"github.com/redis/go-redis/v9"
+
 	"local/merope/internal/platform/scylla"
 )
 

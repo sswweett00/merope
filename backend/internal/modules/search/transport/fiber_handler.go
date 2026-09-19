@@ -1,10 +1,11 @@
 package transport
 
 import (
-	"local/merope/internal/modules/search/domain"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
+
+	"local/merope/internal/modules/search/domain"
 )
 
 type SearchHandler struct {
@@ -60,9 +61,9 @@ func (h *SearchHandler) GetTrending(c *fiber.Ctx) error {
 func (h *SearchHandler) UpdateLocation(c *fiber.Ctx) error {
 	userID := c.Locals("user_id").(string)
 	type request struct {
-		Lat  float64 `json:"lat"`
-		Lon  float64 `json:"lon"`
-		Ghost bool   `json:"ghost"`
+		Lat   float64 `json:"lat"`
+		Lon   float64 `json:"lon"`
+		Ghost bool    `json:"ghost"`
 	}
 
 	var req request

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/jackc/pgx/v5/pgtype"
+
 	"local/merope/internal/modules/community/domain"
 )
 
@@ -37,7 +38,7 @@ SELECT COUNT(*)::int
 FROM event_attendees ea
 JOIN community_proposals e ON e.id = ea.event_id
 WHERE ea.user_id = $1 AND e.community_id = $2`, uid, cid).Scan(&stats.TotalEvents); err != nil {
-	return nil, err
+		return nil, err
 	}
 	return stats, nil
 }

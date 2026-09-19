@@ -119,13 +119,13 @@ func (v ContentReport) MarshalJSON() ([]byte, error) {
 	return json.Marshal(wire)
 }
 
-func (v Ticket) MarshalJSON() ([]byte, error)             { return marshalCommunityWire(v) }
+func (v Ticket) MarshalJSON() ([]byte, error)            { return marshalCommunityWire(v) }
 func (v Subscription) MarshalJSON() ([]byte, error)      { return marshalCommunityWire(v) }
-func (v Guideline) MarshalJSON() ([]byte, error)          { return marshalCommunityWire(v) }
-func (v Collective) MarshalJSON() ([]byte, error)         { return marshalCommunityWire(v) }
-func (v CollectiveStats) MarshalJSON() ([]byte, error)    { return marshalCommunityWire(v) }
-func (v CommunitySettings) MarshalJSON() ([]byte, error)  { return marshalCommunityWire(v) }
-func (v CommunityStats) MarshalJSON() ([]byte, error)     { return marshalCommunityWire(v) }
-func (v Event) MarshalJSON() ([]byte, error)              { return marshalCommunityWire(v) }
-func (v EventTicketInfo) MarshalJSON() ([]byte, error)    { return marshalCommunityWire(v) }
-func (v MemberPreferences) MarshalJSON() ([]byte, error)  { return marshalCommunityWire(v) }
+func (v Guideline) MarshalJSON() ([]byte, error)         { return marshalCommunityWire(v) }
+func (v Collective) MarshalJSON() ([]byte, error)        { return marshalCommunityWire(v) }
+func (v CollectiveStats) MarshalJSON() ([]byte, error)   { return marshalCommunityWire(v) }
+func (v CommunitySettings) MarshalJSON() ([]byte, error) { return marshalCommunityWire(v) }
+func (v CommunityStats) MarshalJSON() ([]byte, error)    { return marshalCommunityWire(v) }
+func (v Event) MarshalJSON() ([]byte, error)             { return marshalCommunityWire(v) }
+func (v EventTicketInfo) MarshalJSON() ([]byte, error)   { return marshalCommunityWire(v) }
+func (v MemberPreferences) MarshalJSON() ([]byte, error) { return marshalCommunityWire(v) }

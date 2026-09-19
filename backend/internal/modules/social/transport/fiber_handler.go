@@ -2,10 +2,11 @@ package transport
 
 import (
 	stdErrors "errors"
-	"local/merope/internal/modules/social/domain"
-	"local/merope/internal/core/errors"
 
 	"github.com/gofiber/fiber/v2"
+
+	"local/merope/internal/core/errors"
+	"local/merope/internal/modules/social/domain"
 )
 
 type SocialHandler struct {
@@ -83,7 +84,9 @@ func (h *SocialHandler) RespondFollowRequest(c *fiber.Ctx) error {
 	followerID := c.Params("id")
 	status := c.Query("status")
 	if status == "" {
-		var req struct{ Status string `json:"status"` }
+		var req struct {
+			Status string `json:"status"`
+		}
 		if err := c.BodyParser(&req); err == nil {
 			status = req.Status
 		}
@@ -107,7 +110,7 @@ func (h *SocialHandler) Mutuals(c *fiber.Ctx) error {
 
 func (h *SocialHandler) Profile(c *fiber.Ctx) error {
 	userID := c.Params("id")
-viewerID, _ := c.Locals("user_id").(string)
+	viewerID, _ := c.Locals("user_id").(string)
 	profile, err := h.service.GetProfile(c.Context(), viewerID, userID)
 	if err != nil {
 		return writeSocialError(c, err)

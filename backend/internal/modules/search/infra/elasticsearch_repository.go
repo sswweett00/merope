@@ -2,6 +2,7 @@ package infra
 
 import (
 	"context"
+
 	"local/merope/internal/modules/search/domain"
 )
 
@@ -29,9 +30,9 @@ func (r *ElasticsearchRepository) FullTextSearch(ctx context.Context, query stri
 	fuzzyQuery := map[string]interface{}{
 		"query": map[string]interface{}{
 			"multi_match": map[string]interface{}{
-				"query":     query,
-				"fields":    []string{"title^3", "content^2", "subtitle^1"},
-				"fuzziness": "AUTO",
+				"query":         query,
+				"fields":        []string{"title^3", "content^2", "subtitle^1"},
+				"fuzziness":     "AUTO",
 				"prefix_length": 2,
 			},
 		},
@@ -44,9 +45,9 @@ func (r *ElasticsearchRepository) Autocomplete(ctx context.Context, query string
 	boolPrefixQuery := map[string]interface{}{
 		"query": map[string]interface{}{
 			"multi_match": map[string]interface{}{
-				"query":    query,
-				"fields":   []string{"title^5", "subtitle^3", "content^1"},
-				"type":     "bool_prefix",
+				"query":  query,
+				"fields": []string{"title^5", "subtitle^3", "content^1"},
+				"type":   "bool_prefix",
 			},
 		},
 		"size": limit,
@@ -65,10 +66,10 @@ func (r *ElasticsearchRepository) IndexPost(ctx context.Context, id, content str
 
 func (r *ElasticsearchRepository) IndexUser(ctx context.Context, id, username, displayName string) error {
 	doc := map[string]interface{}{
-		"title":          username,
-		"subtitle":       displayName,
-		"type":           "user",
-		"title_suggest":  username,
+		"title":            username,
+		"subtitle":         displayName,
+		"type":             "user",
+		"title_suggest":    username,
 		"subtitle_suggest": displayName,
 	}
 	return r.client.Index(ctx, "merope_users", id, doc)

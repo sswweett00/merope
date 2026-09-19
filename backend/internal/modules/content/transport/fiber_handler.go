@@ -1,13 +1,14 @@
 package transport
 
 import (
-	"local/merope/internal/modules/content/domain"
-	"local/merope/internal/core/security"
-	"local/merope/internal/core/errors"
 	"strconv"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
+
+	"local/merope/internal/core/errors"
+	"local/merope/internal/core/security"
+	"local/merope/internal/modules/content/domain"
 )
 
 type ContentHandler struct {
@@ -213,9 +214,10 @@ func (h *ContentHandler) GetPost(c *fiber.Ctx) error {
 	post, err := h.requireVisiblePost(c, c.Params("id"), userID)
 	if err != nil {
 		status := errors.ToHTTPStatus(err)
-		if err == fiber.ErrNotFound {
+		switch err {
+		case fiber.ErrNotFound:
 			status = fiber.StatusNotFound
-		} else if err == fiber.ErrForbidden {
+		case fiber.ErrForbidden:
 			status = fiber.StatusForbidden
 		}
 		return c.Status(status).JSON(fiber.Map{"code": errors.GetCode(err), "message": "Unable to process request"})
@@ -293,17 +295,17 @@ func (h *ContentHandler) DeleteComment(c *fiber.Ctx) error {
 		if comment.ID == commentID && comment.AuthorID == userID {
 			if err := h.service.DeleteNode(c.Context(), commentID); err != nil {
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"code":    errors.GetCode(err),
-			"message": "Unable to process request",
-		})
+					"code":    errors.GetCode(err),
+					"message": "Unable to process request",
+				})
 			}
 			return c.SendStatus(fiber.StatusNoContent)
 		}
 	}
 	return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-			"code":    errors.ErrForbidden,
-			"message": "Not authorized",
-		})
+		"code":    errors.ErrForbidden,
+		"message": "Not authorized",
+	})
 }
 
 func (h *ContentHandler) React(c *fiber.Ctx) error {
@@ -405,17 +407,17 @@ func toMeropeCommentDTO(n *domain.Node) MeropeSignalDTO {
 	return MeropeSignalDTO{
 		ID: n.ID,
 		Author: MeropeAuthor{
-			ID: n.AuthorID,
-			Username: n.AuthorName,
+			ID:          n.AuthorID,
+			Username:    n.AuthorName,
 			DisplayName: n.AuthorName,
-			AvatarURL: n.AuthorAvatar,
+			AvatarURL:   n.AuthorAvatar,
 		},
-		Content: n.Content,
-		Media: []interface{}{},
+		Content:    n.Content,
+		Media:      []interface{}{},
 		Resonances: []MeropeResonance{},
-		Layers: []interface{}{},
-		Cards: []interface{}{},
-		CreatedAt: n.CreatedAt.Unix(),
+		Layers:     []interface{}{},
+		Cards:      []interface{}{},
+		CreatedAt:  n.CreatedAt.Unix(),
 	}
 }
 
@@ -447,12 +449,12 @@ func (h *ContentHandler) GetPostAnalytics(c *fiber.Ctx) error {
 		return c.Status(errors.ToHTTPStatus(err)).JSON(fiber.Map{"code": errors.GetCode(err), "message": "Unable to process request"})
 	}
 	return c.JSON(fiber.Map{
-		"totalViews": post.ViewCount,
-		"totalLikes": post.LikeCount,
-		"totalComments": post.CommentCount,
-		"totalShares": post.ShareCount,
+		"totalViews":     post.ViewCount,
+		"totalLikes":     post.LikeCount,
+		"totalComments":  post.CommentCount,
+		"totalShares":    post.ShareCount,
 		"totalBookmarks": 0,
 		"engagementRate": 0,
-		"dailyMetrics": []interface{}{},
+		"dailyMetrics":   []interface{}{},
 	})
 }

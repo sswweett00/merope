@@ -9,12 +9,12 @@ import (
 	"github.com/pion/webrtc/v4"
 )
 
-/// SFURouter V9 - Nirvana Layer (Self-Healing Gossip & CRDT).
-///
-/// Refinements:
-/// - Gossip-based State Sync: Nodes communicate room ownership directly
-///   to ensure high availability during NATS partitions.
-/// - Participant CRDT: Convergent replication of join/leave events.
+// / SFURouter V9 - Nirvana Layer (Self-Healing Gossip & CRDT).
+// /
+// / Refinements:
+// / - Gossip-based State Sync: Nodes communicate room ownership directly
+// /   to ensure high availability during NATS partitions.
+// / - Participant CRDT: Convergent replication of join/leave events.
 type SFURouter struct {
 	mu          sync.RWMutex
 	rooms       map[string]*RoomState

@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
+
 	"local/merope/internal/modules/marketplace/domain"
 )
 

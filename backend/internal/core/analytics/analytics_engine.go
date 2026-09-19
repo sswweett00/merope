@@ -3,54 +3,55 @@ package analytics
 import (
 	"context"
 	"time"
+
 	"local/merope/internal/core/events"
 	"local/merope/internal/core/logger"
 	ch "local/merope/internal/platform/clickhouse"
 )
 
 type EngagementMetrics struct {
-	UserID       string
-	PostID       string
-	LikeCount    int64
-	CommentCount int64
+	UserID         string
+	PostID         string
+	LikeCount      int64
+	CommentCount   int64
 	ResonanceCount int64
-	Shares       int64
-	Reach        int64
-	Impressions  int64
+	Shares         int64
+	Reach          int64
+	Impressions    int64
 	EngagementRate float64
-	TimeWindow   string
-	RecordedAt   time.Time
+	TimeWindow     string
+	RecordedAt     time.Time
 }
 
 type UserStats struct {
-	UserID          string
-	Period          string // daily, weekly, monthly
-	TimezoneOffset  int
-	PostsPublished  int64
-	TotalLikes      int64
-	TotalComments   int64
-	NewFollowers    int64
-	LostFollowers   int64
+	UserID               string
+	Period               string // daily, weekly, monthly
+	TimezoneOffset       int
+	PostsPublished       int64
+	TotalLikes           int64
+	TotalComments        int64
+	NewFollowers         int64
+	LostFollowers        int64
 	FollowersGainedToday int64
-	InfluenceRank   int64
-	EngagementRate  float64
-	ContentScore    float64
-	Reach           int64
-	AudienceGrowth  float64
-	RetentionRate   float64
-	RecalculateAt   time.Time
+	InfluenceRank        int64
+	EngagementRate       float64
+	ContentScore         float64
+	Reach                int64
+	AudienceGrowth       float64
+	RetentionRate        float64
+	RecalculateAt        time.Time
 }
 
 func NewAnalyticsEngine(chClient *ch.Client, bus events.Publisher) *AnalyticsEngine {
 	return &AnalyticsEngine{
-		ch: chClient,
+		ch:  chClient,
 		bus: bus,
 	}
 }
 
 type AnalyticsEngine struct {
-	ch   *ch.Client
-	bus  events.Publisher
+	ch  *ch.Client
+	bus events.Publisher
 }
 
 func (e *AnalyticsEngine) AggregateDailyStats(ctx context.Context, date time.Time) error {
@@ -63,20 +64,20 @@ func (e *AnalyticsEngine) AggregateDailyStats(ctx context.Context, date time.Tim
 	}
 
 	err := e.ch.InsertEngagementMetrics(ctx, &ch.EngagementMetrics{
-		TimeBucket: dayStart,
-		PostID: "",
-		UserID: "",
-		LikeCount: 0,
+		TimeBucket:   dayStart,
+		PostID:       "",
+		UserID:       "",
+		LikeCount:    0,
 		CommentCount: 0,
-		ShareCount: 0,
-		ViewCount: 0,
+		ShareCount:   0,
+		ViewCount:    0,
 	})
 	if err != nil {
 		logger.Warn("Analytics aggregation failed, retrying")
 		_ = e.bus.Publish(ctx, "analytics.aggregation.failed", events.Event{
 			Type: "ANALYTICS_AGGREGATION_FAILED",
 			Payload: map[string]interface{}{
-				"date": dayStart.Unix(),
+				"date":  dayStart.Unix(),
 				"error": err.Error(),
 			},
 		})
@@ -96,7 +97,7 @@ func (e *AnalyticsEngine) RecalculateInfluenceRank(ctx context.Context, userID s
 	_ = e.bus.Publish(ctx, "analytics.rank.recalculated", events.Event{
 		Type: "INFLUENCE_RANK_RECALCULATED",
 		Payload: map[string]interface{}{
-			"user_id": userID,
+			"user_id":         userID,
 			"influence_score": score,
 		},
 	})

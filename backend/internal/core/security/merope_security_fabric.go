@@ -52,7 +52,7 @@ func (f *MeropeSecurityFabric) SystemWideLockdown(ctx context.Context, reason st
 	_ = f.bus.Publish(ctx, "security.fabric.lockdown", events.Event{
 		Type: "SYSTEM_LOCKDOWN",
 		Payload: map[string]interface{}{
-			"reason":      reason,
+			"reason":       reason,
 			"triggered_at": time.Now(),
 		},
 	})

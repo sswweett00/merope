@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+
 	"local/merope/internal/core/events"
 	"local/merope/internal/platform/postgres"
 )

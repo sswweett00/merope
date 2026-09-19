@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/nats-io/nats.go"
+
 	"local/merope/internal/modules/analytics/domain"
 	"local/merope/internal/platform/clickhouse"
 )

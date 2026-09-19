@@ -18,12 +18,12 @@ const (
 )
 
 type CircuitBreaker struct {
-	mu           sync.RWMutex
-	state        State
-	failures     int
-	threshold    int
-	timeout      time.Duration
-	lastFailure  time.Time
+	mu          sync.RWMutex
+	state       State
+	failures    int
+	threshold   int
+	timeout     time.Duration
+	lastFailure time.Time
 }
 
 func NewCircuitBreaker(threshold int, timeout time.Duration) *CircuitBreaker {

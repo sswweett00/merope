@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"local/merope/internal/core/util"
 	"github.com/jackc/pgx/v5/pgtype"
+
+	"local/merope/internal/core/util"
 )
 
 func (r *postgresCommunityRepository) GetAttendees(ctx context.Context, eventID string, limit, offset int32) ([]string, error) {

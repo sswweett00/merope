@@ -10,7 +10,7 @@ type entry[K comparable, V any] struct {
 	value V
 }
 
-/// LRUCache is a simple thread-safe L1 in-memory cache.
+// / LRUCache is a simple thread-safe L1 in-memory cache.
 type LRUCache[K comparable, V any] struct {
 	capacity int
 	cache    map[K]*list.Element

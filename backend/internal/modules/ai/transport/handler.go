@@ -5,10 +5,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gofiber/fiber/v2"
+
 	"local/merope/internal/core/observability"
 	"local/merope/internal/modules/ai/domain"
-
-	"github.com/gofiber/fiber/v2"
 )
 
 type AIHandler struct {

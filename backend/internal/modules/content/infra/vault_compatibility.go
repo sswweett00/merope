@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/jackc/pgx/v5/pgtype"
+
 	"local/merope/internal/core/util"
 	"local/merope/internal/modules/content/domain"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func (r *PostgresContentRepository) GetUserVaults(ctx context.Context, userID string) ([]*domain.Vault, error) {

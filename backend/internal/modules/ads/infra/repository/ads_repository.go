@@ -2,8 +2,9 @@ package repository
 
 import (
 	"context"
-	"local/merope/internal/modules/ads/domain"
 	"sync"
+
+	"local/merope/internal/modules/ads/domain"
 )
 
 type inMemoryAdsRepository struct {

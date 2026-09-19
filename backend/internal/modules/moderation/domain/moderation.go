@@ -69,9 +69,9 @@ type ModerationService interface {
 }
 
 type ContentClassification struct {
-	Score       float64
-	Categories  map[string]float64
-	Reasons     []string
-	Action      string
-	Confidence  float64
+	Score      float64
+	Categories map[string]float64
+	Reasons    []string
+	Action     string
+	Confidence float64
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+
 	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/ClickHouse/clickhouse-go/v2/lib/driver"
 )
@@ -27,7 +28,7 @@ func New(ctx context.Context, addr, database string) (*Client, error) {
 			Password: password,
 		},
 		Settings: clickhouse.Settings{
-			"async_insert": 1,
+			"async_insert":          1,
 			"wait_for_async_insert": 0,
 		},
 		Compression: &clickhouse.Compression{

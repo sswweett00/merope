@@ -2,11 +2,12 @@ package tenant
 
 import (
 	"fmt"
-	"local/merope/internal/database/db"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5/pgtype"
+
 	"local/merope/internal/core/util"
+	"local/merope/internal/database/db"
 )
 
 type Tenant struct {

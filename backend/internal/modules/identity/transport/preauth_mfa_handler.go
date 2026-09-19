@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/redis/go-redis/v9"
+
 	"local/merope/internal/core/errors"
 	"local/merope/internal/core/security"
 	"local/merope/internal/modules/identity/domain"
@@ -90,8 +91,8 @@ func (h *PreAuthMFAHandler) Login(c *fiber.Ctx) error {
 		"requires_mfa":       true,
 		"mfa_required":       true,
 		"user_id":            user.ID,
-		"challenge_id":        challengeID,
-		"mfa_method":          "totp",
+		"challenge_id":       challengeID,
+		"mfa_method":         "totp",
 		"expires_in_seconds": 300,
 	})
 }

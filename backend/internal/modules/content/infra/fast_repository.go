@@ -20,5 +20,5 @@ func NewFastPostgresContentRepository(queries *db.Queries) *FastPostgresContentR
 }
 
 func (r *FastPostgresContentRepository) GetStream(ctx context.Context, userID string, limit, offset int32) ([]*domain.Signal, error) {
-	return r.PostgresContentRepository.getStreamFast(ctx, userID, limit, offset)
+	return r.getStreamFast(ctx, userID, limit, offset)
 }

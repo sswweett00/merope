@@ -3,10 +3,12 @@ package infra
 import (
 	"context"
 	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
+
+	"local/merope/internal/core/util"
 	"local/merope/internal/database/db"
 	"local/merope/internal/modules/search/domain"
-	"local/merope/internal/core/util"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type PostgresSearchRepository struct {
@@ -83,8 +85,8 @@ func (r *PostgresSearchRepository) AddInterest(ctx context.Context, userID, inte
 	var uid pgtype.UUID
 	_ = uid.Scan(userID)
 	return r.queries.AddInterest(ctx, db.AddInterestParams{
-		UserID:    uid,
-		Interest:  interest,
+		UserID:   uid,
+		Interest: interest,
 	})
 }
 

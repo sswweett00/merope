@@ -2,10 +2,12 @@ package infra
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
+
+	"local/merope/internal/core/util"
 	"local/merope/internal/database/db"
 	"local/merope/internal/modules/vault/domain"
-	"github.com/jackc/pgx/v5/pgtype"
-	"local/merope/internal/core/util"
 )
 
 type PostgresVaultRepository struct {

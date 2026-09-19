@@ -8,49 +8,606 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+
 	"local/merope/internal/modules/community/domain"
 )
 
-type CommunityHandler struct{ service domain.CommunityService; repo domain.CommunityRepository }
-func NewCommunityHandler(service domain.CommunityService, repo domain.CommunityRepository) *CommunityHandler { return &CommunityHandler{service: service, repo: repo} }
-func userID(c *fiber.Ctx)(string,error){v,ok:=c.Locals("user_id").(string);if !ok||strings.TrimSpace(v)==""{return "",fiber.ErrUnauthorized};return v,nil}
-func pageArgs(c *fiber.Ctx,def int)(int32,int32){l,_:=strconv.Atoi(c.Query("limit",strconv.Itoa(def)));o,_:=strconv.Atoi(c.Query("offset","0"));if l<=0||l>100{l=def};if o<0{o=0};return int32(l),int32(o)}
-func writeCommunityError(c *fiber.Ctx,err error)error{status:=fiber.StatusInternalServerError;message:="request failed";if err==fiber.ErrUnauthorized{status=fiber.StatusUnauthorized;message="unauthorized"}else if err==fiber.ErrForbidden{status=fiber.StatusForbidden;message="forbidden"}else if err==fiber.ErrBadRequest{status=fiber.StatusBadRequest;message="bad request"};return c.Status(status).JSON(fiber.Map{"error":message})}
+type CommunityHandler struct {
+	service domain.CommunityService
+	repo    domain.CommunityRepository
+}
 
-func (h *CommunityHandler) ListCommunities(c *fiber.Ctx)error{uid,e:=userID(c);if e!=nil{return writeCommunityError(c,e)};l,o:=pageArgs(c,20);v,e:=h.repo.ListCommunities(c.Context(),uid,c.Query("category"),l,o);if e!=nil{return writeCommunityError(c,e)};return c.JSON(v)}
-func (h *CommunityHandler) GetCommunity(c *fiber.Ctx)error{uid,e:=userID(c);if e!=nil{return writeCommunityError(c,e)};v,e:=h.repo.GetCommunity(c.Context(),c.Params("id"));if e!=nil{return writeCommunityError(c,e)};visible,e:=h.repo.CanViewCommunity(c.Context(),uid,c.Params("id"));if e!=nil{return writeCommunityError(c,e)};if !visible{return writeCommunityError(c,fiber.ErrForbidden)};return c.JSON(v)}
-func (h *CommunityHandler) CreateCommunity(c *fiber.Ctx)error{uid,e:=userID(c);if e!=nil{return writeCommunityError(c,e)};var r struct{Name string `json:"name"`;Description string `json:"description"`;IsPrivate bool `json:"isPrivate"`};if e=c.BodyParser(&r);e!=nil{return writeCommunityError(c,fiber.ErrBadRequest)};v,e:=h.service.CreateGroup(c.Context(),uid,r.Name,r.Description,r.IsPrivate);if e!=nil{return writeCommunityError(c,e)};return c.Status(fiber.StatusCreated).JSON(v)}
-func (h *CommunityHandler) Join(c *fiber.Ctx)error{uid,e:=userID(c);if e!=nil{return writeCommunityError(c,e)};community,e:=h.repo.GetCommunity(c.Context(),c.Params("id"));if e!=nil{return writeCommunityError(c,e)};if community.IsPrivate && community.OwnerID!=uid{return writeCommunityError(c,fiber.ErrForbidden)};if e=h.service.Join(c.Context(),c.Params("id"),uid);e!=nil{return writeCommunityError(c,e)};return c.JSON(fiber.Map{"message":"joined"})}
-func (h *CommunityHandler) Leave(c *fiber.Ctx)error{uid,e:=userID(c);if e!=nil{return writeCommunityError(c,e)};if e=h.service.Leave(c.Context(),c.Params("id"),uid);e!=nil{return writeCommunityError(c,e)};return c.JSON(fiber.Map{"message":"left"})}
-func (h *CommunityHandler) UpdateSettings(c *fiber.Ctx)error{uid,e:=userID(c);if e!=nil{return writeCommunityError(c,e)};id:=c.Params("id");v,e:=h.repo.GetCommunity(c.Context(),id);if e!=nil{return writeCommunityError(c,e)};if v.OwnerID!=uid{return writeCommunityError(c,fiber.ErrForbidden)};var s domain.CommunitySettings;if e=c.BodyParser(&s);e!=nil{return writeCommunityError(c,fiber.ErrBadRequest)};v.Settings=s;if e=h.repo.UpdateCommunity(c.Context(),id,v);e!=nil{return writeCommunityError(c,e)};return c.JSON(v)}
-func (h *CommunityHandler) GetGuidelines(c *fiber.Ctx)error{uid,e:=userID(c);if e!=nil{return writeCommunityError(c,e)};visible,e:=h.repo.CanViewCommunity(c.Context(),uid,c.Params("id"));if e!=nil{return writeCommunityError(c,e)};if !visible{return writeCommunityError(c,fiber.ErrForbidden)};v,e:=h.repo.GetCommunityGuidelines(c.Context(),c.Params("id"));if e!=nil{return writeCommunityError(c,e)};return c.JSON(v)}
-func (h *CommunityHandler) UpdateGuidelines(c *fiber.Ctx)error{uid,e:=userID(c);if e!=nil{return writeCommunityError(c,e)};community,e:=h.repo.GetCommunity(c.Context(),c.Params("id"));if e!=nil{return writeCommunityError(c,e)};if community.OwnerID!=uid{return writeCommunityError(c,fiber.ErrForbidden)};var r struct{Guidelines []*domain.Guideline `json:"guidelines"`};if e=c.BodyParser(&r);e!=nil{return writeCommunityError(c,fiber.ErrBadRequest)};if e=h.service.SetCommunityGuidelines(c.Context(),c.Params("id"),r.Guidelines);e!=nil{return writeCommunityError(c,e)};return c.JSON(fiber.Map{"message":"updated"})}
-func parseFlexibleTime(v string)(time.Time,error){if v==""{return time.Time{},fmt.Errorf("time is required")};if x,e:=strconv.ParseInt(v,10,64);e==nil{return time.Unix(x,0),nil};return time.Parse(time.RFC3339,v)}
+func NewCommunityHandler(service domain.CommunityService, repo domain.CommunityRepository) *CommunityHandler {
+	return &CommunityHandler{service: service, repo: repo}
+}
+func userID(c *fiber.Ctx) (string, error) {
+	v, ok := c.Locals("user_id").(string)
+	if !ok || strings.TrimSpace(v) == "" {
+		return "", fiber.ErrUnauthorized
+	}
+	return v, nil
+}
+func pageArgs(c *fiber.Ctx, def int) (int32, int32) {
+	l, _ := strconv.Atoi(c.Query("limit", strconv.Itoa(def)))
+	o, _ := strconv.Atoi(c.Query("offset", "0"))
+	if l <= 0 || l > 100 {
+		l = def
+	}
+	if o < 0 {
+		o = 0
+	}
+	return int32(l), int32(o)
+}
+func writeCommunityError(c *fiber.Ctx, err error) error {
+	status := fiber.StatusInternalServerError
+	message := "request failed"
+	switch err {
+	case fiber.ErrUnauthorized:
+		status = fiber.StatusUnauthorized
+		message = "unauthorized"
+	case fiber.ErrForbidden:
+		status = fiber.StatusForbidden
+		message = "forbidden"
+	case fiber.ErrBadRequest:
+		status = fiber.StatusBadRequest
+		message = "bad request"
+	}
+	return c.Status(status).JSON(fiber.Map{"error": message})
+}
 
-func (h *CommunityHandler) ListEvents(c *fiber.Ctx)error{l,o:=pageArgs(c,20);uid,e:=userID(c);if e!=nil{return writeCommunityError(c,e)};var cid *string;if v:=c.Query("community_id");v!=""{cid=&v};v,e:=h.repo.ListEvents(c.Context(),cid,uid,c.Query("status"),l,o);if e!=nil{return writeCommunityError(c,e)};return c.JSON(v)}
-func (h *CommunityHandler) UpcomingEvents(c *fiber.Ctx)error{uid,e:=userID(c);if e!=nil{return writeCommunityError(c,e)};l,_:=pageArgs(c,20);v,e:=h.repo.GetUpcomingEvents(c.Context(),uid,l);if e!=nil{return writeCommunityError(c,e)};return c.JSON(v)}
-func (h *CommunityHandler) CreateEvent(c *fiber.Ctx)error{uid,e:=userID(c);if e!=nil{return writeCommunityError(c,e)};var r struct{CommunityID *string `json:"communityId"`;Title string `json:"title"`;Description string `json:"description"`;StartTime string `json:"startTime"`;EndTime string `json:"endTime"`;LocationName string `json:"locationName"`;Latitude *float64 `json:"latitude"`;Longitude *float64 `json:"longitude"`;LocationURL string `json:"locationUrl"`;MaxAttendees int32 `json:"maxAttendees"`;IsPublic bool `json:"isPublic"`;IsRecurring bool `json:"isRecurring"`;RecurrencePattern string `json:"recurrencePattern"`;ImageURL string `json:"imageUrl"`;Status string `json:"status"`;TicketInfo domain.EventTicketInfo `json:"ticketInfo"`};if e=c.BodyParser(&r);e!=nil{return writeCommunityError(c,fiber.ErrBadRequest)};start,e:=parseFlexibleTime(r.StartTime);if e!=nil{return writeCommunityError(c,fiber.ErrBadRequest)};end,e:=parseFlexibleTime(r.EndTime);if e!=nil{return writeCommunityError(c,fiber.ErrBadRequest)};v:=&domain.Event{CreatorID:uid,CommunityID:r.CommunityID,Title:r.Title,Description:r.Description,StartTime:start,EndTime:end,LocationName:r.LocationName,Latitude:r.Latitude,Longitude:r.Longitude,LocationURL:r.LocationURL,MaxAttendees:r.MaxAttendees,IsPublic:r.IsPublic,IsRecurring:r.IsRecurring,RecurrencePattern:r.RecurrencePattern,ImageURL:r.ImageURL,Status:r.Status,TicketInfo:r.TicketInfo};v,e=h.service.OrganizeEvent(c.Context(),v);if e!=nil{return writeCommunityError(c,e)};return c.Status(fiber.StatusCreated).JSON(v)}
-func (h *CommunityHandler) RSVP(c *fiber.Ctx)error{uid,e:=userID(c);if e!=nil{return writeCommunityError(c,e)};var r struct{Status string `json:"status"`};if e=c.BodyParser(&r);e!=nil{return writeCommunityError(c,fiber.ErrBadRequest)};if r.Status==""{r.Status="attending"};if e=h.repo.RSVP(c.Context(),c.Params("id"),uid,r.Status);e!=nil{return writeCommunityError(c,e)};return c.JSON(fiber.Map{"message":"rsvp recorded"})}
-func (h *CommunityHandler) CancelEvent(c *fiber.Ctx)error{uid,e:=userID(c);if e!=nil{return writeCommunityError(c,e)};event,e:=h.repo.GetEvent(c.Context(),c.Params("id"));if e!=nil{return writeCommunityError(c,e)};if event.CreatorID!=uid{return writeCommunityError(c,fiber.ErrForbidden)};if e=h.service.CancelEvent(c.Context(),c.Params("id"));e!=nil{return writeCommunityError(c,e)};return c.JSON(fiber.Map{"message":"cancelled"})}
+func (h *CommunityHandler) ListCommunities(c *fiber.Ctx) error {
+	uid, e := userID(c)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	l, o := pageArgs(c, 20)
+	v, e := h.repo.ListCommunities(c.Context(), uid, c.Query("category"), l, o)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	return c.JSON(v)
+}
+func (h *CommunityHandler) GetCommunity(c *fiber.Ctx) error {
+	uid, e := userID(c)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	v, e := h.repo.GetCommunity(c.Context(), c.Params("id"))
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	visible, e := h.repo.CanViewCommunity(c.Context(), uid, c.Params("id"))
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	if !visible {
+		return writeCommunityError(c, fiber.ErrForbidden)
+	}
+	return c.JSON(v)
+}
+func (h *CommunityHandler) CreateCommunity(c *fiber.Ctx) error {
+	uid, e := userID(c)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	var r struct {
+		Name        string `json:"name"`
+		Description string `json:"description"`
+		IsPrivate   bool   `json:"isPrivate"`
+	}
+	if e = c.BodyParser(&r); e != nil {
+		return writeCommunityError(c, fiber.ErrBadRequest)
+	}
+	v, e := h.service.CreateGroup(c.Context(), uid, r.Name, r.Description, r.IsPrivate)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	return c.Status(fiber.StatusCreated).JSON(v)
+}
+func (h *CommunityHandler) Join(c *fiber.Ctx) error {
+	uid, e := userID(c)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	community, e := h.repo.GetCommunity(c.Context(), c.Params("id"))
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	if community.IsPrivate && community.OwnerID != uid {
+		return writeCommunityError(c, fiber.ErrForbidden)
+	}
+	if e = h.service.Join(c.Context(), c.Params("id"), uid); e != nil {
+		return writeCommunityError(c, e)
+	}
+	return c.JSON(fiber.Map{"message": "joined"})
+}
+func (h *CommunityHandler) Leave(c *fiber.Ctx) error {
+	uid, e := userID(c)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	if e = h.service.Leave(c.Context(), c.Params("id"), uid); e != nil {
+		return writeCommunityError(c, e)
+	}
+	return c.JSON(fiber.Map{"message": "left"})
+}
+func (h *CommunityHandler) UpdateSettings(c *fiber.Ctx) error {
+	uid, e := userID(c)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	id := c.Params("id")
+	v, e := h.repo.GetCommunity(c.Context(), id)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	if v.OwnerID != uid {
+		return writeCommunityError(c, fiber.ErrForbidden)
+	}
+	var s domain.CommunitySettings
+	if e = c.BodyParser(&s); e != nil {
+		return writeCommunityError(c, fiber.ErrBadRequest)
+	}
+	v.Settings = s
+	if e = h.repo.UpdateCommunity(c.Context(), id, v); e != nil {
+		return writeCommunityError(c, e)
+	}
+	return c.JSON(v)
+}
+func (h *CommunityHandler) GetGuidelines(c *fiber.Ctx) error {
+	uid, e := userID(c)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	visible, e := h.repo.CanViewCommunity(c.Context(), uid, c.Params("id"))
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	if !visible {
+		return writeCommunityError(c, fiber.ErrForbidden)
+	}
+	v, e := h.repo.GetCommunityGuidelines(c.Context(), c.Params("id"))
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	return c.JSON(v)
+}
+func (h *CommunityHandler) UpdateGuidelines(c *fiber.Ctx) error {
+	uid, e := userID(c)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	community, e := h.repo.GetCommunity(c.Context(), c.Params("id"))
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	if community.OwnerID != uid {
+		return writeCommunityError(c, fiber.ErrForbidden)
+	}
+	var r struct {
+		Guidelines []*domain.Guideline `json:"guidelines"`
+	}
+	if e = c.BodyParser(&r); e != nil {
+		return writeCommunityError(c, fiber.ErrBadRequest)
+	}
+	if e = h.service.SetCommunityGuidelines(c.Context(), c.Params("id"), r.Guidelines); e != nil {
+		return writeCommunityError(c, e)
+	}
+	return c.JSON(fiber.Map{"message": "updated"})
+}
+func parseFlexibleTime(v string) (time.Time, error) {
+	if v == "" {
+		return time.Time{}, fmt.Errorf("time is required")
+	}
+	if x, e := strconv.ParseInt(v, 10, 64); e == nil {
+		return time.Unix(x, 0), nil
+	}
+	return time.Parse(time.RFC3339, v)
+}
 
-func (h *CommunityHandler) ListCollectives(c *fiber.Ctx)error{l,o:=pageArgs(c,20);v,e:=h.repo.GetCollectives(c.Context(),l,o);if e!=nil{return writeCommunityError(c,e)};return c.JSON(v)}
-func (h *CommunityHandler) CreateCollective(c *fiber.Ctx)error{var r struct{Name string `json:"name"`;Description string `json:"description"`;Icon string `json:"icon"`};if e:=c.BodyParser(&r);e!=nil{return writeCommunityError(c,fiber.ErrBadRequest)};v,e:=h.service.FormCollective(c.Context(),r.Name,r.Description,r.Icon);if e!=nil{return writeCommunityError(c,e)};return c.Status(fiber.StatusCreated).JSON(v)}
-func (h *CommunityHandler) JoinCollective(c *fiber.Ctx)error{uid,e:=userID(c);if e!=nil{return writeCommunityError(c,e)};if e=h.repo.JoinCollective(c.Context(),c.Params("id"),uid);e!=nil{return writeCommunityError(c,e)};return c.JSON(fiber.Map{"message":"joined"})}
-func (h *CommunityHandler) ListThreads(c *fiber.Ctx)error{l,o:=pageArgs(c,20);v,e:=h.repo.GetThreads(c.Context(),c.Params("id"),l,o);if e!=nil{return writeCommunityError(c,e)};return c.JSON(v)}
-func (h *CommunityHandler) CreateThread(c *fiber.Ctx)error{uid,e:=userID(c);if e!=nil{return writeCommunityError(c,e)};var r struct{Title string `json:"title"`;Content string `json:"content"`};if e=c.BodyParser(&r);e!=nil{return writeCommunityError(c,fiber.ErrBadRequest)};v,e:=h.service.StartThread(c.Context(),c.Params("id"),uid,r.Title,r.Content);if e!=nil{return writeCommunityError(c,e)};return c.Status(fiber.StatusCreated).JSON(v)}
-func (h *CommunityHandler) ResonateThread(c *fiber.Ctx)error{var r struct{Delta int `json:"delta"`};if e:=c.BodyParser(&r);e!=nil{return writeCommunityError(c,fiber.ErrBadRequest)};if r.Delta!=1&&r.Delta!=-1{return writeCommunityError(c,fiber.ErrBadRequest)};if e:=h.service.Resonate(c.Context(),c.Params("id"),r.Delta>0);e!=nil{return writeCommunityError(c,e)};return c.JSON(fiber.Map{"message":"resonance updated"})}
-func (h *CommunityHandler) ThreadReplies(c *fiber.Ctx)error{l,o:=pageArgs(c,50);v,e:=h.repo.GetThreadReplies(c.Context(),c.Params("id"),l,o);if e!=nil{return writeCommunityError(c,e)};return c.JSON(v)}
-func (h *CommunityHandler) CreateThreadReply(c *fiber.Ctx)error{uid,e:=userID(c);if e!=nil{return writeCommunityError(c,e)};var r struct{Content string `json:"content"`;ParentID *string `json:"parentId"`};if e=c.BodyParser(&r);e!=nil{return writeCommunityError(c,fiber.ErrBadRequest)};v,e:=h.service.ReplyToThread(c.Context(),c.Params("id"),uid,r.Content);if e!=nil{return writeCommunityError(c,e)};v.ParentID=r.ParentID;return c.Status(fiber.StatusCreated).JSON(v)}
-func (h *CommunityHandler) PinThread(c *fiber.Ctx)error{var r struct{Pinned bool `json:"pinned"`};if e:=c.BodyParser(&r);e!=nil{return writeCommunityError(c,fiber.ErrBadRequest)};if e:=h.service.PinThread(c.Context(),c.Params("id"),r.Pinned);e!=nil{return writeCommunityError(c,e)};return c.JSON(fiber.Map{"message":"pin updated"})}
-func (h *CommunityHandler) LockThread(c *fiber.Ctx)error{var r struct{Locked bool `json:"locked"`};if e:=c.BodyParser(&r);e!=nil{return writeCommunityError(c,fiber.ErrBadRequest)};if e:=h.service.LockThread(c.Context(),c.Params("id"),r.Locked);e!=nil{return writeCommunityError(c,e)};return c.JSON(fiber.Map{"message":"lock updated"})}
+func (h *CommunityHandler) ListEvents(c *fiber.Ctx) error {
+	l, o := pageArgs(c, 20)
+	uid, e := userID(c)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	var cid *string
+	if v := c.Query("community_id"); v != "" {
+		cid = &v
+	}
+	v, e := h.repo.ListEvents(c.Context(), cid, uid, c.Query("status"), l, o)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	return c.JSON(v)
+}
+func (h *CommunityHandler) UpcomingEvents(c *fiber.Ctx) error {
+	uid, e := userID(c)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	l, _ := pageArgs(c, 20)
+	v, e := h.repo.GetUpcomingEvents(c.Context(), uid, l)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	return c.JSON(v)
+}
+func (h *CommunityHandler) CreateEvent(c *fiber.Ctx) error {
+	uid, e := userID(c)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	var r struct {
+		CommunityID       *string                `json:"communityId"`
+		Title             string                 `json:"title"`
+		Description       string                 `json:"description"`
+		StartTime         string                 `json:"startTime"`
+		EndTime           string                 `json:"endTime"`
+		LocationName      string                 `json:"locationName"`
+		Latitude          *float64               `json:"latitude"`
+		Longitude         *float64               `json:"longitude"`
+		LocationURL       string                 `json:"locationUrl"`
+		MaxAttendees      int32                  `json:"maxAttendees"`
+		IsPublic          bool                   `json:"isPublic"`
+		IsRecurring       bool                   `json:"isRecurring"`
+		RecurrencePattern string                 `json:"recurrencePattern"`
+		ImageURL          string                 `json:"imageUrl"`
+		Status            string                 `json:"status"`
+		TicketInfo        domain.EventTicketInfo `json:"ticketInfo"`
+	}
+	if e = c.BodyParser(&r); e != nil {
+		return writeCommunityError(c, fiber.ErrBadRequest)
+	}
+	start, e := parseFlexibleTime(r.StartTime)
+	if e != nil {
+		return writeCommunityError(c, fiber.ErrBadRequest)
+	}
+	end, e := parseFlexibleTime(r.EndTime)
+	if e != nil {
+		return writeCommunityError(c, fiber.ErrBadRequest)
+	}
+	v := &domain.Event{CreatorID: uid, CommunityID: r.CommunityID, Title: r.Title, Description: r.Description, StartTime: start, EndTime: end, LocationName: r.LocationName, Latitude: r.Latitude, Longitude: r.Longitude, LocationURL: r.LocationURL, MaxAttendees: r.MaxAttendees, IsPublic: r.IsPublic, IsRecurring: r.IsRecurring, RecurrencePattern: r.RecurrencePattern, ImageURL: r.ImageURL, Status: r.Status, TicketInfo: r.TicketInfo}
+	v, e = h.service.OrganizeEvent(c.Context(), v)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	return c.Status(fiber.StatusCreated).JSON(v)
+}
+func (h *CommunityHandler) RSVP(c *fiber.Ctx) error {
+	uid, e := userID(c)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	var r struct {
+		Status string `json:"status"`
+	}
+	if e = c.BodyParser(&r); e != nil {
+		return writeCommunityError(c, fiber.ErrBadRequest)
+	}
+	if r.Status == "" {
+		r.Status = "attending"
+	}
+	if e = h.repo.RSVP(c.Context(), c.Params("id"), uid, r.Status); e != nil {
+		return writeCommunityError(c, e)
+	}
+	return c.JSON(fiber.Map{"message": "rsvp recorded"})
+}
+func (h *CommunityHandler) CancelEvent(c *fiber.Ctx) error {
+	uid, e := userID(c)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	event, e := h.repo.GetEvent(c.Context(), c.Params("id"))
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	if event.CreatorID != uid {
+		return writeCommunityError(c, fiber.ErrForbidden)
+	}
+	if e = h.service.CancelEvent(c.Context(), c.Params("id")); e != nil {
+		return writeCommunityError(c, e)
+	}
+	return c.JSON(fiber.Map{"message": "cancelled"})
+}
 
-func (h *CommunityHandler) Members(c *fiber.Ctx)error{uid,e:=userID(c);if e!=nil{return writeCommunityError(c,e)};visible,e:=h.repo.CanViewCommunity(c.Context(),uid,c.Params("id"));if e!=nil{return writeCommunityError(c,e)};if !visible{return writeCommunityError(c,fiber.ErrForbidden)};l,o:=pageArgs(c,50);v,e:=h.repo.GetCommunityMembers(c.Context(),c.Params("id"),c.Query("role"),l,o);if e!=nil{return writeCommunityError(c,e)};return c.JSON(v)}
-func (h *CommunityHandler) UpdateMemberRole(c *fiber.Ctx)error{uid,e:=userID(c);if e!=nil{return writeCommunityError(c,e)};community,e:=h.repo.GetCommunity(c.Context(),c.Params("id"));if e!=nil{return writeCommunityError(c,e)};if community.OwnerID!=uid{return writeCommunityError(c,fiber.ErrForbidden)};var r struct{Role string `json:"role"`};if e=c.BodyParser(&r);e!=nil||strings.TrimSpace(r.Role)==""{return writeCommunityError(c,fiber.ErrBadRequest)};if e=h.service.PromoteMember(c.Context(),c.Params("id"),c.Params("member_id"),r.Role);e!=nil{return writeCommunityError(c,e)};return c.JSON(fiber.Map{"message":"role updated"})}
-func (h *CommunityHandler) BanMember(c *fiber.Ctx)error{uid,e:=userID(c);if e!=nil{return writeCommunityError(c,e)};community,e:=h.repo.GetCommunity(c.Context(),c.Params("id"));if e!=nil{return writeCommunityError(c,e)};if community.OwnerID!=uid{return writeCommunityError(c,fiber.ErrForbidden)};var r struct{Reason string `json:"reason"`};if e=c.BodyParser(&r);e!=nil{return writeCommunityError(c,fiber.ErrBadRequest)};if e=h.service.BanMember(c.Context(),c.Params("id"),c.Params("member_id"),r.Reason,nil);e!=nil{return writeCommunityError(c,e)};return c.JSON(fiber.Map{"message":"member banned"})}
-func (h *CommunityHandler) UnbanMember(c *fiber.Ctx)error{uid,e:=userID(c);if e!=nil{return writeCommunityError(c,e)};community,e:=h.repo.GetCommunity(c.Context(),c.Params("id"));if e!=nil{return writeCommunityError(c,e)};if community.OwnerID!=uid{return writeCommunityError(c,fiber.ErrForbidden)};if e=h.service.UnbanMember(c.Context(),c.Params("id"),c.Params("member_id"));e!=nil{return writeCommunityError(c,e)};return c.JSON(fiber.Map{"message":"member unbanned"})}
+func (h *CommunityHandler) ListCollectives(c *fiber.Ctx) error {
+	l, o := pageArgs(c, 20)
+	v, e := h.repo.GetCollectives(c.Context(), l, o)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	return c.JSON(v)
+}
+func (h *CommunityHandler) CreateCollective(c *fiber.Ctx) error {
+	var r struct {
+		Name        string `json:"name"`
+		Description string `json:"description"`
+		Icon        string `json:"icon"`
+	}
+	if e := c.BodyParser(&r); e != nil {
+		return writeCommunityError(c, fiber.ErrBadRequest)
+	}
+	v, e := h.service.FormCollective(c.Context(), r.Name, r.Description, r.Icon)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	return c.Status(fiber.StatusCreated).JSON(v)
+}
+func (h *CommunityHandler) JoinCollective(c *fiber.Ctx) error {
+	uid, e := userID(c)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	if e = h.repo.JoinCollective(c.Context(), c.Params("id"), uid); e != nil {
+		return writeCommunityError(c, e)
+	}
+	return c.JSON(fiber.Map{"message": "joined"})
+}
+func (h *CommunityHandler) ListThreads(c *fiber.Ctx) error {
+	l, o := pageArgs(c, 20)
+	v, e := h.repo.GetThreads(c.Context(), c.Params("id"), l, o)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	return c.JSON(v)
+}
+func (h *CommunityHandler) CreateThread(c *fiber.Ctx) error {
+	uid, e := userID(c)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	var r struct {
+		Title   string `json:"title"`
+		Content string `json:"content"`
+	}
+	if e = c.BodyParser(&r); e != nil {
+		return writeCommunityError(c, fiber.ErrBadRequest)
+	}
+	v, e := h.service.StartThread(c.Context(), c.Params("id"), uid, r.Title, r.Content)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	return c.Status(fiber.StatusCreated).JSON(v)
+}
+func (h *CommunityHandler) ResonateThread(c *fiber.Ctx) error {
+	var r struct {
+		Delta int `json:"delta"`
+	}
+	if e := c.BodyParser(&r); e != nil {
+		return writeCommunityError(c, fiber.ErrBadRequest)
+	}
+	if r.Delta != 1 && r.Delta != -1 {
+		return writeCommunityError(c, fiber.ErrBadRequest)
+	}
+	if e := h.service.Resonate(c.Context(), c.Params("id"), r.Delta > 0); e != nil {
+		return writeCommunityError(c, e)
+	}
+	return c.JSON(fiber.Map{"message": "resonance updated"})
+}
+func (h *CommunityHandler) ThreadReplies(c *fiber.Ctx) error {
+	l, o := pageArgs(c, 50)
+	v, e := h.repo.GetThreadReplies(c.Context(), c.Params("id"), l, o)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	return c.JSON(v)
+}
+func (h *CommunityHandler) CreateThreadReply(c *fiber.Ctx) error {
+	uid, e := userID(c)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	var r struct {
+		Content  string  `json:"content"`
+		ParentID *string `json:"parentId"`
+	}
+	if e = c.BodyParser(&r); e != nil {
+		return writeCommunityError(c, fiber.ErrBadRequest)
+	}
+	v, e := h.service.ReplyToThread(c.Context(), c.Params("id"), uid, r.Content)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	v.ParentID = r.ParentID
+	return c.Status(fiber.StatusCreated).JSON(v)
+}
+func (h *CommunityHandler) PinThread(c *fiber.Ctx) error {
+	var r struct {
+		Pinned bool `json:"pinned"`
+	}
+	if e := c.BodyParser(&r); e != nil {
+		return writeCommunityError(c, fiber.ErrBadRequest)
+	}
+	if e := h.service.PinThread(c.Context(), c.Params("id"), r.Pinned); e != nil {
+		return writeCommunityError(c, e)
+	}
+	return c.JSON(fiber.Map{"message": "pin updated"})
+}
+func (h *CommunityHandler) LockThread(c *fiber.Ctx) error {
+	var r struct {
+		Locked bool `json:"locked"`
+	}
+	if e := c.BodyParser(&r); e != nil {
+		return writeCommunityError(c, fiber.ErrBadRequest)
+	}
+	if e := h.service.LockThread(c.Context(), c.Params("id"), r.Locked); e != nil {
+		return writeCommunityError(c, e)
+	}
+	return c.JSON(fiber.Map{"message": "lock updated"})
+}
 
-func (h *CommunityHandler) Subscriptions(c *fiber.Ctx)error{uid,e:=userID(c);if e!=nil{return writeCommunityError(c,e)};v,e:=h.repo.GetUserSubscriptions(c.Context(),uid);if e!=nil{return writeCommunityError(c,e)};return c.JSON(v)}
-func (h *CommunityHandler) CreateSubscription(c *fiber.Ctx)error{uid,e:=userID(c);if e!=nil{return writeCommunityError(c,e)};var r struct{CreatorID string `json:"creatorId"`;Tier string `json:"tier"`};if e=c.BodyParser(&r);e!=nil||r.CreatorID==""||r.Tier==""{return writeCommunityError(c,fiber.ErrBadRequest)};subID:=uuid.New().String();if e=h.service.SubscribeToCreator(c.Context(),uid,r.CreatorID,r.Tier,subID);e!=nil{return writeCommunityError(c,e)};v,e:=h.repo.GetSubscription(c.Context(),subID);if e!=nil{return writeCommunityError(c,e)};return c.Status(fiber.StatusCreated).JSON(v)}
-func (h *CommunityHandler) CancelSubscription(c *fiber.Ctx)error{uid,e:=userID(c);if e!=nil{return writeCommunityError(c,e)};sub,e:=h.repo.GetSubscription(c.Context(),c.Params("id"));if e!=nil{return writeCommunityError(c,e)};if sub.SubscriberID!=uid{return writeCommunityError(c,fiber.ErrForbidden)};if e=h.service.CancelSubscription(c.Context(),c.Params("id"));e!=nil{return writeCommunityError(c,e)};return c.JSON(fiber.Map{"message":"cancelled"})}
-func (h *CommunityHandler) UpdateSubscription(c *fiber.Ctx)error{uid,e:=userID(c);if e!=nil{return writeCommunityError(c,e)};sub,e:=h.repo.GetSubscription(c.Context(),c.Params("id"));if e!=nil{return writeCommunityError(c,e)};if sub.SubscriberID!=uid{return writeCommunityError(c,fiber.ErrForbidden)};var r struct{Tier string `json:"tier"`};if e=c.BodyParser(&r);e!=nil||r.Tier==""{return writeCommunityError(c,fiber.ErrBadRequest)};if e=h.service.UpdateSubscriptionTier(c.Context(),c.Params("id"),r.Tier);e!=nil{return writeCommunityError(c,e)};return c.JSON(fiber.Map{"message":"updated"})}
-func (h *CommunityHandler) Analytics(c *fiber.Ctx)error{uid,e:=userID(c);if e!=nil{return writeCommunityError(c,e)};community,e:=h.repo.GetCommunity(c.Context(),c.Params("id"));if e!=nil{return writeCommunityError(c,e)};if community.OwnerID!=uid{return writeCommunityError(c,fiber.ErrForbidden)};v,e:=h.service.GetCommunityAnalytics(c.Context(),c.Params("id"),c.Query("period","30d"));if e!=nil{return writeCommunityError(c,e)};return c.JSON(v)}
+func (h *CommunityHandler) Members(c *fiber.Ctx) error {
+	uid, e := userID(c)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	visible, e := h.repo.CanViewCommunity(c.Context(), uid, c.Params("id"))
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	if !visible {
+		return writeCommunityError(c, fiber.ErrForbidden)
+	}
+	l, o := pageArgs(c, 50)
+	v, e := h.repo.GetCommunityMembers(c.Context(), c.Params("id"), c.Query("role"), l, o)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	return c.JSON(v)
+}
+func (h *CommunityHandler) UpdateMemberRole(c *fiber.Ctx) error {
+	uid, e := userID(c)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	community, e := h.repo.GetCommunity(c.Context(), c.Params("id"))
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	if community.OwnerID != uid {
+		return writeCommunityError(c, fiber.ErrForbidden)
+	}
+	var r struct {
+		Role string `json:"role"`
+	}
+	if e = c.BodyParser(&r); e != nil || strings.TrimSpace(r.Role) == "" {
+		return writeCommunityError(c, fiber.ErrBadRequest)
+	}
+	if e = h.service.PromoteMember(c.Context(), c.Params("id"), c.Params("member_id"), r.Role); e != nil {
+		return writeCommunityError(c, e)
+	}
+	return c.JSON(fiber.Map{"message": "role updated"})
+}
+func (h *CommunityHandler) BanMember(c *fiber.Ctx) error {
+	uid, e := userID(c)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	community, e := h.repo.GetCommunity(c.Context(), c.Params("id"))
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	if community.OwnerID != uid {
+		return writeCommunityError(c, fiber.ErrForbidden)
+	}
+	var r struct {
+		Reason string `json:"reason"`
+	}
+	if e = c.BodyParser(&r); e != nil {
+		return writeCommunityError(c, fiber.ErrBadRequest)
+	}
+	if e = h.service.BanMember(c.Context(), c.Params("id"), c.Params("member_id"), r.Reason, nil); e != nil {
+		return writeCommunityError(c, e)
+	}
+	return c.JSON(fiber.Map{"message": "member banned"})
+}
+func (h *CommunityHandler) UnbanMember(c *fiber.Ctx) error {
+	uid, e := userID(c)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	community, e := h.repo.GetCommunity(c.Context(), c.Params("id"))
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	if community.OwnerID != uid {
+		return writeCommunityError(c, fiber.ErrForbidden)
+	}
+	if e = h.service.UnbanMember(c.Context(), c.Params("id"), c.Params("member_id")); e != nil {
+		return writeCommunityError(c, e)
+	}
+	return c.JSON(fiber.Map{"message": "member unbanned"})
+}
+
+func (h *CommunityHandler) Subscriptions(c *fiber.Ctx) error {
+	uid, e := userID(c)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	v, e := h.repo.GetUserSubscriptions(c.Context(), uid)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	return c.JSON(v)
+}
+func (h *CommunityHandler) CreateSubscription(c *fiber.Ctx) error {
+	uid, e := userID(c)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	var r struct {
+		CreatorID string `json:"creatorId"`
+		Tier      string `json:"tier"`
+	}
+	if e = c.BodyParser(&r); e != nil || r.CreatorID == "" || r.Tier == "" {
+		return writeCommunityError(c, fiber.ErrBadRequest)
+	}
+	subID := uuid.New().String()
+	if e = h.service.SubscribeToCreator(c.Context(), uid, r.CreatorID, r.Tier, subID); e != nil {
+		return writeCommunityError(c, e)
+	}
+	v, e := h.repo.GetSubscription(c.Context(), subID)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	return c.Status(fiber.StatusCreated).JSON(v)
+}
+func (h *CommunityHandler) CancelSubscription(c *fiber.Ctx) error {
+	uid, e := userID(c)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	sub, e := h.repo.GetSubscription(c.Context(), c.Params("id"))
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	if sub.SubscriberID != uid {
+		return writeCommunityError(c, fiber.ErrForbidden)
+	}
+	if e = h.service.CancelSubscription(c.Context(), c.Params("id")); e != nil {
+		return writeCommunityError(c, e)
+	}
+	return c.JSON(fiber.Map{"message": "cancelled"})
+}
+func (h *CommunityHandler) UpdateSubscription(c *fiber.Ctx) error {
+	uid, e := userID(c)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	sub, e := h.repo.GetSubscription(c.Context(), c.Params("id"))
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	if sub.SubscriberID != uid {
+		return writeCommunityError(c, fiber.ErrForbidden)
+	}
+	var r struct {
+		Tier string `json:"tier"`
+	}
+	if e = c.BodyParser(&r); e != nil || r.Tier == "" {
+		return writeCommunityError(c, fiber.ErrBadRequest)
+	}
+	if e = h.service.UpdateSubscriptionTier(c.Context(), c.Params("id"), r.Tier); e != nil {
+		return writeCommunityError(c, e)
+	}
+	return c.JSON(fiber.Map{"message": "updated"})
+}
+func (h *CommunityHandler) Analytics(c *fiber.Ctx) error {
+	uid, e := userID(c)
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	community, e := h.repo.GetCommunity(c.Context(), c.Params("id"))
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	if community.OwnerID != uid {
+		return writeCommunityError(c, fiber.ErrForbidden)
+	}
+	v, e := h.service.GetCommunityAnalytics(c.Context(), c.Params("id"), c.Query("period", "30d"))
+	if e != nil {
+		return writeCommunityError(c, e)
+	}
+	return c.JSON(v)
+}

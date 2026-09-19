@@ -3,11 +3,12 @@ package service
 import (
 	"context"
 	"fmt"
-	"local/merope/internal/core/events"
-	"local/merope/internal/modules/video/domain"
 	"time"
 
 	"github.com/google/uuid"
+
+	"local/merope/internal/core/events"
+	"local/merope/internal/modules/video/domain"
 )
 
 type videoService struct {
@@ -61,17 +62,17 @@ func (s *videoService) SyncWatchHub(ctx context.Context, hubID, state string, ts
 
 func (s *videoService) StartVideoCall(ctx context.Context, hostID, title, description string, maxParticipants int32) (*domain.VideoCall, error) {
 	call := &domain.VideoCall{
-		ID:            uuid.New().String(),
-		HostID:        hostID,
-		Title:         title,
-		Description:   description,
-		IsPublic:      false,
-		MaxParticipants: maxParticipants,
+		ID:                  uuid.New().String(),
+		HostID:              hostID,
+		Title:               title,
+		Description:         description,
+		IsPublic:            false,
+		MaxParticipants:     maxParticipants,
 		CurrentParticipants: 1, // host counts as participant
-		StartTime:     time.Now(),
-		Status:        "live",
-		Category:      "video_call",
-		Tags:          []string{"video-call"},
+		StartTime:           time.Now(),
+		Status:              "live",
+		Category:            "video_call",
+		Tags:                []string{"video-call"},
 	}
 
 	if err := s.repo.CreateVideoCall(ctx, call); err != nil {
@@ -79,7 +80,7 @@ func (s *videoService) StartVideoCall(ctx context.Context, hostID, title, descri
 	}
 
 	_ = s.bus.Publish(ctx, "video.call.started", events.Event{
-		Type: "VIDEO_CALL_STARTED",
+		Type:    "VIDEO_CALL_STARTED",
 		Payload: call,
 	})
 
@@ -165,7 +166,7 @@ func (s *videoService) EndVideoCall(ctx context.Context, callID, userID string) 
 	}
 
 	_ = s.bus.Publish(ctx, "video.call.ended", events.Event{
-		Type: "VIDEO_CALL_ENDED",
+		Type:    "VIDEO_CALL_ENDED",
 		Payload: call,
 	})
 
@@ -174,17 +175,17 @@ func (s *videoService) EndVideoCall(ctx context.Context, callID, userID string) 
 
 func (s *videoService) ScheduleVideoCall(ctx context.Context, hostID, title, description string, scheduledTime time.Time) (*domain.VideoCall, error) {
 	call := &domain.VideoCall{
-		ID:            uuid.New().String(),
-		HostID:        hostID,
-		Title:         title,
-		Description:   description,
-		IsPublic:      false,
-		MaxParticipants: 10,
+		ID:                  uuid.New().String(),
+		HostID:              hostID,
+		Title:               title,
+		Description:         description,
+		IsPublic:            false,
+		MaxParticipants:     10,
 		CurrentParticipants: 0,
-		StartTime:     scheduledTime,
-		Status:        "scheduled",
-		Category:      "video_call",
-		Tags:          []string{"video-call", "scheduled"},
+		StartTime:           scheduledTime,
+		Status:              "scheduled",
+		Category:            "video_call",
+		Tags:                []string{"video-call", "scheduled"},
 	}
 
 	if err := s.repo.CreateVideoCall(ctx, call); err != nil {
@@ -192,7 +193,7 @@ func (s *videoService) ScheduleVideoCall(ctx context.Context, hostID, title, des
 	}
 
 	_ = s.bus.Publish(ctx, "video.call.scheduled", events.Event{
-		Type: "VIDEO_CALL_SCHEDULED",
+		Type:    "VIDEO_CALL_SCHEDULED",
 		Payload: call,
 	})
 
@@ -209,16 +210,16 @@ func (s *videoService) StartLiveStream(ctx context.Context, userID, title, descr
 	streamKey := fmt.Sprintf("stream_%s_%d", userID, time.Now().Unix())
 
 	session := &domain.StreamSession{
-		ID:         uuid.New().String(),
-		StreamerID: userID,
-		StreamKey:  streamKey,
-		StreamURL:  fmt.Sprintf("rtmp://merope.live/live/%s", streamKey),
-		IsLive:     true,
+		ID:          uuid.New().String(),
+		StreamerID:  userID,
+		StreamKey:   streamKey,
+		StreamURL:   fmt.Sprintf("rtmp://merope.live/live/%s", streamKey),
+		IsLive:      true,
 		ViewerCount: 0,
-		StartTime:  time.Now(),
-		Bandwidth:  0,
-		Resolution: "1080p",
-		FPS:        30,
+		StartTime:   time.Now(),
+		Bandwidth:   0,
+		Resolution:  "1080p",
+		FPS:         30,
 	}
 
 	if err := s.repo.CreateStreamSession(ctx, session); err != nil {
@@ -226,7 +227,7 @@ func (s *videoService) StartLiveStream(ctx context.Context, userID, title, descr
 	}
 
 	_ = s.bus.Publish(ctx, "stream.started", events.Event{
-		Type: "STREAM_STARTED",
+		Type:    "STREAM_STARTED",
 		Payload: session,
 	})
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"sync"
+
 	"local/merope/internal/database/db"
 )
 
@@ -19,7 +20,7 @@ type OrchestratedTask struct {
 	Execute  Task
 }
 
-/// Orchestrator manages multiple worker pools with different priorities (SLAs).
+// / Orchestrator manages multiple worker pools with different priorities (SLAs).
 type Orchestrator struct {
 	realTimePool   *Engine
 	backgroundPool *Engine
@@ -55,12 +56,12 @@ func (o *Orchestrator) Submit(task OrchestratedTask) bool {
 	}
 }
 
-/// SubmitBackground is a convenience method for non-critical tasks like mirroring or analytics
+// / SubmitBackground is a convenience method for non-critical tasks like mirroring or analytics
 func (o *Orchestrator) SubmitBackground(task Task) bool {
 	return o.Submit(OrchestratedTask{Priority: PriorityBackground, Execute: task})
 }
 
-/// SubmitRealTime is a convenience method for critical path tasks
+// / SubmitRealTime is a convenience method for critical path tasks
 func (o *Orchestrator) SubmitRealTime(task Task) bool {
 	return o.Submit(OrchestratedTask{Priority: PriorityRealTime, Execute: task})
 }

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+
 	"local/merope/internal/core/errors"
 	"local/merope/internal/modules/messaging/domain"
 )
@@ -34,7 +35,6 @@ func (h *MessagingContractHandler) requireRoomMember(c *fiber.Ctx, roomID, userI
 	return fiber.ErrForbidden
 }
 
-
 func (h *MessagingContractHandler) GetRooms(c *fiber.Ctx) error {
 	userID, _ := c.Locals("user_id").(string)
 	rooms, err := h.service.GetUserRooms(c.Context(), userID)
@@ -51,9 +51,9 @@ func (h *MessagingContractHandler) GetRooms(c *fiber.Ctx) error {
 		conversations = append(conversations, fiber.Map{
 			"id":                     room.ID,
 			"title":                  room.Name,
-			"other_user_name":       room.Name,
-			"other_user_id":         "",
-			"other_user_avatar":     "",
+			"other_user_name":        room.Name,
+			"other_user_id":          "",
+			"other_user_avatar":      "",
 			"description":            "",
 			"participants":           []string{},
 			"unread_count":           0,
@@ -73,9 +73,10 @@ func (h *MessagingContractHandler) GetHistory(c *fiber.Ctx) error {
 	userID, _ := c.Locals("user_id").(string)
 	if err := h.requireRoomMember(c, roomID, userID); err != nil {
 		status := fiber.StatusInternalServerError
-		if err == fiber.ErrUnauthorized {
+		switch err {
+		case fiber.ErrUnauthorized:
 			status = fiber.StatusUnauthorized
-		} else if err == fiber.ErrForbidden {
+		case fiber.ErrForbidden:
 			status = fiber.StatusForbidden
 		}
 		return c.Status(status).JSON(fiber.Map{"code": errors.GetCode(err), "message": "Unable to access room"})
@@ -125,9 +126,10 @@ func (h *MessagingContractHandler) SendMessage(c *fiber.Ctx) error {
 	}
 	if err := h.requireRoomMember(c, roomID, senderID); err != nil {
 		status := fiber.StatusInternalServerError
-		if err == fiber.ErrUnauthorized {
+		switch err {
+		case fiber.ErrUnauthorized:
 			status = fiber.StatusUnauthorized
-		} else if err == fiber.ErrForbidden {
+		case fiber.ErrForbidden:
 			status = fiber.StatusForbidden
 		}
 		return c.Status(status).JSON(fiber.Map{"code": errors.GetCode(err), "message": "Unable to access room"})
@@ -204,8 +206,8 @@ func serializeMessage(msg *domain.ChatMessage) fiber.Map {
 		"author_name":       msg.SenderName,
 		"author_avatar_url": msg.SenderAvatar,
 		"author_avatar":     msg.SenderAvatar,
-		"content":            msg.Content,
-		"encrypted_payload":  msg.EncryptedPayload,
+		"content":           msg.Content,
+		"encrypted_payload": msg.EncryptedPayload,
 		"type":              msg.MessageType,
 		"message_type":      msg.MessageType,
 		"parent_id":         msg.ParentID,
@@ -222,7 +224,7 @@ func serializeMessage(msg *domain.ChatMessage) fiber.Map {
 		"expires_at":        unixMilliPtr(msg.ExpiresAt),
 		"scheduled_at":      unixMilliPtr(msg.ScheduledAt),
 		"status":            msg.Status,
-		"reactions":        reactions,
+		"reactions":         reactions,
 		"version":           msg.Version,
 		"timestamp":         msg.CreatedAt.UnixMilli(),
 		"created_at":        msg.CreatedAt.UnixMilli(),

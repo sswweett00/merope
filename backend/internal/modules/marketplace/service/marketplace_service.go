@@ -41,11 +41,11 @@ func (s *marketplaceService) ExecutePulsePay(ctx context.Context, fromID, toID s
 		return fmt.Errorf("amount must be positive")
 	}
 	tx := &domain.PulseTransaction{
-		FromID: fromID,
-		ToID: toID,
-		Amount: amount,
+		FromID:  fromID,
+		ToID:    toID,
+		Amount:  amount,
 		RefType: "transfer",
-		Status: "pending",
+		Status:  "pending",
 	}
 	return s.repo.RecordTransaction(ctx, tx)
 }
@@ -99,20 +99,20 @@ func (s *marketplaceService) Purchase(ctx context.Context, buyerID string, produ
 		}
 		total += lineTotal
 		items = append(items, domain.OrderItem{
-			ProductID: pid,
-			ProductName: prod.Name,
-			Quantity: quantities[i],
+			ProductID:       pid,
+			ProductName:     prod.Name,
+			Quantity:        quantities[i],
 			PriceAtPurchase: prod.Price,
-			Subtotal: prod.Price * quantities[i],
+			Subtotal:        prod.Price * quantities[i],
 		})
 	}
 
 	order := &domain.Order{
-		BuyerID: buyerID,
-		TotalAmount: int32(total),
-		Status: "pending",
+		BuyerID:         buyerID,
+		TotalAmount:     int32(total),
+		Status:          "pending",
 		ShippingAddress: domain.ShippingAddress{FullName: buyerID, AddressLine1: address},
-		Items: items,
+		Items:           items,
 	}
 	return order, s.repo.CreateOrder(ctx, order)
 }

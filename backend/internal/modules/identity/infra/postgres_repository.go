@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgtype"
+
 	"local/merope/internal/core/audit"
 	"local/merope/internal/core/util"
 	"local/merope/internal/database/db"
 	"local/merope/internal/modules/identity/domain"
 	"local/merope/internal/platform/redis"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type HybridIdentityRepository struct {

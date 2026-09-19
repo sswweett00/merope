@@ -3,9 +3,9 @@ package transport
 import (
 	"strings"
 
-	"local/merope/internal/modules/ads/domain"
-
 	"github.com/gofiber/fiber/v2"
+
+	"local/merope/internal/modules/ads/domain"
 )
 
 type AdsHandler struct {

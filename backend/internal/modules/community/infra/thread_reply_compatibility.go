@@ -4,20 +4,26 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/jackc/pgx/v5/pgtype"
+
 	"local/merope/internal/core/util"
 	"local/merope/internal/modules/community/domain"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func (r *postgresCommunityRepository) CreateThreadReply(ctx context.Context, reply *domain.ThreadReply) error {
 	var threadID, authorID pgtype.UUID
-	if err := threadID.Scan(reply.ThreadID); err != nil { return fmt.Errorf("invalid thread id: %w", err) }
-	if err := authorID.Scan(reply.AuthorID); err != nil { return fmt.Errorf("invalid author id: %w", err) }
+	if err := threadID.Scan(reply.ThreadID); err != nil {
+		return fmt.Errorf("invalid thread id: %w", err)
+	}
+	if err := authorID.Scan(reply.AuthorID); err != nil {
+		return fmt.Errorf("invalid author id: %w", err)
+	}
 
 	var parentID pgtype.UUID
 	if reply.ParentID != nil && *reply.ParentID != "" {
-		if err := parentID.Scan(*reply.ParentID); err != nil { return fmt.Errorf("invalid parent id: %w", err) }
+		if err := parentID.Scan(*reply.ParentID); err != nil {
+			return fmt.Errorf("invalid parent id: %w", err)
+		}
 	}
 
 	row := r.queries.QueryRow(ctx, `
@@ -29,7 +35,9 @@ RETURNING id, created_at, updated_at`,
 
 	var id pgtype.UUID
 	var createdAt, updatedAt pgtype.Timestamptz
-	if err := row.Scan(&id, &createdAt, &updatedAt); err != nil { return err }
+	if err := row.Scan(&id, &createdAt, &updatedAt); err != nil {
+		return err
+	}
 	reply.ID = util.UUIDToString(id)
 	reply.CreatedAt = createdAt.Time
 	reply.UpdatedAt = updatedAt.Time

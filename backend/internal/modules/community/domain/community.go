@@ -54,20 +54,20 @@ type CommunityStats struct {
 }
 
 type CommunityMember struct {
-	ID            string            `json:"id"`
-	CommunityID   string            `json:"communityId"`
-	UserID        string            `json:"userId"`
-	Username      string            `json:"username"`
-	AvatarURL     *string           `json:"avatarUrl,omitempty"`
-	Role          string            `json:"role"`
-	JoinedAt      time.Time         `json:"joinedAt"`
-	IsActive      bool              `json:"isActive"`
-	LastActiveAt  time.Time         `json:"lastActiveAt"`
-	PostCount     int32             `json:"postCount"`
-	CommentCount  int32             `json:"commentCount"`
-	Reputation    int32             `json:"reputation"`
-	Badges        []string          `json:"badges"`
-	Preferences   MemberPreferences `json:"preferences"`
+	ID           string            `json:"id"`
+	CommunityID  string            `json:"communityId"`
+	UserID       string            `json:"userId"`
+	Username     string            `json:"username"`
+	AvatarURL    *string           `json:"avatarUrl,omitempty"`
+	Role         string            `json:"role"`
+	JoinedAt     time.Time         `json:"joinedAt"`
+	IsActive     bool              `json:"isActive"`
+	LastActiveAt time.Time         `json:"lastActiveAt"`
+	PostCount    int32             `json:"postCount"`
+	CommentCount int32             `json:"commentCount"`
+	Reputation   int32             `json:"reputation"`
+	Badges       []string          `json:"badges"`
+	Preferences  MemberPreferences `json:"preferences"`
 }
 
 type MemberPreferences struct {
@@ -155,17 +155,17 @@ type Thread struct {
 }
 
 type ThreadReply struct {
-	ID          string    `json:"id"`
-	ThreadID    string    `json:"threadId"`
-	AuthorID    string    `json:"authorId"`
-	AuthorName  string    `json:"authorName"`
+	ID           string    `json:"id"`
+	ThreadID     string    `json:"threadId"`
+	AuthorID     string    `json:"authorId"`
+	AuthorName   string    `json:"authorName"`
 	AuthorAvatar *string   `json:"authorAvatar,omitempty"`
-	Content     string    `json:"content"`
-	Resonance   int       `json:"resonance"`
-	CreatedAt   time.Time `json:"createdAt"`
-	UpdatedAt   time.Time `json:"updatedAt"`
-	IsEdited    bool      `json:"isEdited"`
-	ParentID    *string   `json:"parentId,omitempty"`
+	Content      string    `json:"content"`
+	Resonance    int       `json:"resonance"`
+	CreatedAt    time.Time `json:"createdAt"`
+	UpdatedAt    time.Time `json:"updatedAt"`
+	IsEdited     bool      `json:"isEdited"`
+	ParentID     *string   `json:"parentId,omitempty"`
 }
 
 type CommunityRepository interface {
@@ -232,20 +232,80 @@ type CommunityRepository interface {
 }
 
 type Ticket struct {
-	ID string `json:"id"`; EventID string `json:"eventId"`; UserID string `json:"userId"`; TicketCode string `json:"ticketCode"`; Status string `json:"status"`; PurchasedAt time.Time `json:"purchasedAt"`; UsedAt *time.Time `json:"usedAt,omitempty"`; ExpiresAt *time.Time `json:"expiresAt,omitempty"`; Metadata map[string]interface{} `json:"metadata"`
+	ID          string                 `json:"id"`
+	EventID     string                 `json:"eventId"`
+	UserID      string                 `json:"userId"`
+	TicketCode  string                 `json:"ticketCode"`
+	Status      string                 `json:"status"`
+	PurchasedAt time.Time              `json:"purchasedAt"`
+	UsedAt      *time.Time             `json:"usedAt,omitempty"`
+	ExpiresAt   *time.Time             `json:"expiresAt,omitempty"`
+	Metadata    map[string]interface{} `json:"metadata"`
 }
 
 type Subscription struct {
-	ID string `json:"id"`; CreatorID string `json:"creatorId"`; SubscriberID string `json:"subscriberId"`; Tier string `json:"tier"`; Amount float64 `json:"amount"`; Currency string `json:"currency"`; Status string `json:"status"`; StartedAt time.Time `json:"startedAt"`; ExpiresAt time.Time `json:"expiresAt"`; AutoRenew bool `json:"autoRenew"`; Benefits []string `json:"benefits"`
+	ID           string    `json:"id"`
+	CreatorID    string    `json:"creatorId"`
+	SubscriberID string    `json:"subscriberId"`
+	Tier         string    `json:"tier"`
+	Amount       float64   `json:"amount"`
+	Currency     string    `json:"currency"`
+	Status       string    `json:"status"`
+	StartedAt    time.Time `json:"startedAt"`
+	ExpiresAt    time.Time `json:"expiresAt"`
+	AutoRenew    bool      `json:"autoRenew"`
+	Benefits     []string  `json:"benefits"`
 }
 
-type ContentReport struct { ID string `json:"id"`; ReporterID string `json:"reporterId"`; ContentType string `json:"contentType"`; ContentID string `json:"contentId"`; Reason string `json:"reason"`; Description string `json:"description"`; Status string `json:"status"`; CreatedAt time.Time `json:"createdAt"`; ResolvedAt *time.Time `json:"resolvedAt,omitempty"`; ResolvedBy *string `json:"resolvedBy,omitempty"`; Resolution string `json:"resolution"` }
+type ContentReport struct {
+	ID          string     `json:"id"`
+	ReporterID  string     `json:"reporterId"`
+	ContentType string     `json:"contentType"`
+	ContentID   string     `json:"contentId"`
+	Reason      string     `json:"reason"`
+	Description string     `json:"description"`
+	Status      string     `json:"status"`
+	CreatedAt   time.Time  `json:"createdAt"`
+	ResolvedAt  *time.Time `json:"resolvedAt,omitempty"`
+	ResolvedBy  *string    `json:"resolvedBy,omitempty"`
+	Resolution  string     `json:"resolution"`
+}
 
-type Guideline struct { ID string `json:"id"`; CommunityID string `json:"communityId"`; Title string `json:"title"`; Description string `json:"description"`; Order int `json:"order"`; IsActive bool `json:"isActive"`; CreatedAt time.Time `json:"createdAt"` }
+type Guideline struct {
+	ID          string    `json:"id"`
+	CommunityID string    `json:"communityId"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	Order       int       `json:"order"`
+	IsActive    bool      `json:"isActive"`
+	CreatedAt   time.Time `json:"createdAt"`
+}
 
-type CommunityAnalytics struct { CommunityID string `json:"communityId"`; Period string `json:"period"`; MemberCount int32 `json:"memberCount"`; NewMembers int32 `json:"newMembers"`; ActiveMembers int32 `json:"activeMembers"`; PostCount int32 `json:"postCount"`; CommentCount int32 `json:"commentCount"`; EventCount int32 `json:"eventCount"`; EngagementRate float64 `json:"engagementRate"`; AvgSessionTime float64 `json:"avgSessionTime"`; TopContent []string `json:"topContent"` }
+type CommunityAnalytics struct {
+	CommunityID    string   `json:"communityId"`
+	Period         string   `json:"period"`
+	MemberCount    int32    `json:"memberCount"`
+	NewMembers     int32    `json:"newMembers"`
+	ActiveMembers  int32    `json:"activeMembers"`
+	PostCount      int32    `json:"postCount"`
+	CommentCount   int32    `json:"commentCount"`
+	EventCount     int32    `json:"eventCount"`
+	EngagementRate float64  `json:"engagementRate"`
+	AvgSessionTime float64  `json:"avgSessionTime"`
+	TopContent     []string `json:"topContent"`
+}
 
-type MemberActivity struct { UserID string `json:"userId"`; CommunityID string `json:"communityId"`; Period string `json:"period"`; PostsCreated int32 `json:"postsCreated"`; CommentsMade int32 `json:"commentsMade"`; EventsAttended int32 `json:"eventsAttended"`; ReactionsGiven int32 `json:"reactionsGiven"`; TimeSpent int32 `json:"timeSpent"`; LastActiveAt time.Time `json:"lastActiveAt"` }
+type MemberActivity struct {
+	UserID         string    `json:"userId"`
+	CommunityID    string    `json:"communityId"`
+	Period         string    `json:"period"`
+	PostsCreated   int32     `json:"postsCreated"`
+	CommentsMade   int32     `json:"commentsMade"`
+	EventsAttended int32     `json:"eventsAttended"`
+	ReactionsGiven int32     `json:"reactionsGiven"`
+	TimeSpent      int32     `json:"timeSpent"`
+	LastActiveAt   time.Time `json:"lastActiveAt"`
+}
 
 type CommunityService interface {
 	CreateGroup(context.Context, string, string, string, bool) (*Community, error)

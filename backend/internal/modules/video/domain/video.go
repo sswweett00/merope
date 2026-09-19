@@ -67,18 +67,18 @@ type VideoCall struct {
 }
 
 type StreamSession struct {
-	ID           string
-	VideoID      string
-	StreamerID   string
-	StreamKey    string
-	StreamURL    string
-	IsLive       bool
-	ViewerCount  int32
-	StartTime    time.Time
-	EndTime      *time.Time
-	Bandwidth    int32
-	Resolution   string
-	FPS          int32
+	ID          string
+	VideoID     string
+	StreamerID  string
+	StreamKey   string
+	StreamURL   string
+	IsLive      bool
+	ViewerCount int32
+	StartTime   time.Time
+	EndTime     *time.Time
+	Bandwidth   int32
+	Resolution  string
+	FPS         int32
 }
 
 type VideoRepository interface {

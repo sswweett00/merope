@@ -9,15 +9,15 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
+
 	"local/merope/internal/core/events"
 	"local/merope/internal/core/observability"
 	"local/merope/internal/modules/ai/domain"
 	"local/merope/internal/platform/nats"
 	"local/merope/internal/platform/redis"
-
-	"github.com/google/uuid"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
 )
 
 type aiService struct {

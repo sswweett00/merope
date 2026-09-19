@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/redis/go-redis/v9"
+
 	"local/merope/internal/core/util"
 )
 
@@ -47,9 +48,10 @@ func (rl *RedisRateLimiter) RateLimit(keyPrefix string) fiber.Handler {
 		userID, _ := c.Locals("user_id").(string)
 		role, _ := c.Locals("role").(string)
 		limit := rl.maxRequests
-		if role == "verified" {
+		switch role {
+		case "verified":
 			limit *= 5
-		} else if role == "admin" {
+		case "admin":
 			limit *= 2
 		}
 

@@ -2,10 +2,12 @@ package service
 
 import (
 	"context"
-	"local/merope/internal/modules/ads/domain"
-	"time"
 	"strings"
+	"time"
+
 	"github.com/google/uuid"
+
+	"local/merope/internal/modules/ads/domain"
 )
 
 type adsService struct {

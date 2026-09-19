@@ -16,7 +16,7 @@ func (w *ScheduledWorkers) notificationDispatch(ctx context.Context, interval ti
 			return
 		case <-ticker.C:
 			_ = w.bus.Publish(ctx, "notifications.dispatch.tick", events.Event{
-				Type: "NOTIFICATION_DISPATCH_TICK",
+				Type:    "NOTIFICATION_DISPATCH_TICK",
 				Payload: map[string]interface{}{"triggered_at": time.Now().Unix()},
 			})
 		}

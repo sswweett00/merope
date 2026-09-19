@@ -8,23 +8,24 @@ import (
 	"time"
 
 	"github.com/gofiber/contrib/websocket"
+
 	"local/merope/internal/core/events"
 )
 
 const (
-	ShardCount         = 32
-	maxWSMessageSize   = 64 * 1024
-	maxWSTypeLength    = 64
-	maxWSTargetLength  = 128
-	wsReadTimeout      = 2 * time.Minute
-	wsWriteTimeout     = 10 * time.Second
-	wsPingInterval     = 45 * time.Second
-	wsPublishTimeout   = 5 * time.Second
+	ShardCount        = 32
+	maxWSMessageSize  = 64 * 1024
+	maxWSTypeLength   = 64
+	maxWSTargetLength = 128
+	wsReadTimeout     = 2 * time.Minute
+	wsWriteTimeout    = 10 * time.Second
+	wsPingInterval    = 45 * time.Second
+	wsPublishTimeout  = 5 * time.Second
 )
 
 type Client struct {
-	UserID string
-	Conn   *websocket.Conn
+	UserID  string
+	Conn    *websocket.Conn
 	writeMu sync.Mutex
 }
 
@@ -218,7 +219,7 @@ func (h *Hub) Broadcast(userID string, payload interface{}) {
 	}
 }
 
-func (h *Hub) Register() chan<- *Client { return h.register }
+func (h *Hub) Register() chan<- *Client   { return h.register }
 func (h *Hub) Unregister() chan<- *Client { return h.unregister }
 
 func (h *Hub) Stop() {

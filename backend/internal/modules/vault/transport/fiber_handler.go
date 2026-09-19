@@ -1,9 +1,9 @@
 package transport
 
 import (
-	"local/merope/internal/modules/vault/domain"
-
 	"github.com/gofiber/fiber/v2"
+
+	"local/merope/internal/modules/vault/domain"
 )
 
 type VaultHandler struct {
@@ -33,8 +33,8 @@ func (h *VaultHandler) StoreItem(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"item":     item,
-		"item_id":  item.ID,
+		"item":      item,
+		"item_id":   item.ID,
 		"item_type": item.ItemType,
 	})
 }

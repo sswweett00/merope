@@ -1,10 +1,10 @@
 package transport
 
 import (
-	"local/merope/internal/modules/lumia/domain"
-	"local/merope/internal/core/errors"
-
 	"github.com/gofiber/fiber/v2"
+
+	"local/merope/internal/core/errors"
+	"local/merope/internal/modules/lumia/domain"
 )
 
 type LumiaHandler struct {

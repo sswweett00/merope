@@ -1,9 +1,9 @@
 package transport
 
 import (
-	"local/merope/internal/modules/talent/domain"
-
 	"github.com/gofiber/fiber/v2"
+
+	"local/merope/internal/modules/talent/domain"
 )
 
 type TalentHandler struct {
@@ -34,9 +34,9 @@ func (h *TalentHandler) PostJob(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"job":      job,
-		"job_id":   job.ID,
-		"title":    job.Title,
+		"job":    job,
+		"job_id": job.ID,
+		"title":  job.Title,
 	})
 }
 
@@ -59,7 +59,7 @@ func (h *TalentHandler) ApplyToJob(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"application": app,
+		"application":    app,
 		"application_id": app.ID,
 	})
 }

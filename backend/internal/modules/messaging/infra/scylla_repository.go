@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"time"
 
-	"local/merope/internal/platform/scylla"
-	"local/merope/internal/modules/messaging/domain"
-
 	"github.com/gocql/gocql"
 	"github.com/google/uuid"
+
+	"local/merope/internal/modules/messaging/domain"
+	"local/merope/internal/platform/scylla"
 )
 
 type ScyllaMessagingRepository struct {
@@ -155,24 +155,24 @@ func (r *ScyllaMessagingRepository) GetMessages(ctx context.Context, roomID stri
 		}
 
 		messages = append(messages, &domain.ChatMessage{
-			ID:          messageID.String(),
-			RoomID:      roomID,
-			SenderID:    senderID.String(),
-			SenderName:  senderName,
-			SenderAvatar: senderAvatar,
-			ParentID:    pid,
-			Content:     content,
+			ID:               messageID.String(),
+			RoomID:           roomID,
+			SenderID:         senderID.String(),
+			SenderName:       senderName,
+			SenderAvatar:     senderAvatar,
+			ParentID:         pid,
+			Content:          content,
 			EncryptedPayload: encPayload,
-			MessageType: msgType,
-			VoiceURL:    voiceURL,
-			FileURL:     fileURL,
-			IsEdited:    isEdited,
-			IsPinned:    isPinned,
-			IsEncrypted: isEncrypted,
-			Reactions:   reactions,
-			Version:     int32(version),
-			CreatedAt:   time.UnixMilli(createdAt),
-			UpdatedAt:   time.UnixMilli(createdAt),
+			MessageType:      msgType,
+			VoiceURL:         voiceURL,
+			FileURL:          fileURL,
+			IsEdited:         isEdited,
+			IsPinned:         isPinned,
+			IsEncrypted:      isEncrypted,
+			Reactions:        reactions,
+			Version:          int32(version),
+			CreatedAt:        time.UnixMilli(createdAt),
+			UpdatedAt:        time.UnixMilli(createdAt),
 		})
 	}
 
@@ -320,13 +320,13 @@ func (r *ScyllaMessagingRepository) getMessageByID(ctx context.Context, messageI
 	}
 
 	var (
-		roomID, senderID uuid.UUID
+		roomID, senderID                                                                uuid.UUID
 		senderName, senderAvatar, content, msgType, voiceURL, fileURL, encryptedPayload string
-		isEdited, isPinned, isEncrypted bool
-		parentID uuid.UUID
-		reactions map[string][]string
-		version int
-		createdAt, updatedAt int64
+		isEdited, isPinned, isEncrypted                                                 bool
+		parentID                                                                        uuid.UUID
+		reactions                                                                       map[string][]string
+		version                                                                         int
+		createdAt, updatedAt                                                            int64
 	)
 
 	err = r.client.Session.Query(
@@ -358,24 +358,24 @@ func (r *ScyllaMessagingRepository) getMessageByID(ctx context.Context, messageI
 	}
 
 	return &domain.ChatMessage{
-		ID:          messageID,
-		RoomID:      roomID.String(),
-		SenderID:    senderID.String(),
-		SenderName:  senderName,
-		SenderAvatar: senderAvatar,
-		ParentID:    pid,
-		Content:     content,
+		ID:               messageID,
+		RoomID:           roomID.String(),
+		SenderID:         senderID.String(),
+		SenderName:       senderName,
+		SenderAvatar:     senderAvatar,
+		ParentID:         pid,
+		Content:          content,
 		EncryptedPayload: encPayload,
-		MessageType: msgType,
-		VoiceURL:    voiceURL,
-		FileURL:     fileURL,
-		IsEdited:    isEdited,
-		IsPinned:    isPinned,
-		IsEncrypted: isEncrypted,
-		Reactions:   reactions,
-		Version:     int32(version),
-		CreatedAt:   time.UnixMilli(createdAt),
-		UpdatedAt:   time.UnixMilli(updatedAt),
+		MessageType:      msgType,
+		VoiceURL:         voiceURL,
+		FileURL:          fileURL,
+		IsEdited:         isEdited,
+		IsPinned:         isPinned,
+		IsEncrypted:      isEncrypted,
+		Reactions:        reactions,
+		Version:          int32(version),
+		CreatedAt:        time.UnixMilli(createdAt),
+		UpdatedAt:        time.UnixMilli(updatedAt),
 	}, nil
 }
 

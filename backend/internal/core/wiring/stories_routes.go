@@ -5,14 +5,15 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
+
 	"local/merope/internal/core/config"
 	coreMiddleware "local/merope/internal/core/middleware"
 	"local/merope/internal/core/security"
 	"local/merope/internal/database/db"
-	"local/merope/internal/platform/redis"
 	storiesInfra "local/merope/internal/modules/stories/infra"
 	storiesService "local/merope/internal/modules/stories/service"
 	storiesTransport "local/merope/internal/modules/stories/transport"
+	"local/merope/internal/platform/redis"
 )
 
 // RegisterStoriesRoutes attaches the server-authoritative stories API with the

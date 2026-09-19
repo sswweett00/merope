@@ -2,12 +2,13 @@ package service
 
 import (
 	"context"
+
 	"local/merope/internal/modules/search/domain"
 )
 
 type searchService struct {
-	repo    domain.SearchRepository
-	esRepo  domain.ElasticsearchRepository
+	repo   domain.SearchRepository
+	esRepo domain.ElasticsearchRepository
 }
 
 func NewSearchService(repo domain.SearchRepository, esRepo domain.ElasticsearchRepository) domain.SearchService {

@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
+
 	"local/merope/internal/modules/notifications/domain"
 )
 

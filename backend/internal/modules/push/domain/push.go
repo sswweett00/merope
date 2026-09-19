@@ -5,16 +5,16 @@ import (
 )
 
 type PushToken struct {
-	ID          string
-	UserID      string
-	Token       string
-	TokenPlain  string
-	Platform    string
-	DeviceID    string
-	AppVersion  string
-	IsActive    bool
-	LastUsedAt  string
-	CreatedAt   string
+	ID         string
+	UserID     string
+	Token      string
+	TokenPlain string
+	Platform   string
+	DeviceID   string
+	AppVersion string
+	IsActive   bool
+	LastUsedAt string
+	CreatedAt  string
 }
 
 type PushNotification struct {

@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"time"
 
-	"local/merope/internal/platform/scylla"
-	"local/merope/internal/modules/social/domain"
-	identityDomain "local/merope/internal/modules/identity/domain"
-	contentDomain "local/merope/internal/modules/content/domain"
-
 	"github.com/google/uuid"
+
+	contentDomain "local/merope/internal/modules/content/domain"
+	identityDomain "local/merope/internal/modules/identity/domain"
+	"local/merope/internal/modules/social/domain"
+	"local/merope/internal/platform/scylla"
 )
 
 type ScyllaSocialRepository struct {
@@ -164,17 +164,17 @@ func (r *ScyllaSocialRepository) GetUserTimeline(ctx context.Context, userID str
 
 	for q.Scan(&signalID, &authorID, &authorName, &authorAvatar, &contentText, &mediaURLs, &visibility, &resonanceScore, &waveAmp, &isPinned, &createdAt) {
 		signals = append(signals, &contentDomain.Signal{
-			ID:              signalID.String(),
-			AuthorID:        authorID.String(),
-			AuthorName:      authorName,
-			AuthorAvatar:    authorAvatar,
-			ContentText:     contentText,
-			MediaURLs:       sliceOrDefault(mediaURLs),
-			Visibility:      visibility,
-			ResonanceScore:  resonanceScore,
-			WaveAmplitude:   waveAmp,
-			IsPinned:        isPinned,
-			CreatedAt:       time.UnixMilli(createdAt),
+			ID:             signalID.String(),
+			AuthorID:       authorID.String(),
+			AuthorName:     authorName,
+			AuthorAvatar:   authorAvatar,
+			ContentText:    contentText,
+			MediaURLs:      sliceOrDefault(mediaURLs),
+			Visibility:     visibility,
+			ResonanceScore: resonanceScore,
+			WaveAmplitude:  waveAmp,
+			IsPinned:       isPinned,
+			CreatedAt:      time.UnixMilli(createdAt),
 		})
 	}
 

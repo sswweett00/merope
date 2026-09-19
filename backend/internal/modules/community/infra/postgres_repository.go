@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
+
 	"local/merope/internal/core/util"
 	"local/merope/internal/database/db"
 	"local/merope/internal/modules/community/domain"
@@ -89,7 +90,6 @@ func (r *postgresCommunityRepository) JoinCommunity(ctx context.Context, commID,
 		Role:        role,
 	})
 }
-
 
 func (r *postgresCommunityRepository) UpdateEvent(ctx context.Context, eventID string, event *domain.Event) error {
 	id, err := parseUUID(eventID)

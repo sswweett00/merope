@@ -20,12 +20,12 @@ type APNSClient struct {
 
 type APNSMessage struct {
 	Aps struct {
-		Alert        string `json:"alert,omitempty"`
-		Sound        string `json:"sound,omitempty"`
-		Badge        int    `json:"badge,omitempty"`
-		Category     string `json:"category,omitempty"`
-		ThreadID     string `json:"thread-id,omitempty"`
-		ContentAvailable int `json:"content-available,omitempty"`
+		Alert            string `json:"alert,omitempty"`
+		Sound            string `json:"sound,omitempty"`
+		Badge            int    `json:"badge,omitempty"`
+		Category         string `json:"category,omitempty"`
+		ThreadID         string `json:"thread-id,omitempty"`
+		ContentAvailable int    `json:"content-available,omitempty"`
 	} `json:"aps"`
 	CustomData map[string]string `json:"custom_data,omitempty"`
 }

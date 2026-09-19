@@ -51,4 +51,3 @@ WHERE community_id = $1 AND user_id = $2`, cid, uid, role)
 	}
 	return nil
 }
-

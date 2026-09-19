@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/jackc/pgx/v5/pgtype"
+
 	"local/merope/internal/core/util"
 	"local/merope/internal/modules/content/domain"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func (r *PostgresContentRepository) DeleteNode(ctx context.Context, nodeID string) error {

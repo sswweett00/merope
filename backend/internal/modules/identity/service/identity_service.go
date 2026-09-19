@@ -6,12 +6,12 @@ import (
 	"strings"
 	"time"
 
-	"local/merope/internal/core/security"
-	"local/merope/internal/modules/identity/domain"
-
 	"github.com/nbutton23/zxcvbn-go"
 	"github.com/pquerna/otp/totp"
 	"golang.org/x/crypto/bcrypt"
+
+	"local/merope/internal/core/security"
+	"local/merope/internal/modules/identity/domain"
 )
 
 type refreshTokenRotator interface {

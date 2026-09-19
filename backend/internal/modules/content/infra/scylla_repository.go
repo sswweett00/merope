@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"time"
 
-	"local/merope/internal/platform/scylla"
-	"local/merope/internal/modules/content/domain"
-
 	"github.com/google/uuid"
+
+	"local/merope/internal/modules/content/domain"
+	"local/merope/internal/platform/scylla"
 )
 
 type ScyllaContentRepository struct {
@@ -84,11 +84,11 @@ func (r *ScyllaContentRepository) CreateNode(ctx context.Context, signalID, auth
 	}
 
 	return &domain.Node{
-		ID:       nodeID.String(),
-		SignalID: signalID,
-		AuthorID: authorID,
-		ParentID: parentID,
-		Content:  content,
+		ID:        nodeID.String(),
+		SignalID:  signalID,
+		AuthorID:  authorID,
+		ParentID:  parentID,
+		Content:   content,
 		CreatedAt: time.UnixMilli(now),
 	}, nil
 }
@@ -120,11 +120,11 @@ func (r *ScyllaContentRepository) GetNodesForSignal(ctx context.Context, signalI
 			pid = &s
 		}
 		nodes = append(nodes, &domain.Node{
-			ID:       nodeID.String(),
-			SignalID: sid.String(),
-			AuthorID: authorID.String(),
-			ParentID: pid,
-			Content:  content,
+			ID:        nodeID.String(),
+			SignalID:  sid.String(),
+			AuthorID:  authorID.String(),
+			ParentID:  pid,
+			Content:   content,
 			CreatedAt: time.UnixMilli(createdAt),
 		})
 	}

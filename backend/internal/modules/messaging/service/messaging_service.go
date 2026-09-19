@@ -156,12 +156,12 @@ func (s *messagingService) ForwardMessage(ctx context.Context, messageID, fromUs
 	}
 
 	forwarded := &domain.ChatMessage{
-		RoomID:         toRoomID,
-		SenderID:       fromUserID,
-		Content:        original.Content,
-		MessageType:    original.MessageType,
-		VoiceURL:       original.VoiceURL,
-		FileURL:        original.FileURL,
+		RoomID:          toRoomID,
+		SenderID:        fromUserID,
+		Content:         original.Content,
+		MessageType:     original.MessageType,
+		VoiceURL:        original.VoiceURL,
+		FileURL:         original.FileURL,
 		ForwardedFromID: &original.ID,
 	}
 	return s.repo.SendMessage(ctx, forwarded)

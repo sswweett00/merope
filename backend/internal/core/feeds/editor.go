@@ -7,11 +7,11 @@ import (
 	"sort"
 	"time"
 
-	"local/merope/internal/core/observability"
-	"local/merope/internal/core/util"
-
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
+
+	"local/merope/internal/core/observability"
+	"local/merope/internal/core/util"
 )
 
 type FeedItem struct {

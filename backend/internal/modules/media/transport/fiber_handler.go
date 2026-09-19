@@ -1,9 +1,9 @@
 package transport
 
 import (
-	"local/merope/internal/modules/media/domain"
-
 	"github.com/gofiber/fiber/v2"
+
+	"local/merope/internal/modules/media/domain"
 )
 
 type MediaHandler struct {

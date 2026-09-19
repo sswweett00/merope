@@ -4,8 +4,9 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgxpool"
+
 	"local/merope/internal/core/errors"
 	"local/merope/internal/core/util"
 	"local/merope/internal/modules/messaging/domain"
@@ -70,17 +71,17 @@ func (h *UnreadHandler) Get(c *fiber.Ctx) error {
 		}
 
 		msg := &domain.ChatMessage{
-			ID:                util.UUIDToString(id),
-			RoomID:            util.UUIDToString(room),
-			SenderID:          util.UUIDToString(author),
-			SenderName:        username,
-			SenderAvatar:      avatar,
-			Content:           content,
-			MessageType:       messageType,
-			IsEncrypted:       isEncrypted,
-			IsBurnOnRead:      burnOnRead,
-			CreatedAt:         createdAt.Time,
-			UpdatedAt:         updatedAt.Time,
+			ID:           util.UUIDToString(id),
+			RoomID:       util.UUIDToString(room),
+			SenderID:     util.UUIDToString(author),
+			SenderName:   username,
+			SenderAvatar: avatar,
+			Content:      content,
+			MessageType:  messageType,
+			IsEncrypted:  isEncrypted,
+			IsBurnOnRead: burnOnRead,
+			CreatedAt:    createdAt.Time,
+			UpdatedAt:    updatedAt.Time,
 		}
 		if encryptedPayload.Valid {
 			value := encryptedPayload.String

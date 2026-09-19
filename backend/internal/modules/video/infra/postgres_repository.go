@@ -2,11 +2,12 @@ package infra
 
 import (
 	"context"
-	"local/merope/internal/database/db"
-	"local/merope/internal/modules/video/domain"
 	"encoding/json"
 
 	"github.com/jackc/pgx/v5/pgtype"
+
+	"local/merope/internal/database/db"
+	"local/merope/internal/modules/video/domain"
 )
 
 type PostgresVideoRepository struct {

@@ -7,7 +7,9 @@ import (
 )
 
 func (s *HighPerformanceMessagingService) UpdateFlowState(ctx context.Context, state *domain.FlowState) error {
-	if state == nil { return nil }
+	if state == nil {
+		return nil
+	}
 	return nil
 }
 

@@ -6,7 +6,7 @@ import (
 	"sync"
 )
 
-/// MerkleAuditTree V9 - Nirvana Layer (Verifiable Privacy Proofs).
+// / MerkleAuditTree V9 - Nirvana Layer (Verifiable Privacy Proofs).
 type MerkleAuditTree struct {
 	mu     sync.RWMutex
 	leaves [][]byte
@@ -18,8 +18,8 @@ func NewMerkleAuditTree() *MerkleAuditTree {
 	}
 }
 
-/// Mechanic: Proof-of-Privacy.
-/// Appends a privacy-related event (e.g. Identity Rotation) to the Merkle tree.
+// / Mechanic: Proof-of-Privacy.
+// / Appends a privacy-related event (e.g. Identity Rotation) to the Merkle tree.
 func (t *MerkleAuditTree) AppendPrivacyAction(action string, userID string) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
@@ -29,7 +29,7 @@ func (t *MerkleAuditTree) AppendPrivacyAction(action string, userID string) {
 	t.leaves = append(t.leaves, hash[:])
 }
 
-/// Generates a root hash that represents the immutable history of privacy actions.
+// / Generates a root hash that represents the immutable history of privacy actions.
 func (t *MerkleAuditTree) GetRootHash() [32]byte {
 	t.mu.RLock()
 	defer t.mu.RUnlock()
@@ -52,7 +52,7 @@ func (t *MerkleAuditTree) GetRootHash() [32]byte {
 	return result
 }
 
-/// Provides an Inclusion Proof for a specific user to verify their action was audited.
+// / Provides an Inclusion Proof for a specific user to verify their action was audited.
 func (t *MerkleAuditTree) RequestInclusionProof(userID string) []byte {
 	// Returns the cryptographic proof that the user's action exists in the tree
 	// without revealing other users' data.

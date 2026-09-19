@@ -54,11 +54,11 @@ type MessageHistory struct {
 }
 
 type FlowState struct {
-	UserID    string
-	DeviceID  string
-	RoomID    string
-	Draft     string
-	ActiveAt  time.Time
+	UserID   string
+	DeviceID string
+	RoomID   string
+	Draft    string
+	ActiveAt time.Time
 }
 
 type ChatFolder struct {
@@ -70,12 +70,12 @@ type ChatFolder struct {
 }
 
 type E2EEKeyRotation struct {
-	ID         string
-	RoomID     string
-	UserID     string
+	ID          string
+	RoomID      string
+	UserID      string
 	PublicKeyID string
-	DeviceID   string
-	RotatedAt  time.Time
+	DeviceID    string
+	RotatedAt   time.Time
 }
 
 type MessagingRepository interface {

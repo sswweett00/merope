@@ -33,36 +33,36 @@ type SupplyService interface {
 }
 
 type ServeAdResponse struct {
-	CreativeID    string
-	MediaURL      string
-	ContentText   string
-	CTAText       string
-	LandingURL    string
-	ImpressionID  string
+	CreativeID     string
+	MediaURL       string
+	ContentText    string
+	CTAText        string
+	LandingURL     string
+	ImpressionID   string
 	TrackingPixels []string
 }
 
 type CampaignAnalytics struct {
-	CampaignID   string
-	Impressions  int32
-	Clicks       int32
-	Conversions  int32
-	Spend        int32
-	CTR          float64
-	CPC          float64
-	CPA          float64
-	RoAS         float64
+	CampaignID  string
+	Impressions int32
+	Clicks      int32
+	Conversions int32
+	Spend       int32
+	CTR         float64
+	CPC         float64
+	CPA         float64
+	RoAS        float64
 }
 
 type AdGroupAnalytics struct {
-	AdGroupID    string
-	Impressions  int32
-	Clicks       int32
-	Conversions  int32
-	Spend        int32
-	CTR          float64
-	CPC          float64
-	CPA          float64
+	AdGroupID   string
+	Impressions int32
+	Clicks      int32
+	Conversions int32
+	Spend       int32
+	CTR         float64
+	CPC         float64
+	CPA         float64
 }
 
 type EarningsReport struct {
@@ -70,6 +70,6 @@ type EarningsReport struct {
 	Impressions        int32
 	Revenue            int32
 	FillRate           float64
-	ECPM              float32
+	ECPM               float32
 	Payouts            []*Payout
 }

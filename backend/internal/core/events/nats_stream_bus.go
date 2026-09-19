@@ -46,9 +46,9 @@ func (b *NatsStreamBus) Publish(ctx context.Context, subject string, event Event
 
 func (b *NatsStreamBus) CreateStream(ctx context.Context, name string, subjects []string) error {
 	_, err := b.js.CreateStream(ctx, jetstream.StreamConfig{
-		Name:     name,
-		Subjects: subjects,
-		Storage:  jetstream.FileStorage,
+		Name:      name,
+		Subjects:  subjects,
+		Storage:   jetstream.FileStorage,
 		Retention: jetstream.LimitsPolicy,
 	})
 	return err

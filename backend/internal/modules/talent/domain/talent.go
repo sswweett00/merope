@@ -29,13 +29,13 @@ type JobApplication struct {
 }
 
 type ProfessionalProfile struct {
-	UserID       string
-	Headline     string
-	About        string
-	Pathways     []Experience
-	Vibrations   []string // Skills
+	UserID         string
+	Headline       string
+	About          string
+	Pathways       []Experience
+	Vibrations     []string // Skills
 	Amplifications []string // Certifications
-	UpdatedAt    time.Time
+	UpdatedAt      time.Time
 }
 
 type Experience struct {

@@ -6,51 +6,51 @@ import (
 )
 
 type Signal struct {
-	ID              string         `json:"id"`
-	AuthorID        string         `json:"author_id"`
-	AuthorName      string         `json:"author_username"` // Flutter expects author_username
-	AuthorAvatar    string         `json:"author_avatar_url"` // Flutter expects author_avatar_url
-	ContentText     string         `json:"content_text"`
-	MediaURLs       []string       `json:"media_urls"`
-	Visibility      string         `json:"visibility"`
-	IsPinned        bool           `json:"is_pinned"`
-	IsArchived      bool           `json:"is_archived"`
-	IsDraft         bool           `json:"is_draft"`
-	LocationName    string         `json:"location_name"`
-	Latitude        *float64       `json:"latitude"`
-	Longitude       *float64       `json:"longitude"`
-	ContentWarning  string         `json:"content_warning"`
-	CreatedAt       time.Time      `json:"-"`
-	CreatedAtUnix   int64          `json:"created_at"` // Flutter expects int
-	UpdatedAt       time.Time      `json:"updated_at"`
-	Reactions       map[string]int `json:"-"`
-	LikeCount       int            `json:"like_count"`
-	CommentCount    int            `json:"comment_count"`
-	ShareCount      int            `json:"repost_count"`
-	ViewCount       int            `json:"view_count"`
-	ResonanceScore  float64        `json:"resonance_score"`
-	WaveAmplitude   int            `json:"resonance_count"` // resonance_count
-	IsLiked         bool           `json:"is_liked"`
-	IsReposted      bool           `json:"is_reposted"`
-	IsOwned         bool           `json:"is_owned"`
-	ContentType     string         `json:"content_type"`
-	LinkPreview     *LinkPreview   `json:"link_preview"`
-	Mentions        []string       `json:"mentions"`
-	Hashtags        []string       `json:"hashtags"`
-	Effect          string         `json:"effect"`
-	ScheduledAt     *time.Time     `json:"scheduled_at"`
-	ExpiresAt       *time.Time     `json:"expires_at"`
-	ReplyToID       *string        `json:"reply_to_id"`
-	RepostOfID      *string        `json:"repost_of_id"`
-	Quote           *string        `json:"quote"`
-	Language        string         `json:"language"`
-	Sensitivity     string         `json:"sensitivity"`
+	ID             string         `json:"id"`
+	AuthorID       string         `json:"author_id"`
+	AuthorName     string         `json:"author_username"`   // Flutter expects author_username
+	AuthorAvatar   string         `json:"author_avatar_url"` // Flutter expects author_avatar_url
+	ContentText    string         `json:"content_text"`
+	MediaURLs      []string       `json:"media_urls"`
+	Visibility     string         `json:"visibility"`
+	IsPinned       bool           `json:"is_pinned"`
+	IsArchived     bool           `json:"is_archived"`
+	IsDraft        bool           `json:"is_draft"`
+	LocationName   string         `json:"location_name"`
+	Latitude       *float64       `json:"latitude"`
+	Longitude      *float64       `json:"longitude"`
+	ContentWarning string         `json:"content_warning"`
+	CreatedAt      time.Time      `json:"-"`
+	CreatedAtUnix  int64          `json:"created_at"` // Flutter expects int
+	UpdatedAt      time.Time      `json:"updated_at"`
+	Reactions      map[string]int `json:"-"`
+	LikeCount      int            `json:"like_count"`
+	CommentCount   int            `json:"comment_count"`
+	ShareCount     int            `json:"repost_count"`
+	ViewCount      int            `json:"view_count"`
+	ResonanceScore float64        `json:"resonance_score"`
+	WaveAmplitude  int            `json:"resonance_count"` // resonance_count
+	IsLiked        bool           `json:"is_liked"`
+	IsReposted     bool           `json:"is_reposted"`
+	IsOwned        bool           `json:"is_owned"`
+	ContentType    string         `json:"content_type"`
+	LinkPreview    *LinkPreview   `json:"link_preview"`
+	Mentions       []string       `json:"mentions"`
+	Hashtags       []string       `json:"hashtags"`
+	Effect         string         `json:"effect"`
+	ScheduledAt    *time.Time     `json:"scheduled_at"`
+	ExpiresAt      *time.Time     `json:"expires_at"`
+	ReplyToID      *string        `json:"reply_to_id"`
+	RepostOfID     *string        `json:"repost_of_id"`
+	Quote          *string        `json:"quote"`
+	Language       string         `json:"language"`
+	Sensitivity    string         `json:"sensitivity"`
 
 	// Apex Mechanics (v11.0)
-	IsBoosted       bool           `json:"is_boosted"`
-	BoostAmount     int            `json:"boost_amount"`
-	BurnAt          *time.Time     `json:"burn_at"`
-	Summary         string         `json:"neural_summary"`
+	IsBoosted   bool       `json:"is_boosted"`
+	BoostAmount int        `json:"boost_amount"`
+	BurnAt      *time.Time `json:"burn_at"`
+	Summary     string     `json:"neural_summary"`
 }
 
 type LinkPreview struct {
@@ -119,11 +119,11 @@ type ContentRepository interface {
 }
 
 type Vault struct {
-	ID        string
-	OwnerID   string
-	Name      string
-	IsPrivate bool
-	CreatedAt time.Time
+	ID          string
+	OwnerID     string
+	Name        string
+	IsPrivate   bool
+	CreatedAt   time.Time
 	SignalCount int
 }
 

@@ -10,13 +10,13 @@ import (
 )
 
 type EngagementMetrics struct {
-	TimeBucket    time.Time `json:"time_bucket"`
-	PostID        string    `json:"post_id"`
-	UserID        string    `json:"user_id"`
-	LikeCount     int64     `json:"like_count"`
-	CommentCount  int64     `json:"comment_count"`
-	ShareCount    int64     `json:"share_count"`
-	ViewCount     int64     `json:"view_count"`
+	TimeBucket   time.Time `json:"time_bucket"`
+	PostID       string    `json:"post_id"`
+	UserID       string    `json:"user_id"`
+	LikeCount    int64     `json:"like_count"`
+	CommentCount int64     `json:"comment_count"`
+	ShareCount   int64     `json:"share_count"`
+	ViewCount    int64     `json:"view_count"`
 }
 
 func (c *Client) InsertEngagementMetrics(ctx context.Context, metrics *EngagementMetrics) error {

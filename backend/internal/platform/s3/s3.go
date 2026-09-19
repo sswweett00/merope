@@ -3,12 +3,13 @@ package s3
 import (
 	"context"
 	"fmt"
+	"io"
+	"time"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"io"
-	"time"
 )
 
 type Client struct {
@@ -17,12 +18,12 @@ type Client struct {
 }
 
 type Options struct {
-	Region          string
-	Endpoint        string
-	AccessKey       string
-	SecretKey       string
-	UsePathStyle    bool
-	Bucket          string
+	Region       string
+	Endpoint     string
+	AccessKey    string
+	SecretKey    string
+	UsePathStyle bool
+	Bucket       string
 }
 
 func New(ctx context.Context, opts Options) (*Client, error) {

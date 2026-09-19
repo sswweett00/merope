@@ -2,6 +2,7 @@ package infra
 
 import (
 	"context"
+
 	"local/merope/internal/database/db"
 	"local/merope/internal/modules/talent/domain"
 )

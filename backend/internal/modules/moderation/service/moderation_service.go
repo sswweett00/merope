@@ -19,12 +19,12 @@ func NewModerationService(repo domain.ModerationRepository) domain.ModerationSer
 
 func (s *moderationService) ReportContent(ctx context.Context, reporterID, targetType, targetID, reason string) error {
 	report := &domain.Report{
-		ReporterID:  reporterID,
-		TargetType:  targetType,
-		TargetID:    targetID,
-		Reason:      security.SanitizeHTML(reason),
-		Status:      "pending",
-		CreatedAt:   time.Now(),
+		ReporterID: reporterID,
+		TargetType: targetType,
+		TargetID:   targetID,
+		Reason:     security.SanitizeHTML(reason),
+		Status:     "pending",
+		CreatedAt:  time.Now(),
 	}
 	return s.repo.CreateReport(ctx, report)
 }

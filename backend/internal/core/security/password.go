@@ -89,10 +89,10 @@ func decodeHash(encodedHash string) (p *Argon2Params, salt, hash []byte, err err
 
 	// Reject malformed or attacker-controlled cost parameters before Argon2 allocates memory.
 	const (
-		minMemoryKiB = 16 * 1024
-		maxMemoryKiB = 256 * 1024
-		minIterations = 1
-		maxIterations = 10
+		minMemoryKiB   = 16 * 1024
+		maxMemoryKiB   = 256 * 1024
+		minIterations  = 1
+		maxIterations  = 10
 		minParallelism = 1
 		maxParallelism = 16
 	)

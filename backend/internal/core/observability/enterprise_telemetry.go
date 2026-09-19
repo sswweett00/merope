@@ -8,12 +8,12 @@ import (
 )
 
 type SystemTelemetry struct {
-	Goroutines    int       `json:"goroutines"`
-	HeapAllocMB   uint64    `json:"heap_alloc_mb"`
-	SystemMemoryMB uint64   `json:"system_memory_mb"`
-	UptimeSeconds int64     `json:"uptime_seconds"`
-	CircuitStatus string    `json:"circuit_status"`
-	Timestamp     time.Time `json:"timestamp"`
+	Goroutines     int       `json:"goroutines"`
+	HeapAllocMB    uint64    `json:"heap_alloc_mb"`
+	SystemMemoryMB uint64    `json:"system_memory_mb"`
+	UptimeSeconds  int64     `json:"uptime_seconds"`
+	CircuitStatus  string    `json:"circuit_status"`
+	Timestamp      time.Time `json:"timestamp"`
 }
 
 type EnterpriseTelemetryCollector interface {
