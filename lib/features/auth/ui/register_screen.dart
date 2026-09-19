@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:merope_ui/theme/tokens/merope_tokens.dart';
 import 'package:merope_ui/widgets/merope_button.dart';
 import 'package:merope_ui/widgets/merope_text_field.dart';
+import '../repository/auth_repository.dart';
 
 // Test data - only visible in development mode
 const bool kIsDevMode = kDebugMode;
@@ -82,10 +83,27 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     }
 
     setState(() => _isSubmitting = true);
-    await Future.delayed(const Duration(seconds: 1));
-    if (mounted) {
+    try {
+      final user = await ref.read(authRepositoryProvider).register(
+        username: username,
+        email: email,
+        password: password,
+      );
+      if (!mounted) return;
       setState(() => _isSubmitting = false);
-      context.go('/');
+      if (user != null) {
+        context.go('/');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Registration failed.')),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isSubmitting = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Registration failed: $e')),
+      );
     }
   }
 
