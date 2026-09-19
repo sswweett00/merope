@@ -117,7 +117,7 @@ flutter run
 ```
 
 ## Known Issues / Notes
-- `go 1.23.0` is the standard for backend.
+- `go 1.25.0` is the standard for backend.
 - AI features have been removed for a clean communication experience.
 - The server is authoritative: clients must not implement offline write-behind or deferred mutation replay.
 - All modules are fully integrated with services and transport layers.
