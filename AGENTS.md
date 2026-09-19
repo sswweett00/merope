@@ -2,7 +2,7 @@
 
 ## Project Overview
 High-Performance, Modular, Server-Authoritative Real-Time Communication Platform.
-Status: **Production Ready**
+Status: **Production Hardening**
 
 ## Technology Stack
 
