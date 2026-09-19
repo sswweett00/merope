@@ -22,6 +22,17 @@ type Report struct {
 	CreatedAt  time.Time
 }
 
+type PublicProfile struct {
+	ID          string    `json:"id"`
+	Username    string    `json:"username"`
+	DisplayName string    `json:"display_name"`
+	Bio         string    `json:"bio"`
+	AvatarURL   string    `json:"avatar_url"`
+	IsVerified  bool      `json:"is_verified"`
+	IsPrivate   bool      `json:"is_private"`
+	CreatedAt   time.Time `json:"created_at"`
+}
+
 type SocialRepository interface {
 	Follow(ctx context.Context, followerID, followingID string) error
 	Unfollow(ctx context.Context, followerID, followingID string) error
@@ -43,6 +54,7 @@ type SocialRepository interface {
 }
 
 type SocialService interface {
+	GetProfile(ctx context.Context, userID string) (*PublicProfile, error)
 	Follow(ctx context.Context, followerID, followingID string) error
 	Unfollow(ctx context.Context, followerID, followingID string) error
 	GetMutualFriends(ctx context.Context, userA, userB string) ([]*domain.User, error)
