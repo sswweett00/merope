@@ -135,6 +135,32 @@ LIMIT $1 OFFSET $2`, limit, offset)
 	return result, nil
 }
 
+func (r *postgresCommunityRepository) UpdateCollective(ctx context.Context, collectiveID string, updates *domain.Collective) error {
+	collectiveID = strings.TrimSpace(collectiveID)
+	if collectiveID == "" || updates == nil {
+		return fmt.Errorf("collective id and updates are required")
+	}
+	var id pgtype.UUID
+	if err := id.Scan(collectiveID); err != nil {
+		return fmt.Errorf("invalid collective uuid: %w", err)
+	}
+	name := strings.TrimSpace(updates.Name)
+	if name == "" {
+		return fmt.Errorf("collective name is required")
+	}
+	_, err := r.queries.Exec(ctx, `
+UPDATE collectives
+SET name = $2,
+    slug = $3,
+    description = $4,
+    icon = $5,
+    banner_url = $6,
+    category = $7,
+    updated_at = NOW()
+WHERE id = $1`, id, name, strings.TrimSpace(updates.Slug), updates.Description, updates.Icon, updates.BannerURL, strings.TrimSpace(updates.Category))
+	return err
+}
+
 func (r *postgresCommunityRepository) DeleteCollective(ctx context.Context, collectiveID string) error {
 	id := strings.TrimSpace(collectiveID)
 	if id == "" {
