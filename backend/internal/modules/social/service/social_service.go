@@ -29,10 +29,18 @@ func NewSocialService(repo socialDomain.SocialRepository, idService domain.Ident
     }
 }
 
-func (s *socialService) GetProfile(ctx context.Context, userID string) (*socialDomain.PublicProfile, error) {
+func (s *socialService) GetProfile(ctx context.Context, viewerID, userID string) (*socialDomain.PublicProfile, error) {
+    viewerID = strings.TrimSpace(viewerID)
     userID = strings.TrimSpace(userID)
-    if userID == "" {
+    if viewerID == "" || userID == "" {
         return nil, fmt.Errorf("user id is required")
+    }
+    visible, err := s.repo.CanViewProfile(ctx, viewerID, userID)
+    if err != nil {
+        return nil, err
+    }
+    if !visible {
+        return nil, fiber.ErrForbidden
     }
     exported, err := s.idService.ExportData(ctx, userID)
     if err != nil {
