@@ -32,6 +32,10 @@ func (s *searchService) GetRecentHistory(ctx context.Context, userID string) ([]
 	return s.repo.GetHistory(ctx, userID)
 }
 
+func (s *searchService) GetInterests(ctx context.Context, userID string) ([]string, error) {
+	return s.repo.GetInterests(ctx, userID)
+}
+
 func (s *searchService) UpdateInterests(ctx context.Context, userID string, interests []string) error {
 	for _, interest := range interests {
 		_ = s.repo.AddInterest(ctx, userID, interest)
