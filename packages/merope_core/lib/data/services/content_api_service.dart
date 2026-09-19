@@ -190,14 +190,13 @@ class ContentApiService {
     try {
       final response = await _apiClient.post<Map<String, dynamic>>(
         '/api/v10/content/posts/$postId/comments',
-        data: {'content': content},
+        data: {'text': content},
       );
 
       final data = response.data;
       if (data == null) {
         return CommentResult(success: false, error: 'No response from server');
       }
-
       return CommentResult(success: true, comment: data);
     } on MeropeAPIException catch (e) {
       return CommentResult(success: false, error: e.message);
@@ -220,14 +219,7 @@ class ContentApiService {
         '/api/v10/content/posts/$postId/like',
       );
 
-      final data = response.data;
-      if (data == null) {
-        return SocialPostActionResult(
-            success: false, error: 'No response from server');
-      }
-
-      final post = MeropeSignal.fromJson(data);
-      return SocialPostActionResult(success: true, post: post);
+      return const SocialPostActionResult(success: true);
     } on MeropeAPIException catch (e) {
       return SocialPostActionResult(success: false, error: e.message);
     }
@@ -248,14 +240,7 @@ class ContentApiService {
         '/api/v10/content/posts/$postId/repost',
       );
 
-      final data = response.data;
-      if (data == null) {
-        return SocialPostActionResult(
-            success: false, error: 'No response from server');
-      }
-
-      final post = MeropeSignal.fromJson(data);
-      return SocialPostActionResult(success: true, post: post);
+      return const SocialPostActionResult(success: true);
     } on MeropeAPIException catch (e) {
       return SocialPostActionResult(success: false, error: e.message);
     }
@@ -367,17 +352,15 @@ class ContentApiService {
     String? subCommunityId,
     List<Map<String, dynamic>>? layers,
     List<Map<String, dynamic>>? cards,
+    String visibility = 'public',
   }) async {
     try {
       final response = await _apiClient.post<Map<String, dynamic>>(
         '/api/v10/content/posts',
         data: {
-          'content': content,
-          'media_urls': mediaUrls ?? [],
-          'title': title,
-          'sub_community_id': subCommunityId,
-          'layers': layers ?? [],
-          'cards': cards ?? [],
+          'text': content,
+          'media': mediaUrls ?? [],
+          'visibility': visibility,
         },
       );
 
