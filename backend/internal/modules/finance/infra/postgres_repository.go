@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"strings"
 
 	"local/merope/internal/core/util"
 	"local/merope/internal/database/db"
@@ -11,14 +12,16 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type PostgresFinanceRepository struct {
 	queries *db.Queries
+	pool    *pgxpool.Pool
 }
 
-func NewPostgresFinanceRepository(queries *db.Queries) *PostgresFinanceRepository {
-	return &PostgresFinanceRepository{queries: queries}
+func NewPostgresFinanceRepository(queries *db.Queries, pool *pgxpool.Pool) *PostgresFinanceRepository {
+	return &PostgresFinanceRepository{queries: queries, pool: pool}
 }
 
 func toDBAmount(amount int64) (int32, error) {
