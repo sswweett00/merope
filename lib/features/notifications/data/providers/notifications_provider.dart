@@ -59,6 +59,42 @@ class NotificationsList extends AsyncNotifier<List<MeropeNotification>> {
     }).toList(growable: false);
   }
 
+  Future<void> markRead(String id) async {
+    final result = await _api.post<dynamic>('/notifications/$id/read');
+    if (result.isError) {
+      throw StateError('Failed to mark notification as read');
+    }
+    ref.invalidate(notificationsUnreadCountProvider);
+    state = await AsyncValue.guard(() async {
+      final refreshed = await _api.get<dynamic>('/notifications/activity');
+      if (refreshed.isError || refreshed.data is! Map) {
+        throw StateError('Failed to refresh notifications');
+      }
+      final raw = (refreshed.data as Map)['notifications'];
+      if (raw is! List) return const <MeropeNotification>[];
+      return raw.whereType<Map>().map((item) {
+        final map = Map<String, dynamic>.from(item);
+        final type = _parseType(map['type']?.toString());
+        final sender = (map['senderUsername'] ?? '').toString().trim();
+        return MeropeNotification(
+          id: (map['id'] ?? '').toString(),
+          authorName: sender.isEmpty ? 'Merope System' : sender,
+          message: _messageFor(map, type),
+          timestamp: _relativeTime(DateTime.tryParse(map['createdAt']?.toString() ?? '')),
+          type: type,
+        );
+      }).toList(growable: false);
+    });
+  }
+
+  Future<void> markAllRead() async {
+    final result = await _api.post<dynamic>('/notifications/read-all');
+    if (result.isError) {
+      throw StateError('Failed to mark notifications as read');
+    }
+    ref.invalidate(notificationsUnreadCountProvider);
+  }
+
   Future<void> clearAll() async {
     final result = await _api.delete<dynamic>('/notifications');
     if (result.isError) {
@@ -125,3 +161,10 @@ final notificationsListProvider =
     AsyncNotifierProvider<NotificationsList, List<MeropeNotification>>(
   NotificationsList.new,
 );
+
+final notificationsUnreadCountProvider = FutureProvider<int>((ref) async {
+  final result = await ApiClient().get<dynamic>('/notifications/unread-count');
+  if (result.isError || result.data is! Map) return 0;
+  final value = (result.data as Map)['count'];
+  return value is num ? value.toInt() : int.tryParse('${value ?? 0}') ?? 0;
+});
