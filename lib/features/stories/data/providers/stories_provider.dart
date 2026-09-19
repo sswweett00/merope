@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:merope_core/data/services/stories_api.dart';
-import 'package:merope_core/data/services/exceptions.dart';
 import 'package:merope_models/stories/story_model.dart' as model;
-import '../../repository/story_repository.dart';
 
 class StoryFeed extends AsyncNotifier<List<model.StoryUser>> {
   int _page = 0;
@@ -16,8 +14,6 @@ class StoryFeed extends AsyncNotifier<List<model.StoryUser>> {
 
   Future<List<model.StoryUser>> _fetchFeed() async {
     final api = ref.read(storiesApiServiceProvider);
-    final repo = ref.read(storyRepositoryProvider);
-
     try {
       final result = await api.getFeed(
           limit: _pageSize, cursor: _page > 0 ? 'cursor_$_page' : null);
@@ -25,7 +21,10 @@ class StoryFeed extends AsyncNotifier<List<model.StoryUser>> {
 
       final stories = result.data ?? [];
       for (final story in stories) {
-        await repo.markStoryViewed(story.id);
+        final viewed = await api.markStoryViewed(story.id);
+        if (viewed.isError) {
+          throw StateError('Failed to record story view');
+        }
       }
 
       final users = <String, model.Story>{};
@@ -49,25 +48,7 @@ class StoryFeed extends AsyncNotifier<List<model.StoryUser>> {
 
       _page++;
       return userList;
-    } on MeropeAPIException catch (_) {
-      final localStories = await repo.getStoryFeed();
-      final users = <String, model.Story>{};
-      for (final story in localStories) {
-        users[story.userId] = story;
-      }
-      return users.entries.map((e) {
-        final story = e.value;
-        return model.StoryUser(
-          id: story.userId,
-          username: story.userId,
-          displayName: story.userId,
-          isViewed: story.isViewed,
-          unreadStoryIds: story.isViewed ? const [] : [story.id],
-          streak: (story.id.hashCode % 90) + 1,
-        );
-      }).toList();
-    }
-  }
+    }  }
 
   Future<void> refresh() async {
     _page = 0;
@@ -119,10 +100,10 @@ class StoryProvider extends FamilyAsyncNotifier<model.Story, String> {
       return remoteResult.data!;
     }
 
-    final localStory = await repo.getStory(arg);
-    if (localStory != null) return localStory;
-
-    throw Exception('Story not found for user: $arg');
+    if (remoteResult.error != null || remoteResult.data == null) {
+      throw StateError('Story not available');
+    }
+    return remoteResult.data!;
   }
 }
 
@@ -135,14 +116,11 @@ class StoryViewersProvider
   @override
   FutureOr<List<model.StoryUser>> build(String arg) async {
     final api = ref.read(storiesApiServiceProvider);
-    final repo = ref.read(storyRepositoryProvider);
-
     final remoteResult = await api.getStoryViewers(arg);
     if (remoteResult.error == null && remoteResult.data != null) {
       return remoteResult.data!;
     }
-
-    return repo.getStoryViewers(arg);
+    throw StateError('Story viewers not available');
   }
 }
 
