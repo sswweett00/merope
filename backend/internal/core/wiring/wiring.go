@@ -168,7 +168,7 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	communitySvc := communityService.NewCommunityService(communityRepo)
 	communityHandler := communityTransport.NewCommunityHandler(communitySvc, communityRepo)
 
-	marketplaceRepo := marketplaceInfra.NewPostgresMarketplaceRepository(queries)
+	marketplaceRepo := marketplaceInfra.NewPostgresMarketplaceRepository(queries, pgPool)
 	marketplaceSvc := marketplaceService.NewMarketplaceService(marketplaceRepo)
 	marketplaceHandler := marketplaceTransport.NewMarketplaceHandler(marketplaceSvc)
 
