@@ -364,14 +364,7 @@ class ContentApiService {
         },
       );
 
-      final data = response.data;
-      if (data == null) {
-        return SocialPostActionResult(
-            success: false, error: 'No response from server');
-      }
-
-      final post = MeropeSignal.fromJson(data);
-      return SocialPostActionResult(success: true, post: post);
+      return const SocialPostActionResult(success: true);
     } on MeropeAPIException catch (e) {
       return SocialPostActionResult(success: false, error: e.message);
     }
