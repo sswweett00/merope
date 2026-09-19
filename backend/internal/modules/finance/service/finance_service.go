@@ -17,6 +17,13 @@ func NewFinanceService(repo financeDomain.RuntimeFinanceRepository, contentRepo 
 	return &financeService{repo: repo, contentRepo: contentRepo}
 }
 
+func (s *financeService) TransferFunds(ctx context.Context, senderID, receiverID string, amount int64) error {
+	if senderID == "" || receiverID == "" || senderID == receiverID || amount <= 0 {
+		return fmt.Errorf("invalid transfer")
+	}
+	return s.repo.Transfer(ctx, senderID, receiverID, amount, "transfer", nil, nil)
+}
+
 func (s *financeService) TipUser(ctx context.Context, senderID, receiverID string, amount int64) error {
 	if amount <= 0 {
 		return fmt.Errorf("amount must be positive")
