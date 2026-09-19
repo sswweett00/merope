@@ -20,13 +20,6 @@ class StoryFeed extends AsyncNotifier<List<model.StoryUser>> {
       if (result.error != null) throw result.error!;
 
       final stories = result.data ?? [];
-      for (final story in stories) {
-        final viewed = await api.markStoryViewed(story.id);
-        if (viewed.isError) {
-          throw StateError('Failed to record story view');
-        }
-      }
-
       final users = <String, model.Story>{};
       for (final story in stories) {
         users[story.userId] = story;
@@ -48,7 +41,8 @@ class StoryFeed extends AsyncNotifier<List<model.StoryUser>> {
 
       _page++;
       return userList;
-    }  }
+    }
+  }
 
   Future<void> refresh() async {
     _page = 0;
@@ -93,7 +87,6 @@ class StoryProvider extends FamilyAsyncNotifier<model.Story, String> {
   @override
   FutureOr<model.Story> build(String arg) async {
     final api = ref.read(storiesApiServiceProvider);
-    final repo = ref.read(storyRepositoryProvider);
 
     final remoteResult = await api.getStory(arg);
     if (remoteResult.error == null && remoteResult.data != null) {
