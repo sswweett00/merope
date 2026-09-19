@@ -1,15 +1,3 @@
-func (r *postgresCommunityRepository) UpdateCommunityStats(ctx context.Context, communityID string) error {
-	var cid pgtype.UUID
-	if err := cid.Scan(strings.TrimSpace(communityID)); err != nil {
-		return fmt.Errorf("invalid community uuid: %w", err)
-	}
-	_, err := r.queries.Exec(ctx, `
-UPDATE communities
-SET updated_at = NOW()
-WHERE id = $1`, cid)
-	return err
-}
-
 package infra
 
 import (
@@ -129,4 +117,17 @@ WHERE user_id = $1 AND created_at >= NOW() - $2::interval`, uid, window.String()
 		TimeSpent:      0,
 		LastActiveAt:   lastActivity.Time,
 	}, nil
+}
+
+
+func (r *postgresCommunityRepository) UpdateCommunityStats(ctx context.Context, communityID string) error {
+	var cid pgtype.UUID
+	if err := cid.Scan(strings.TrimSpace(communityID)); err != nil {
+		return fmt.Errorf("invalid community uuid: %w", err)
+	}
+	_, err := r.queries.Exec(ctx, `
+UPDATE communities
+SET updated_at = NOW()
+WHERE id = $1`, cid)
+	return err
 }
