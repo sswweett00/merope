@@ -17,22 +17,29 @@ class VaultContentNotifier extends AsyncNotifier<List<VaultItem>> {
     if (data is! Map) return const <VaultItem>[];
     final raw = data['items'];
     if (raw is! List) return const <VaultItem>[];
-    return raw.whereType<Map>().map((entry) {
-      final item = Map<String, dynamic>.from(entry);
-      final itemType = (item['itemType'] ?? item['item_type'] ?? 'file').toString();
-      return VaultItem(
-        id: (item['id'] ?? '').toString(),
-        title: (item['title'] ?? '').toString(),
-        type: VaultItemType.values.firstWhere(
-          (type) => type.name == itemType,
-          orElse: () => VaultItemType.file,
-        ),
-        protection: item['protection']?.toString() ?? 'Encrypted',
-        lastAccessed: DateTime.tryParse(
-          item['updatedAt']?.toString() ?? item['updated_at']?.toString() ?? '',
-        ),
-      );
-    }).where((item) => item.id.isNotEmpty).toList(growable: false);
+    return raw
+        .whereType<Map>()
+        .map((entry) {
+          final item = Map<String, dynamic>.from(entry);
+          final itemType =
+              (item['itemType'] ?? item['item_type'] ?? 'file').toString();
+          return VaultItem(
+            id: (item['id'] ?? '').toString(),
+            title: (item['title'] ?? '').toString(),
+            type: VaultItemType.values.firstWhere(
+              (type) => type.name == itemType,
+              orElse: () => VaultItemType.file,
+            ),
+            protection: item['protection']?.toString() ?? 'Encrypted',
+            lastAccessed: DateTime.tryParse(
+              item['updatedAt']?.toString() ??
+                  item['updated_at']?.toString() ??
+                  '',
+            ),
+          );
+        })
+        .where((item) => item.id.isNotEmpty)
+        .toList(growable: false);
   }
 }
 
