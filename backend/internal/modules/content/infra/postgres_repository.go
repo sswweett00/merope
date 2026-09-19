@@ -88,6 +88,20 @@ func (r *PostgresContentRepository) AddResonance(ctx context.Context, userID, ta
 	return err
 }
 
+func (r *PostgresContentRepository) RemoveResonance(ctx context.Context, userID, targetID string) error {
+	var uid, tid pgtype.UUID
+	if err := uid.Scan(userID); err != nil {
+		return fmt.Errorf("invalid user uuid: %w", err)
+	}
+	if err := tid.Scan(targetID); err != nil {
+		return fmt.Errorf("invalid target uuid: %w", err)
+	}
+	_, err := r.queries.Exec(ctx, `
+DELETE FROM reactions
+WHERE user_id = $1 AND target_id = $2 AND reaction_type = 'resonance'`, uid, tid)
+	return err
+}
+
 func (r *PostgresContentRepository) CreateNode(ctx context.Context, signalID, authorID string, parentID *string, content string) (*domain.Node, error) {
 	var pid, aid, prid pgtype.UUID
 	if err := pid.Scan(signalID); err != nil {
