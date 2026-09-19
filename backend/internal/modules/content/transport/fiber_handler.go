@@ -58,7 +58,7 @@ func (h *ContentHandler) CreatePost(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(errors.ToHTTPStatus(err)).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
-			"message": err.Error(),
+			"message": "Unable to process request",
 		})
 	}
 
@@ -82,7 +82,7 @@ func (h *ContentHandler) Vote(c *fiber.Ctx) error {
 	if err := h.service.Vote(c.Context(), pollID, req.OptionID, userID); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
-			"message": err.Error(),
+			"message": "Unable to process request",
 		})
 	}
 	return c.JSON(fiber.Map{"message": "Vote casted"})
@@ -169,7 +169,7 @@ func (h *ContentHandler) Feed(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
-			"message": err.Error(),
+			"message": "Unable to process request",
 		})
 	}
 
@@ -190,7 +190,7 @@ func (h *ContentHandler) GetPost(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
-			"message": err.Error(),
+			"message": "Unable to process request",
 		})
 	}
 	if post == nil {
@@ -229,7 +229,7 @@ func (h *ContentHandler) UpdatePost(c *fiber.Ctx) error {
 	if err := h.service.UpdateSignal(c.Context(), post); err != nil {
 		return c.Status(errors.ToHTTPStatus(err)).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
-			"message": err.Error(),
+			"message": "Unable to process request",
 		})
 	}
 	return c.JSON(toMeropeSignalDTO(post))
@@ -248,7 +248,7 @@ func (h *ContentHandler) DeletePost(c *fiber.Ctx) error {
 	if err := h.service.DeleteSignal(c.Context(), postID); err != nil {
 		return c.Status(errors.ToHTTPStatus(err)).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
-			"message": err.Error(),
+			"message": "Unable to process request",
 		})
 	}
 	return c.SendStatus(fiber.StatusNoContent)
@@ -262,7 +262,7 @@ func (h *ContentHandler) DeleteComment(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
-			"message": err.Error(),
+			"message": "Unable to process request",
 		})
 	}
 	for _, comment := range comments {
@@ -270,7 +270,7 @@ func (h *ContentHandler) DeleteComment(c *fiber.Ctx) error {
 			if err := h.service.DeleteNode(c.Context(), commentID); err != nil {
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
-			"message": err.Error(),
+			"message": "Unable to process request",
 		})
 			}
 			return c.SendStatus(fiber.StatusNoContent)
@@ -289,7 +289,7 @@ func (h *ContentHandler) React(c *fiber.Ctx) error {
 	if err := h.service.AmplifySignal(c.Context(), userID, postID, 1); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
-			"message": err.Error(),
+			"message": "Unable to process request",
 		})
 	}
 
@@ -302,7 +302,7 @@ func (h *ContentHandler) Like(c *fiber.Ctx) error {
 	if err := h.service.AmplifySignal(c.Context(), userID, signalID, 1); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
-			"message": err.Error(),
+			"message": "Unable to process request",
 		})
 	}
 	return c.SendStatus(fiber.StatusOK)
@@ -314,7 +314,7 @@ func (h *ContentHandler) Unlike(c *fiber.Ctx) error {
 	if err := h.service.AmplifySignal(c.Context(), userID, signalID, -1); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
-			"message": err.Error(),
+			"message": "Unable to process request",
 		})
 	}
 	return c.SendStatus(fiber.StatusOK)
@@ -326,7 +326,7 @@ func (h *ContentHandler) Repost(c *fiber.Ctx) error {
 	if err := h.service.ShareSignal(c.Context(), userID, signalID); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
-			"message": err.Error(),
+			"message": "Unable to process request",
 		})
 	}
 	return c.SendStatus(fiber.StatusOK)
@@ -352,7 +352,7 @@ func (h *ContentHandler) AddComment(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
-			"message": err.Error(),
+			"message": "Unable to process request",
 		})
 	}
 
@@ -365,7 +365,7 @@ func (h *ContentHandler) GetComments(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
-			"message": err.Error(),
+			"message": "Unable to process request",
 		})
 	}
 
