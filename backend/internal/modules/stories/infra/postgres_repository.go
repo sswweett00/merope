@@ -121,8 +121,12 @@ LIMIT 100`, uid)
 	return stories, nil
 }
 
-func (r *PostgresStoriesRepository) GetLatestStoryForUser(ctx context.Context, userID string) (*domain.Story, error) {
-	uid, err := parseStoryUUID(userID)
+func (r *PostgresStoriesRepository) GetLatestStoryForUser(ctx context.Context, targetUserID, viewerID string) (*domain.Story, error) {
+	targetID, err := parseStoryUUID(targetUserID)
+	if err != nil {
+		return nil, err
+	}
+	viewerIDValue, err := parseStoryUUID(viewerID)
 	if err != nil {
 		return nil, err
 	}
@@ -131,21 +135,33 @@ func (r *PostgresStoriesRepository) GetLatestStoryForUser(ctx context.Context, u
 	if err := r.queries.QueryRow(ctx, `
 SELECT s.id, s.author_id, u.username, COALESCE(u.avatar_url, ''),
        s.media_url, s.media_type, s.created_at, s.expires_at,
-       EXISTS (SELECT 1 FROM story_views sv WHERE sv.story_id = s.id AND sv.viewer_id = $1),
+       EXISTS (SELECT 1 FROM story_views sv WHERE sv.story_id = s.id AND sv.viewer_id = $2),
        (SELECT COUNT(*)::int FROM story_views sv2 WHERE sv2.story_id = s.id),
        (SELECT COUNT(*)::int FROM story_reactions sr WHERE sr.story_id = s.id)
 FROM stories s
 JOIN users u ON u.id = s.author_id
-WHERE s.author_id = $2 AND s.expires_at > NOW() AND s.is_archived = FALSE
+WHERE s.author_id = $1
+  AND s.expires_at > NOW()
+  AND s.is_archived = FALSE
+  AND (
+      s.author_id = $2
+      OR s.visibility = 'public'
+      OR EXISTS (
+          SELECT 1
+          FROM follows f
+          WHERE f.follower_id = $2
+            AND f.following_id = s.author_id
+            AND f.status = 'accepted'
+      )
+  )
 ORDER BY s.created_at DESC, s.id DESC
-LIMIT 1`, uid, uid).Scan(&id, &authorID, &story.Username, &story.AvatarURL, &story.MediaURL, &story.MediaType, &story.CreatedAt, &story.ExpiresAt, &story.IsViewed, &story.ViewCount, &story.ReactionCount); err != nil {
+LIMIT 1`, targetID, viewerIDValue).Scan(&id, &authorID, &story.Username, &story.AvatarURL, &story.MediaURL, &story.MediaType, &story.CreatedAt, &story.ExpiresAt, &story.IsViewed, &story.ViewCount, &story.ReactionCount); err != nil {
 		return nil, err
 	}
 	story.ID = util.UUIDToString(id)
 	story.AuthorID = util.UUIDToString(authorID)
 	return &story, nil
 }
-
 func (r *PostgresStoriesRepository) RecordView(ctx context.Context, storyID, userID string) error {
 	sid, err := parseStoryUUID(storyID)
 	if err != nil {
@@ -155,13 +171,35 @@ func (r *PostgresStoriesRepository) RecordView(ctx context.Context, storyID, use
 	if err != nil {
 		return err
 	}
-	_, err = r.queries.Exec(ctx, `
+	result, err := r.queries.Exec(ctx, `
 INSERT INTO story_views (story_id, viewer_id)
-VALUES ($1, $2)
+SELECT $1, $2
+WHERE EXISTS (
+    SELECT 1
+    FROM stories s
+    WHERE s.id = $1
+      AND s.expires_at > NOW()
+      AND s.is_archived = FALSE
+      AND (
+          s.author_id = $2
+          OR s.visibility = 'public'
+          OR EXISTS (
+              SELECT 1 FROM follows f
+              WHERE f.follower_id = $2
+                AND f.following_id = s.author_id
+                AND f.status = 'accepted'
+          )
+      )
+)
 ON CONFLICT (story_id, viewer_id) DO UPDATE SET viewed_at = NOW()`, sid, uid)
-	return err
+	if err != nil {
+		return err
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("story is not available")
+	}
+	return nil
 }
-
 func (r *PostgresStoriesRepository) React(ctx context.Context, storyID, userID, emoji string) error {
 	sid, err := parseStoryUUID(storyID)
 	if err != nil {
@@ -175,15 +213,41 @@ func (r *PostgresStoriesRepository) React(ctx context.Context, storyID, userID, 
 	if emoji == "" {
 		return fmt.Errorf("emoji is required")
 	}
-	_, err = r.queries.Exec(ctx, `
+	result, err := r.queries.Exec(ctx, `
 INSERT INTO story_reactions (story_id, user_id, emoji)
-VALUES ($1, $2, $3)
+SELECT $1, $2, $3
+WHERE EXISTS (
+    SELECT 1
+    FROM stories s
+    WHERE s.id = $1
+      AND s.expires_at > NOW()
+      AND s.is_archived = FALSE
+      AND (
+          s.author_id = $2
+          OR s.visibility = 'public'
+          OR EXISTS (
+              SELECT 1 FROM follows f
+              WHERE f.follower_id = $2
+                AND f.following_id = s.author_id
+                AND f.status = 'accepted'
+          )
+      )
+)
 ON CONFLICT (story_id, user_id) DO UPDATE SET emoji = EXCLUDED.emoji, created_at = NOW()`, sid, uid, emoji)
-	return err
+	if err != nil {
+		return err
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("story is not available")
+	}
+	return nil
 }
-
-func (r *PostgresStoriesRepository) GetStoryViewers(ctx context.Context, storyID string) ([]*domain.StoryViewer, error) {
+func (r *PostgresStoriesRepository) GetStoryViewers(ctx context.Context, storyID, requesterID string) ([]*domain.StoryViewer, error) {
 	sid, err := parseStoryUUID(storyID)
+	if err != nil {
+		return nil, err
+	}
+	rid, err := parseStoryUUID(requesterID)
 	if err != nil {
 		return nil, err
 	}
@@ -192,7 +256,12 @@ SELECT u.id, u.username, COALESCE(u.display_name, ''), COALESCE(u.avatar_url, ''
 FROM story_views sv
 JOIN users u ON u.id = sv.viewer_id
 WHERE sv.story_id = $1
-ORDER BY sv.viewed_at DESC`, sid)
+  AND EXISTS (
+      SELECT 1 FROM stories s
+      WHERE s.id = $1
+        AND s.author_id = $2
+  )
+ORDER BY sv.viewed_at DESC`, sid, rid)
 	if err != nil {
 		return nil, err
 	}
@@ -210,7 +279,6 @@ ORDER BY sv.viewed_at DESC`, sid)
 	}
 	return viewers, rows.Err()
 }
-
 func (r *PostgresStoriesRepository) CreateHighlight(ctx context.Context, authorID, name, coverURL string) (*domain.StoryHighlight, error) {
 	return nil, fmt.Errorf("story highlights are not part of the active storage contract")
 }
