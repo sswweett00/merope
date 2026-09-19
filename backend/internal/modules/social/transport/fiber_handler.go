@@ -69,17 +69,11 @@ func (h *SocialHandler) Mutuals(c *fiber.Ctx) error {
 
 func (h *SocialHandler) Profile(c *fiber.Ctx) error {
 	userID := c.Params("id")
-	users, err := h.service.GetMutualFriends(c.Context(), userID, "")
+	profile, err := h.service.GetProfile(c.Context(), userID)
 	if err != nil {
 		return writeSocialError(c, err)
 	}
-	if len(users) == 0 {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"code":    errors.ErrNotFound,
-			"message": "User not found",
-		})
-	}
-	return c.JSON(users[0])
+	return c.JSON(profile)
 }
 
 func (h *SocialHandler) Search(c *fiber.Ctx) error {
