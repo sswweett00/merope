@@ -162,10 +162,11 @@ func (r *PostgresContentRepository) UpdateSignalStatus(ctx context.Context, sign
 	}
 	_, err := r.queries.Exec(ctx, `
 UPDATE posts
-SET is_archived = $2,
-    is_draft = $3,
+SET is_pinned = $2,
+    is_archived = $3,
+    is_draft = $4,
     updated_at = NOW()
-WHERE id = $1`, sid, archived, draft)
+WHERE id = $1`, sid, pinned, archived, draft)
 	return err
 }
 
