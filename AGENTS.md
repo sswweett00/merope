@@ -1,7 +1,7 @@
 # Merope — Agent Knowledge
 
 ## Project Overview
-High-Performance, Modular, Offline-First Real-Time Communication Platform.
+High-Performance, Modular, Server-Authoritative Real-Time Communication Platform.
 Status: **Production Ready**
 
 ## Technology Stack
@@ -10,7 +10,7 @@ Status: **Production Ready**
 Developed exclusively with **Flutter**.
 - **Core**: Flutter (Stable), Dart, Material 3, Impeller Rendering Engine
 - **State & Navigation**: Riverpod, GoRouter, Freezed
-- **Storage**: Drift (SQLite), flutter_secure_storage
+- **Storage**: Drift (SQLite) for non-authoritative local cache/state, flutter_secure_storage
 - **Networking**: Dio, WebSocket, gRPC
 - **Media & RTC**: flutter_webrtc, media_kit
 - **Performance**: Isolate, Custom Render Objects (as needed)
@@ -119,4 +119,5 @@ flutter run
 ## Known Issues / Notes
 - `go 1.23.0` is the standard for backend.
 - AI features have been removed for a clean communication experience.
+- The server is authoritative: clients must not implement offline write-behind or deferred mutation replay.
 - All modules are fully integrated with services and transport layers.
