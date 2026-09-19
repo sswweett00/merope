@@ -65,6 +65,7 @@ class AuthController extends StateNotifier<AuthState> {
 
       final biometricSuccess = await shield.authenticateBiometrically();
       if (!biometricSuccess) {
+        await _sessionStorage.clearSession();
         state = state.copyWith(
             isLoading: false, error: 'Biometric authentication failed');
         return false;
