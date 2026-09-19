@@ -186,54 +186,6 @@ ORDER BY u.username
 	return r.mapUsers(users), nil
 }
 
-func (r *PostgresSocialRepository) IsPrivateUser(ctx context.Context, userID string) (bool, error) {
-	var uid pgtype.UUID
-	if err := uid.Scan(userID); err != nil {
-		return false, fmt.Errorf("invalid uuid: %w", err)
-	}
-	var isPrivate bool
-	if err := r.queries.QueryRow(ctx, `SELECT COALESCE(is_private, FALSE) FROM users WHERE id = $1`, uid).Scan(&isPrivate); err != nil {
-		return false, err
-	}
-	return isPrivate, nil
-}
-
-func (r *PostgresSocialRepository) GetFollowers(ctx context.Context, userID string) ([]*idDomain.User, error) {
-    var uid pgtype.UUID
-    if err := uid.Scan(userID); err != nil {
-        return nil, fmt.Errorf("invalid uuid: %w", err)
-    }
-    users, err := r.queries.GetFollowers(ctx, uid)
-    if err != nil {
-        return nil, err
-    }
-    return r.mapUsers(users), nil
-}
-
-func (r *PostgresSocialRepository) GetFollowing(ctx context.Context, userID string) ([]*idDomain.User, error) {
-    var uid pgtype.UUID
-    if err := uid.Scan(userID); err != nil {
-        return nil, fmt.Errorf("invalid uuid: %w", err)
-    }
-    users, err := r.queries.GetFollowing(ctx, uid)
-    if err != nil {
-        return nil, err
-    }
-    return r.mapUsers(users), nil
-}
-
-func (r *PostgresSocialRepository) GetMutuals(ctx context.Context, userA, userB string) ([]*idDomain.User, error) {
-    var uid pgtype.UUID
-    if err := uid.Scan(userA); err != nil {
-        return nil, fmt.Errorf("invalid uuid: %w", err)
-    }
-    users, err := r.queries.GetMutuals(ctx, uid)
-    if err != nil {
-        return nil, err
-    }
-    return r.mapUsers(users), nil
-}
-
 func (r *PostgresSocialRepository) Block(ctx context.Context, blockerID, blockedID string) error {
     var bID, bdID pgtype.UUID
     if err := bID.Scan(blockerID); err != nil {
