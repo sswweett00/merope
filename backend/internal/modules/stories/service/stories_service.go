@@ -25,8 +25,8 @@ func (s *storiesService) GetFeed(ctx context.Context, userID string) ([]*domain.
 	return s.repo.GetActiveStories(ctx, userID)
 }
 
-func (s *storiesService) GetLatestStoryForUser(ctx context.Context, userID string) (*domain.Story, error) {
-	return s.repo.GetLatestStoryForUser(ctx, userID)
+func (s *storiesService) GetLatestStoryForUser(ctx context.Context, targetUserID, viewerID string) (*domain.Story, error) {
+	return s.repo.GetLatestStoryForUser(ctx, targetUserID, viewerID)
 }
 
 func (s *storiesService) ViewStory(ctx context.Context, storyID, userID string) error {
@@ -37,8 +37,8 @@ func (s *storiesService) ReactToStory(ctx context.Context, storyID, userID, emoj
 	return s.repo.React(ctx, storyID, userID, emoji)
 }
 
-func (s *storiesService) GetStoryViewers(ctx context.Context, storyID string) ([]*domain.StoryViewer, error) {
-	return s.repo.GetStoryViewers(ctx, storyID)
+func (s *storiesService) GetStoryViewers(ctx context.Context, storyID, requesterID string) ([]*domain.StoryViewer, error) {
+	return s.repo.GetStoryViewers(ctx, storyID, requesterID)
 }
 
 func (s *storiesService) CreateHighlight(ctx context.Context, authorID, name string, storyIDs []string) (*domain.StoryHighlight, error) {
