@@ -48,6 +48,14 @@ func (s *financeService) GetBalance(ctx context.Context, userID string) (int64, 
 	return w.Balance, nil
 }
 
+func (s *financeService) GetTransactions(ctx context.Context, userID string, limit, offset int32) ([]*financeDomain.Transaction, error) {
+	return s.repo.GetUserTransactions(ctx, userID, limit, offset)
+}
+
+func (s *financeService) GetEscrow(ctx context.Context, escrowID string) (*financeDomain.EscrowRecord, error) {
+	return s.repo.GetEscrow(ctx, escrowID)
+}
+
 func (s *financeService) InitiateEscrow(ctx context.Context, buyerID, sellerID string, amount int64, description string) (*financeDomain.EscrowRecord, error) {
 	if buyerID == "" || sellerID == "" || buyerID == sellerID {
 		return nil, fmt.Errorf("invalid escrow participants")
