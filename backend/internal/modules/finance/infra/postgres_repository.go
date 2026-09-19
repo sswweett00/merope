@@ -9,6 +9,7 @@ import (
 	"local/merope/internal/database/db"
 	"local/merope/internal/modules/finance/domain"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -45,53 +46,111 @@ func (r *PostgresFinanceRepository) GetWallet(ctx context.Context, userID string
 }
 
 func (r *PostgresFinanceRepository) Transfer(ctx context.Context, senderID, receiverID string, amount int64, tType string, entityType, entityID *string) error {
-	amountDB, err := toDBAmount(amount)
-	if err != nil {
+	if amount <= 0 {
+		return fmt.Errorf("amount must be positive")
+	}
+	if senderID == receiverID {
+		return fmt.Errorf("sender and receiver must differ")
+	}
+	if r.pool == nil {
+		return fmt.Errorf("postgres pool is required")
+	}
+	sid, err := parseFinanceUUID(senderID)
+	if err != nil { return err }
+	rid, err := parseFinanceUUID(receiverID)
+	if err != nil { return err }
+
+	tx, err := r.pool.Begin(ctx)
+	if err != nil { return fmt.Errorf("begin transfer transaction: %w", err) }
+	defer tx.Rollback(ctx)
+
+	var remaining int64
+	if err := tx.QueryRow(ctx,
+		`UPDATE wallets
+		 SET balance = balance - $2, updated_at = NOW()
+		 WHERE user_id = $1 AND balance >= $2
+		 RETURNING balance`,
+		sid, amount,
+	).Scan(&remaining); err != nil {
+		if err == pgx.ErrNoRows {
+			return fmt.Errorf("insufficient balance or sender wallet not found")
+		}
 		return err
-	}
-	var sid, rid pgtype.UUID
-	if err := sid.Scan(senderID); err != nil {
-		return fmt.Errorf("invalid sender id: %w", err)
-	}
-	if err := rid.Scan(receiverID); err != nil {
-		return fmt.Errorf("invalid receiver id: %w", err)
 	}
 
-	if err := r.queries.UpdateWalletBalance(ctx, db.UpdateWalletBalanceParams{UserID: sid, Balance: -amountDB}); err != nil {
-		return err
-	}
-	if err := r.queries.UpdateWalletBalance(ctx, db.UpdateWalletBalanceParams{UserID: rid, Balance: amountDB}); err != nil {
-		return err
+	if _, err := tx.Exec(ctx,
+		`UPDATE wallets SET balance = balance + $2, updated_at = NOW() WHERE user_id = $1`,
+		rid, amount,
+	); err != nil {
+		return fmt.Errorf("credit receiver wallet: %w", err)
 	}
 
-	_, err = r.queries.CreateTransaction(ctx, db.CreateTransactionParams{BuyerID: sid, TotalAmount: amountDB})
-	return err
+	if _, err := tx.Exec(ctx,
+		`INSERT INTO transactions (sender_wallet_id, receiver_wallet_id, amount, tx_type, status, reference)
+		 VALUES ($1, $2, $3, $4, 'completed', $5)`,
+		sid, rid, amount, tType, transactionReference(entityType, entityID),
+	); err != nil {
+		return fmt.Errorf("record transfer: %w", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit transfer transaction: %w", err)
+	}
+	_ = remaining
+	return nil
 }
 
 func (r *PostgresFinanceRepository) CreateEscrow(ctx context.Context, escrow *domain.EscrowRecord) error {
+	if escrow == nil || escrow.Amount <= 0 {
+		return fmt.Errorf("invalid escrow")
+	}
+	if escrow.BuyerID == escrow.SellerID {
+		return fmt.Errorf("buyer and seller must differ")
+	}
+	if r.pool == nil {
+		return fmt.Errorf("postgres pool is required")
+	}
+	bid, err := parseFinanceUUID(escrow.BuyerID)
+	if err != nil { return err }
+	sid, err := parseFinanceUUID(escrow.SellerID)
+	if err != nil { return err }
+
 	amountDB, err := toDBAmount(escrow.Amount)
-	if err != nil {
-		return err
-	}
-	var bid, sid pgtype.UUID
-	if err := bid.Scan(escrow.BuyerID); err != nil {
-		return fmt.Errorf("invalid buyer id: %w", err)
-	}
-	if err := sid.Scan(escrow.SellerID); err != nil {
-		return fmt.Errorf("invalid seller id: %w", err)
+	if err != nil { return err }
+
+	tx, err := r.pool.Begin(ctx)
+	if err != nil { return fmt.Errorf("begin escrow transaction: %w", err) }
+	defer tx.Rollback(ctx)
+
+	if _, err := tx.Exec(ctx,
+		`UPDATE wallets
+		 SET balance = balance - $2, updated_at = NOW()
+		 WHERE user_id = $1 AND balance >= $2`,
+		bid, amountDB,
+	); err != nil {
+		return fmt.Errorf("reserve escrow funds: %w", err)
 	}
 
-	res, err := r.queries.CreateEscrowRecord(ctx, db.CreateEscrowRecordParams{
-		BuyerID: bid,
-		SellerID: sid,
-		Amount: amountDB,
-		Status: escrow.Status,
-		Description: pgtype.Text{String: escrow.Description, Valid: escrow.Description != ""},
-	})
+	var escrowID pgtype.UUID
+	var createdAt, releaseAt pgtype.Timestamptz
+	err = tx.QueryRow(ctx,
+		`INSERT INTO escrow_records (buyer_id, seller_id, amount, status, description, release_at)
+		 VALUES ($1, $2, $3, 'held', $4, $5)
+		 RETURNING id, created_at, release_at`,
+		bid, sid, amountDB, escrow.Description, escrow.ReleaseAt,
+	).Scan(&escrowID, &createdAt, &releaseAt)
 	if err != nil {
-		return err
+		return fmt.Errorf("create escrow record: %w", err)
 	}
-	escrow.ID = util.UUIDToString(res.ID)
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit escrow transaction: %w", err)
+	}
+	escrow.ID = util.UUIDToString(escrowID)
+	escrow.CreatedAt = createdAt.Time
+	if releaseAt.Valid {
+		escrow.ReleaseAt = &releaseAt.Time
+	}
 	return nil
 }
 
@@ -120,6 +179,96 @@ func (r *PostgresFinanceRepository) UpdateEscrowStatus(ctx context.Context, id, 
 		return fmt.Errorf("invalid escrow id: %w", err)
 	}
 	return r.queries.UpdateEscrowStatus(ctx, db.UpdateEscrowStatusParams{ID: eid, Status: status})
+}
+
+var _ domain.RuntimeFinanceRepository = (*PostgresFinanceRepository)(nil)
+
+
+func parseFinanceUUID(value string) (pgtype.UUID, error) {
+	var id pgtype.UUID
+	if err := id.Scan(strings.TrimSpace(value)); err != nil {
+		return id, fmt.Errorf("invalid uuid: %w", err)
+	}
+	return id, nil
+}
+
+func transactionReference(entityType, entityID *string) string {
+	if entityType == nil || entityID == nil || strings.TrimSpace(*entityID) == "" {
+		return ""
+	}
+	return strings.TrimSpace(*entityType) + ":" + strings.TrimSpace(*entityID)
+}
+
+func (r *PostgresFinanceRepository) ReleaseEscrow(ctx context.Context, escrowID string) error {
+	if r.pool == nil { return fmt.Errorf("postgres pool is required") }
+	eid, err := parseFinanceUUID(escrowID)
+	if err != nil { return err }
+
+	tx, err := r.pool.Begin(ctx)
+	if err != nil { return fmt.Errorf("begin escrow release transaction: %w", err) }
+	defer tx.Rollback(ctx)
+
+	var buyerID, sellerID pgtype.UUID
+	var amount int32
+	if err := tx.QueryRow(ctx,
+		`UPDATE escrow_records
+		 SET status = 'released', updated_at = NOW()
+		 WHERE id = $1 AND status = 'held'
+		 RETURNING buyer_id, seller_id, amount`,
+		eid,
+	).Scan(&buyerID, &sellerID, &amount); err != nil {
+		if err == pgx.ErrNoRows { return fmt.Errorf("escrow is not releasable") }
+		return err
+	}
+
+	if _, err := tx.Exec(ctx,
+		`UPDATE wallets SET balance = balance + $2, updated_at = NOW() WHERE user_id = $1`,
+		sellerID, amount,
+	); err != nil { return fmt.Errorf("credit seller wallet: %w", err) }
+
+	if _, err := tx.Exec(ctx,
+		`INSERT INTO transactions (sender_wallet_id, receiver_wallet_id, amount, tx_type, status, reference)
+		 VALUES ($1, $2, $3, 'escrow_release', 'completed', $4)`,
+		buyerID, sellerID, amount, escrowID,
+	); err != nil { return fmt.Errorf("record escrow release: %w", err) }
+
+	return tx.Commit(ctx)
+}
+
+func (r *PostgresFinanceRepository) RefundEscrow(ctx context.Context, escrowID string) error {
+	if r.pool == nil { return fmt.Errorf("postgres pool is required") }
+	eid, err := parseFinanceUUID(escrowID)
+	if err != nil { return err }
+
+	tx, err := r.pool.Begin(ctx)
+	if err != nil { return fmt.Errorf("begin escrow refund transaction: %w", err) }
+	defer tx.Rollback(ctx)
+
+	var buyerID, sellerID pgtype.UUID
+	var amount int32
+	if err := tx.QueryRow(ctx,
+		`UPDATE escrow_records
+		 SET status = 'refunded', updated_at = NOW()
+		 WHERE id = $1 AND status = 'held'
+		 RETURNING buyer_id, seller_id, amount`,
+		eid,
+	).Scan(&buyerID, &sellerID, &amount); err != nil {
+		if err == pgx.ErrNoRows { return fmt.Errorf("escrow is not refundable") }
+		return err
+	}
+
+	if _, err := tx.Exec(ctx,
+		`UPDATE wallets SET balance = balance + $2, updated_at = NOW() WHERE user_id = $1`,
+		buyerID, amount,
+	); err != nil { return fmt.Errorf("refund buyer wallet: %w", err) }
+
+	if _, err := tx.Exec(ctx,
+		`INSERT INTO transactions (sender_wallet_id, receiver_wallet_id, amount, tx_type, status, reference)
+		 VALUES ($1, $2, $3, 'escrow_refund', 'completed', $4)`,
+		sellerID, buyerID, amount, escrowID,
+	); err != nil { return fmt.Errorf("record escrow refund: %w", err) }
+
+	return tx.Commit(ctx)
 }
 
 var _ domain.RuntimeFinanceRepository = (*PostgresFinanceRepository)(nil)
