@@ -18,6 +18,23 @@ func NewMessagingContractHandler(service domain.MessagingService) *MessagingCont
 	return &MessagingContractHandler{service: service}
 }
 
+func (h *MessagingContractHandler) requireRoomMember(c *fiber.Ctx, roomID, userID string) error {
+	if userID == "" || roomID == "" {
+		return fiber.ErrUnauthorized
+	}
+	rooms, err := h.service.GetUserRooms(c.Context(), userID)
+	if err != nil {
+		return err
+	}
+	for _, room := range rooms {
+		if room != nil && room.ID == roomID {
+			return nil
+		}
+	}
+	return fiber.ErrForbidden
+}
+
+
 func (h *MessagingContractHandler) GetRooms(c *fiber.Ctx) error {
 	userID, _ := c.Locals("user_id").(string)
 	rooms, err := h.service.GetUserRooms(c.Context(), userID)
@@ -53,6 +70,16 @@ func (h *MessagingContractHandler) GetRooms(c *fiber.Ctx) error {
 
 func (h *MessagingContractHandler) GetHistory(c *fiber.Ctx) error {
 	roomID := strings.TrimSpace(c.Params("id"))
+	userID, _ := c.Locals("user_id").(string)
+	if err := h.requireRoomMember(c, roomID, userID); err != nil {
+		status := fiber.StatusInternalServerError
+		if err == fiber.ErrUnauthorized {
+			status = fiber.StatusUnauthorized
+		} else if err == fiber.ErrForbidden {
+			status = fiber.StatusForbidden
+		}
+		return c.Status(status).JSON(fiber.Map{"code": errors.GetCode(err), "message": "Unable to access room"})
+	}
 	if roomID == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"code": errors.ErrValidation, "message": "Invalid room id"})
 	}
@@ -95,6 +122,15 @@ func (h *MessagingContractHandler) SendMessage(c *fiber.Ctx) error {
 	roomID := strings.TrimSpace(c.Params("id"))
 	if senderID == "" || roomID == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"code": errors.ErrValidation, "message": "Invalid sender or room"})
+	}
+	if err := h.requireRoomMember(c, roomID, senderID); err != nil {
+		status := fiber.StatusInternalServerError
+		if err == fiber.ErrUnauthorized {
+			status = fiber.StatusUnauthorized
+		} else if err == fiber.ErrForbidden {
+			status = fiber.StatusForbidden
+		}
+		return c.Status(status).JSON(fiber.Map{"code": errors.GetCode(err), "message": "Unable to access room"})
 	}
 
 	type request struct {
