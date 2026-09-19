@@ -302,7 +302,13 @@ func (r *PostgresMessagingRepository) MarkRead(ctx context.Context, messageID, u
 
 	_, err := r.pool.Exec(ctx,
 		`INSERT INTO message_reads (message_id, user_id, read_at)
-		 VALUES ($1, $2, NOW())
+		 SELECT $1, $2, NOW()
+		 WHERE EXISTS (
+		   SELECT 1
+		   FROM chat_messages cm
+		   JOIN chat_members member ON member.room_id = cm.room_id
+		   WHERE cm.id = $1 AND member.user_id = $2
+		 )
 		 ON CONFLICT (message_id, user_id) DO UPDATE SET read_at = NOW()`,
 		mid, uid)
 	return err
@@ -315,7 +321,13 @@ func (r *PostgresMessagingRepository) AddReaction(ctx context.Context, messageID
 
 	_, err := r.pool.Exec(ctx,
 		`INSERT INTO message_reactions (message_id, user_id, emoji)
-		 VALUES ($1, $2, $3)
+		 SELECT $1, $2, $3
+		 WHERE EXISTS (
+		   SELECT 1
+		   FROM chat_messages cm
+		   JOIN chat_members member ON member.room_id = cm.room_id
+		   WHERE cm.id = $1 AND member.user_id = $2
+		 )
 		 ON CONFLICT (message_id, user_id) DO UPDATE SET emoji = $3`,
 		mid, uid, emoji)
 	return err
