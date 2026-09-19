@@ -40,7 +40,7 @@ func (s *socialService) GetProfile(ctx context.Context, viewerID, userID string)
         return nil, err
     }
     if !visible {
-        return nil, fiber.ErrForbidden
+        return nil, socialDomain.ErrProfileForbidden
     }
     exported, err := s.idService.ExportData(ctx, userID)
     if err != nil {
