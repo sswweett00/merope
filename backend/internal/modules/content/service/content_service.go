@@ -93,10 +93,11 @@ func (s *contentService) BroadcastSignal(ctx context.Context, signal *domain.Sig
 
 	if s.bus != nil {
 		g.Go(func() error {
-			return s.bus.Publish(gCtx, "content.signal.broadcasted", events.Event{
+			_ = s.bus.Publish(gCtx, "content.signal.broadcasted", events.Event{
 				Type:    "SIGNAL_BROADCASTED",
 				Payload: signal,
 			})
+			return nil
 		})
 	}
 
