@@ -38,6 +38,11 @@ func (s *HighPerformanceContentService) BroadcastSignal(ctx context.Context, sig
 		return nil, fmt.Errorf("signal author is required")
 	}
 	signal.ContentText = security.SanitizeHTML(signal.ContentText)
+	visibility, err := normalizeVisibility(signal.Visibility)
+	if err != nil {
+		return nil, err
+	}
+	signal.Visibility = visibility
 	if s.veritasGuard != nil {
 		if s.veritasGuard.DetectBotPattern(ctx, signal.AuthorID, signal.ContentText) {
 			return nil, fmt.Errorf("signal rejected: bot pattern detected")
