@@ -66,6 +66,13 @@ func (s *socialService) Follow(ctx context.Context, followerID, followingID stri
     if followerID == "" || followingID == "" || followerID == followingID {
         return fmt.Errorf("invalid follow relationship")
     }
+    privateAccount, err := s.repo.IsPrivateUser(ctx, followingID)
+    if err != nil {
+        return err
+    }
+    if privateAccount {
+        return fmt.Errorf("private account requires a follow request")
+    }
     if s.veritasGuard != nil && s.veritasGuard.TrackInteraction(ctx, followerID, followingID, "follow") {
         return fmt.Errorf("excessive follow activity detected")
     }
@@ -98,11 +105,25 @@ func (s *socialService) GetMutualFriends(ctx context.Context, userA, userB strin
     return s.repo.GetMutuals(ctx, userA, userB)
 }
 
-func (s *socialService) GetFollowers(ctx context.Context, userID string) ([]*domain.User, error) {
+func (s *socialService) GetFollowers(ctx context.Context, viewerID, userID string) ([]*domain.User, error) {
+    visible, err := s.repo.CanViewProfile(ctx, viewerID, userID)
+    if err != nil {
+        return nil, err
+    }
+    if !visible {
+        return nil, socialDomain.ErrProfileForbidden
+    }
     return s.repo.GetFollowers(ctx, userID)
 }
 
-func (s *socialService) GetFollowing(ctx context.Context, userID string) ([]*domain.User, error) {
+func (s *socialService) GetFollowing(ctx context.Context, viewerID, userID string) ([]*domain.User, error) {
+    visible, err := s.repo.CanViewProfile(ctx, viewerID, userID)
+    if err != nil {
+        return nil, err
+    }
+    if !visible {
+        return nil, socialDomain.ErrProfileForbidden
+    }
     return s.repo.GetFollowing(ctx, userID)
 }
 
