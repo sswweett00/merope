@@ -294,6 +294,8 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	content.Put("/posts/:id", contHandler.UpdatePost)
 	content.Delete("/posts/:id", contHandler.DeletePost)
 	content.Get("/posts/:id/comments", contHandler.GetComments)
+	content.Post("/posts/:id/comments", contHandler.AddComment)
+	content.Get("/posts/:id/analytics", contHandler.GetPostAnalytics)
 	content.Post("/posts/:id/react", contHandler.React)
 	content.Post("/posts/:id/like", contHandler.Like)
 	content.Delete("/posts/:id/like", contHandler.Unlike)
