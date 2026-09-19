@@ -122,14 +122,14 @@ func (r *PostgresMarketplaceRepository) CreateOrder(ctx context.Context, o *doma
 		status = "pending"
 	}
 
-	var orderID pgtype.UUID
-	var createdAt pgtype.Timestamptz
-	if err := tx.QueryRow(ctx, `
-INSERT INTO orders (buyer_id, total_amount, status, currency, shipping_address)
-VALUES ($1, $2, $3, $4, $5)
-RETURNING id, created_at`, buyerID, o.TotalAmount, status, currency, o.ShippingAddress.AddressLine1).Scan(&orderID, &createdAt); err != nil {
-		return err
+	type reservedItem struct {
+		productID pgtype.UUID
+		quantity  int32
+		price     int32
 	}
+	reserved := make([]reservedItem, 0, len(o.Items))
+	var total int64
+	const maxInt32 = int64(1<<31 - 1)
 
 	for _, item := range o.Items {
 		productID, parseErr := parseMarketplaceUUID(item.ProductID)
@@ -141,20 +141,43 @@ RETURNING id, created_at`, buyerID, o.TotalAmount, status, currency, o.ShippingA
 		}
 
 		var updatedProductID pgtype.UUID
+		var currentPrice int32
 		if err := tx.QueryRow(ctx, `
 UPDATE products
 SET stock_quantity = CASE
     WHEN stock_quantity = 0 THEN 0
     ELSE stock_quantity - $2
 END
-WHERE id = $1 AND (stock_quantity = 0 OR stock_quantity >= $2)
-RETURNING id`, productID, item.Quantity).Scan(&updatedProductID); err != nil {
+WHERE id = $1 AND is_active = TRUE
+  AND (stock_quantity = 0 OR stock_quantity >= $2)
+RETURNING id, price`, productID, item.Quantity).Scan(&updatedProductID, &currentPrice); err != nil {
 			return fmt.Errorf("reserve stock for product %s: %w", item.ProductID, err)
 		}
+		if currentPrice <= 0 {
+			return fmt.Errorf("product %s has an invalid price", item.ProductID)
+		}
 
+		lineTotal := int64(currentPrice) * int64(item.Quantity)
+		if lineTotal <= 0 || total > maxInt32-lineTotal {
+			return fmt.Errorf("order total exceeds supported amount")
+		}
+		total += lineTotal
+		reserved = append(reserved, reservedItem{productID: updatedProductID, quantity: item.Quantity, price: currentPrice})
+	}
+
+	var orderID pgtype.UUID
+	var createdAt pgtype.Timestamptz
+	if err := tx.QueryRow(ctx, `
+INSERT INTO orders (buyer_id, total_amount, status, currency, shipping_address)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, created_at`, buyerID, int32(total), status, currency, o.ShippingAddress.AddressLine1).Scan(&orderID, &createdAt); err != nil {
+		return err
+	}
+
+	for _, item := range reserved {
 		if _, err := tx.Exec(ctx, `
 INSERT INTO order_items (order_id, product_id, quantity, price_at_purchase)
-VALUES ($1, $2, $3, $4)`, orderID, productID, item.Quantity, item.PriceAtPurchase); err != nil {
+VALUES ($1, $2, $3, $4)`, orderID, item.productID, item.quantity, item.price); err != nil {
 			return err
 		}
 	}
@@ -165,8 +188,15 @@ VALUES ($1, $2, $3, $4)`, orderID, productID, item.Quantity, item.PriceAtPurchas
 
 	o.ID = util.UUIDToString(orderID)
 	o.Currency = currency
+	o.TotalAmount = int32(total)
 	o.Status = status
 	o.CreatedAt = createdAt.Time
+	for i := range o.Items {
+		if i < len(reserved) {
+			o.Items[i].PriceAtPurchase = reserved[i].price
+			o.Items[i].Subtotal = reserved[i].price * reserved[i].quantity
+		}
+	}
 	return nil
 }
 func (r *PostgresMarketplaceRepository) ListProducts(ctx context.Context, category, search string) ([]*domain.Product, error) {
