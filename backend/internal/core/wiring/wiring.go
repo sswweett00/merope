@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"strings"
+	"path/filepath"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -12,11 +13,14 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 
 	"local/merope/internal/core/config"
 	coreErrors "local/merope/internal/core/errors"
 	coreMiddleware "local/merope/internal/core/middleware"
+	"local/merope/internal/platform/s3"
+	"local/merope/internal/core/realtime"
 	"local/merope/internal/core/security"
 	"local/merope/internal/core/worker"
 	"local/merope/internal/database"
@@ -51,6 +55,18 @@ import (
 	notificationsInfra "local/merope/internal/modules/notifications/infra"
 	notificationsService "local/merope/internal/modules/notifications/service"
 	notificationsTransport "local/merope/internal/modules/notifications/transport"
+	searchInfra "local/merope/internal/modules/search/infra"
+	searchService "local/merope/internal/modules/search/service"
+	searchTransport "local/merope/internal/modules/search/transport"
+	vaultInfra "local/merope/internal/modules/vault/infra"
+	vaultService "local/merope/internal/modules/vault/service"
+	vaultTransport "local/merope/internal/modules/vault/transport"
+	financeInfra "local/merope/internal/modules/finance/infra"
+	financeService "local/merope/internal/modules/finance/service"
+	financeTransport "local/merope/internal/modules/finance/transport"
+	moderationInfra "local/merope/internal/modules/moderation/infra"
+	moderationService "local/merope/internal/modules/moderation/service"
+	moderationTransport "local/merope/internal/modules/moderation/transport"
 	socialInfra "local/merope/internal/modules/social/infra"
 	socialService "local/merope/internal/modules/social/service"
 	socialTransport "local/merope/internal/modules/social/transport"
@@ -61,6 +77,8 @@ type Resources struct {
 	Redis        *redis.Client
 	NATS         *nats.Client
 	Orchestrator *worker.Orchestrator
+	Storage      *s3.Client
+	WSHub        *realtime.Hub
 	Scylla       *scylla.Client
 }
 
@@ -117,7 +135,13 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 
 	orchestrator := worker.NewOrchestrator(queries, 10, 20)
 	orchestrator.Start(ctx)
-	resources := &Resources{PostgresPool: pgPool, Redis: rdb, NATS: bus, Orchestrator: orchestrator, Scylla: scyllaClient}
+	storageClient, err := s3.New(ctx, s3.Options{Endpoint: cfg.Storage.Endpoint, Region: cfg.Storage.Region, AccessKey: cfg.Storage.AccessKey, SecretKey: cfg.Storage.SecretKey, Bucket: cfg.Storage.Bucket})
+	if err != nil {
+		log.Fatalf("failed to initialize storage client: %v", err)
+	}
+	wsHub := realtime.NewHub(bus)
+	go wsHub.Run(ctx)
+	resources := &Resources{PostgresPool: pgPool, Redis: rdb, NATS: bus, Orchestrator: orchestrator, Storage: storageClient, WSHub: wsHub, Scylla: scyllaClient}
 
 	identityRepo := identityInfra.NewPostgresIdentityRepository(queries, rdb, nil)
 	identitySentinel := identityService.NewIdentitySentinel(identityRepo, rdb.Conn)
@@ -175,6 +199,18 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	notificationRepo := notificationsInfra.NewPostgresNotificationsRepository(queries)
 	notificationSvc := notificationsService.NewNotificationsService(notificationRepo, nil)
 	notificationHandler := notificationsTransport.NewNotificationsHandler(notificationSvc)
+	searchRepo := searchInfra.NewPostgresSearchRepository(queries)
+	searchSvc := searchService.NewSearchService(searchRepo, nil)
+	searchHandler := searchTransport.NewSearchHandler(searchSvc)
+	vaultRepo := vaultInfra.NewPostgresVaultRepository(queries)
+	vaultSvc := vaultService.NewVaultService(vaultRepo, vaultService.NewVaultSentinelEngine(bus))
+	vaultHandler := vaultTransport.NewVaultHandler(vaultSvc)
+	financeRepo := financeInfra.NewPostgresFinanceRepository(queries, pgPool)
+	financeSvc := financeService.NewFinanceService(financeRepo, contentRepo)
+	financeHandler := financeTransport.NewFinanceHandler(financeSvc)
+	moderationRepo := moderationInfra.NewPostgresModerationRepository(queries, pgPool)
+	moderationSvc := moderationService.NewModerationService(moderationRepo)
+	moderationHandler := moderationTransport.NewModerationHandler(moderationSvc)
 
 	handlers := &Handlers{
 		Identity:      idHandler,
@@ -349,11 +385,50 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	developer.Get("/apps/:app_id/metrics", developerHandler.GetMetrics)
 	developer.Post("/apps/:app_id/test-suite", developerHandler.TestSuite)
 
+	search := protected.Group("/search")
+	search.Get("", searchHandler.Search)
+	search.Get("/autocomplete", searchHandler.Autocomplete)
+	search.Get("/trending", searchHandler.GetTrending)
+	search.Post("/location", searchHandler.UpdateLocation)
+	search.Get("/nearby", searchHandler.GetNearby)
+
+	vault := protected.Group("/vault")
+	vault.Post("/items", vaultHandler.StoreItem)
+	vault.Get("/items", vaultHandler.ListItems)
+
+	finance := protected.Group("/finance")
+	finance.Get("/balance", financeHandler.GetBalance)
+	finance.Post("/tip", financeHandler.Tip)
+	finance.Post("/escrow", financeHandler.CreateEscrow)
+	finance.Post("/escrow/:id/release", financeHandler.ReleaseEscrow)
+
+	moderation := protected.Group("/moderation")
+	moderation.Get("/queue", moderationHandler.GetQueue)
+	moderation.Post("/queue/:user_id/ban", moderationHandler.BanAccount)
+	moderation.Post("/queue/:user_id/safe", moderationHandler.MarkSafe)
+	moderation.Post("/reviews/:id/assign", moderationHandler.AssignReview)
+	moderation.Post("/reviews/:id/resolve", moderationHandler.ResolveReview)
+	moderation.Post("/classify", moderationHandler.ClassifyContent)
+
+	content.Post("/media/upload", func(c *fiber.Ctx) error {
+		file, err := c.FormFile("file")
+		if err != nil { return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "file is required"}) }
+		reader, err := file.Open()
+		if err != nil { return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid file"}) }
+		defer reader.Close()
+		ext := filepath.Ext(file.Filename)
+		key := "media/" + uuid.NewString() + ext
+		if _, err := storageClient.Upload(c.Context(), key, reader, file.Header.Get("Content-Type")); err != nil { return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "media upload failed"}) }
+		url := strings.TrimRight(cfg.Storage.PublicURLPrefix, "/") + "/" + key
+		return c.Status(fiber.StatusCreated).JSON(fiber.Map{"url": url, "media_url": url, "media_id": strings.TrimSuffix(uuid.NewString(), "")})
+	})
+
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "ok", "request_id": coreMiddleware.GetRequestID(c)})
 	})
 	cleanup := func() {
 		zapLogger.Info("shutting down API")
+		if wsHub != nil { wsHub.Stop() }
 		if orchestrator != nil {
 			orchestrator.Stop()
 		}
