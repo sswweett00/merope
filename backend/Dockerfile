@@ -1,20 +1,19 @@
 FROM golang:1.25-alpine AS builder
 
-RUN apk add --no-cache gcc musl-dev sqlite-dev build-base
-
+RUN apk add --no-cache ca-certificates
 WORKDIR /app
 
 COPY go.mod go.sum ./
 RUN go mod download
 
-COPY . .
+COPY . ./
+RUN CGO_ENABLED=0 go build -trimpath -ldflags='-s -w' -o /merope-api ./cmd/api
 
-RUN CGO_ENABLED=0 go build -ldflags='-s -w -extldflags "-static"' -o merope-api ./cmd/api/main.go
+FROM gcr.io/distroless/static-debian12:nonroot
 
-FROM alpine:3.21
-RUN apk add --no-cache ca-certificates tzdata
-
-COPY --from=builder /app/merope-api /usr/local/bin/merope-api
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=builder /merope-api /merope-api
 
 EXPOSE 8080
-ENTRYPOINT ["merope-api"]
+USER nonroot:nonroot
+ENTRYPOINT ["/merope-api"]
