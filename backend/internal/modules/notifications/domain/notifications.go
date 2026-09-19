@@ -6,28 +6,28 @@ import (
 )
 
 type Notification struct {
-	ID             string
-	ReceiverID     string
-	SenderID       *string
-	SenderUsername string
-	SenderAvatar   string
-	Type           string // like, follow, comment, message, mention, system, reminder, alert
-	EntityType     string // post, comment, message, community, event, user, product, order
-	EntityID       string
-	Title          string
-	Body           string
-	Data           map[string]interface{}
-	IsRead         bool
-	IsSeen         bool
-	Priority       string // low, normal, high, urgent
-	CreatedAt      time.Time
-	ExpiresAt      *time.Time
-	ActionURL      *string
-	ActionText     *string
-	Category       string // social, system, financial, marketplace, community, security
-	Tags           []string
-	Source         string // web, mobile, email, sms, push
-	Metadata       NotificationMetadata
+	ID             string                 `json:"id"`
+	ReceiverID     string                 `json:"receiverId"`
+	SenderID       *string                `json:"senderId"`
+	SenderUsername string                 `json:"senderUsername"`
+	SenderAvatar   string                 `json:"senderAvatar"`
+	Type           string                 `json:"type"`
+	EntityType     string                 `json:"entityType"`
+	EntityID       string                 `json:"entityId"`
+	Title          string                 `json:"title"`
+	Body           string                 `json:"body"`
+	Data           map[string]interface{} `json:"data"`
+	IsRead         bool                   `json:"isRead"`
+	IsSeen         bool                   `json:"isSeen"`
+	Priority       string                 `json:"priority"`
+	CreatedAt      time.Time              `json:"createdAt"`
+	ExpiresAt      *time.Time             `json:"expiresAt"`
+	ActionURL      *string                `json:"actionUrl"`
+	ActionText     *string                `json:"actionText"`
+	Category       string                 `json:"category"`
+	Tags           []string               `json:"tags"`
+	Source         string                 `json:"source"`
+	Metadata       NotificationMetadata   `json:"metadata"`
 }
 
 type NotificationMetadata struct {
