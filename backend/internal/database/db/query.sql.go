@@ -2625,7 +2625,19 @@ func (q *Queries) Search(ctx context.Context, arg SearchParams) ([]SearchRow, er
 }
 
 const searchUsers = `-- name: SearchUsers :many
-SELECT id, username, display_name, avatar_url, bio
+SELECT id, username, display_name, avatar_url,
+       CASE
+           WHEN COALESCE(is_private, FALSE) = FALSE
+                OR id = $2
+                OR EXISTS (
+                    SELECT 1 FROM follows f
+                    WHERE f.follower_id = $2
+                      AND f.following_id = users.id
+                      AND f.status = 'accepted'
+                )
+           THEN bio
+           ELSE NULL
+       END AS bio
 FROM users
 WHERE (username ILIKE '%' || $1 || '%' OR display_name ILIKE '%' || $1 || '%')
   AND id != $2
