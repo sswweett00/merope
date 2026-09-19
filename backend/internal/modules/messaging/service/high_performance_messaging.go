@@ -145,20 +145,26 @@ func (s *HighPerformanceMessagingService) DeleteMessage(ctx context.Context, mes
 }
 
 func (s *HighPerformanceMessagingService) ForwardMessage(ctx context.Context, messageID, fromUserID, toRoomID string) (*domain.ChatMessage, error) {
-	messages, err := s.pgRepo.GetMessages(ctx, toRoomID, 1, 0)
+	original, err := s.pgRepo.GetMessageByID(ctx, messageID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get messages: %w", err)
+		return nil, fmt.Errorf("load source message: %w", err)
+	}
+	if original == nil || original.ID == "" {
+		return nil, fmt.Errorf("message not found")
+	}
+	if original.IsDeleted || (original.ExpiresAt != nil && original.ExpiresAt.Before(time.Now().UTC())) {
+		return nil, fmt.Errorf("message is no longer available")
+	}
+	if original.IsEncrypted || original.EncryptedPayload != nil {
+		return nil, fmt.Errorf("encrypted messages must be re-encrypted by the client before forwarding")
 	}
 
-	var original *domain.ChatMessage
-	for _, m := range messages {
-		if m.ID == messageID {
-			original = m
-			break
-		}
+	rooms, err := s.pgRepo.GetUserRooms(ctx, fromUserID)
+	if err != nil {
+		return nil, fmt.Errorf("verify room membership: %w", err)
 	}
-	if original == nil {
-		return nil, fmt.Errorf("message not found")
+	if !hasRoom(rooms, original.RoomID) || !hasRoom(rooms, toRoomID) {
+		return nil, fmt.Errorf("user must belong to both source and target rooms")
 	}
 
 	forwarded := &domain.ChatMessage{
@@ -166,7 +172,9 @@ func (s *HighPerformanceMessagingService) ForwardMessage(ctx context.Context, me
 		SenderID:        fromUserID,
 		Content:         original.Content,
 		MessageType:     original.MessageType,
-		ForwardedFromID: &messageID,
+		VoiceURL:        original.VoiceURL,
+		FileURL:         original.FileURL,
+		ForwardedFromID: &original.ID,
 	}
 
 	return s.SendMessage(ctx, forwarded)
