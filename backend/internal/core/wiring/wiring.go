@@ -424,9 +424,13 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 
 	finance := protected.Group("/finance")
 	finance.Get("/balance", financeHandler.GetBalance)
+	finance.Get("/transactions", financeHandler.GetTransactions)
 	finance.Post("/tip", financeHandler.Tip)
+	finance.Post("/unlock", financeHandler.UnlockContent)
 	finance.Post("/escrow", financeHandler.CreateEscrow)
+	finance.Get("/escrow/:id", financeHandler.GetEscrow)
 	finance.Post("/escrow/:id/release", financeHandler.ReleaseEscrow)
+	finance.Post("/escrow/:id/refund", financeHandler.RefundEscrow)
 
 	moderation := protected.Group("/moderation")
 	moderation.Get("/queue", moderationHandler.GetQueue)
