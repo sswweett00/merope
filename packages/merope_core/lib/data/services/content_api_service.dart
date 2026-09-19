@@ -388,8 +388,7 @@ class ContentApiService {
         '/api/v10/content/posts/$postId',
         data: {
           'content': content,
-          'media_urls': mediaUrls ?? [],
-          'title': title,
+          'media': mediaUrls ?? [],
         },
       );
 
