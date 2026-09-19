@@ -20,7 +20,9 @@ class RealtimeMessage {
     return RealtimeMessage(
       type: json['type'] as String,
       payload: Map<String, dynamic>.from(json['payload'] as Map),
-      timestamp: DateTime.parse(json['timestamp'] as String),
+      timestamp: json['timestamp'] == null
+          ? DateTime.now().toUtc()
+          : DateTime.parse(json['timestamp'] as String),
     );
   }
 
