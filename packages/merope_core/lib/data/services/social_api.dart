@@ -244,7 +244,7 @@ class SocialApiService {
           'text': contentText,
           'media': mediaUrls,
           if (hashtags.isNotEmpty) 'hashtags': hashtags,
-          'privacy': privacy.name,
+          'visibility': _visibilityFor(privacy),
         },
       );
       if (response.statusCode == 201 && response.data is Map) {
@@ -417,6 +417,19 @@ class SocialApiService {
     } catch (e) {
       return ApiResult.error(e.toString());
     }
+  }
+}
+
+
+String _visibilityFor(PostPrivacy privacy) {
+  switch (privacy) {
+    case PostPrivacy.public:
+      return 'public';
+    case PostPrivacy.private:
+      return 'private';
+    case PostPrivacy.friendsOnly:
+    case PostPrivacy.circle:
+      return 'followers';
   }
 }
 
