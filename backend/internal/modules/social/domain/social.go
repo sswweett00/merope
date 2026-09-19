@@ -41,6 +41,8 @@ type SocialRepository interface {
 	Unfollow(ctx context.Context, followerID, followingID string) error
 	GetFollowers(ctx context.Context, userID string) ([]*domain.User, error)
 	GetFollowing(ctx context.Context, userID string) ([]*domain.User, error)
+	IsPrivateUser(ctx context.Context, userID string) (bool, error)
+	GetFollowing(ctx context.Context, userID string) ([]*domain.User, error)
 	GetMutuals(ctx context.Context, userA, userB string) ([]*domain.User, error)
 	CanViewProfile(ctx context.Context, viewerID, targetID string) (bool, error)
 	Block(ctx context.Context, blockerID, blockedID string) error
@@ -59,11 +61,14 @@ type SocialRepository interface {
 
 type SocialService interface {
 	GetProfile(ctx context.Context, viewerID, userID string) (*PublicProfile, error)
+	RequestFollow(ctx context.Context, followerID, followingID string) error
+	HandleFollowRequest(ctx context.Context, viewerID, followerID, status string) error
+	GetFollowRequests(ctx context.Context, userID string) ([]*FollowRequest, error)
 	Follow(ctx context.Context, followerID, followingID string) error
 	Unfollow(ctx context.Context, followerID, followingID string) error
 	GetMutualFriends(ctx context.Context, userA, userB string) ([]*domain.User, error)
-	GetFollowers(ctx context.Context, userID string) ([]*domain.User, error)
-	GetFollowing(ctx context.Context, userID string) ([]*domain.User, error)
+	GetFollowers(ctx context.Context, viewerID, userID string) ([]*domain.User, error)
+	GetFollowing(ctx context.Context, viewerID, userID string) ([]*domain.User, error)
 	GlobalSearch(ctx context.Context, viewerID, query string) ([]*domain.User, error)
 	ReportContent(ctx context.Context, reporterID, targetID, targetType, reason string) error
 	CreatePrivacyCircle(ctx context.Context, ownerID, name string, members []string) (string, error)
