@@ -46,13 +46,29 @@ class SearchScreen extends ConsumerWidget {
                       const SizedBox(height: MeropeTokens.space24),
                       const NearbyRadar(),
                       const SizedBox(height: MeropeTokens.space32),
-                      _SectionHeader(title: 'Trending Now', tokens: tokens),
-                      const SizedBox(height: MeropeTokens.space12),
-                      _TrendingList(
-                          tags: List<TrendingSignal>.from(
-                              data['trending'] as List),
-                          tokens: tokens),
-                      const SizedBox(height: MeropeTokens.space32),
+                      if ((data['trending'] as List).isNotEmpty) ...[
+                        _SectionHeader(title: 'Trending Now', tokens: tokens),
+                        const SizedBox(height: MeropeTokens.space12),
+                        _TrendingList(
+                            tags: List<TrendingSignal>.from(
+                                data['trending'] as List),
+                            tokens: tokens),
+                        const SizedBox(height: MeropeTokens.space32),
+                      ],
+                      if ((data['history'] as List).isNotEmpty) ...[
+                        _SectionHeader(title: 'Recent Searches', tokens: tokens),
+                        const SizedBox(height: MeropeTokens.space12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: (data['history'] as List)
+                              .whereType<String>()
+                              .take(8)
+                              .map((query) => Chip(label: Text(query)))
+                              .toList(growable: false),
+                        ),
+                        const SizedBox(height: MeropeTokens.space32),
+                      ],
                       _SectionHeader(
                           title: 'Suggested for You', tokens: tokens),
                       const SizedBox(height: MeropeTokens.space12),
