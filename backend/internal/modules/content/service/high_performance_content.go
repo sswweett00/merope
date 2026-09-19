@@ -103,6 +103,12 @@ func (s *HighPerformanceContentService) GetResonanceStream(ctx context.Context, 
 }
 
 func (s *HighPerformanceContentService) AmplifySignal(ctx context.Context, userID, signalID string, amplitude int) error {
+	if amplitude <= 0 {
+		return fmt.Errorf("amplitude must be positive")
+	}
+	if s.veritasGuard != nil && s.veritasGuard.TrackInteraction(ctx, userID, signalID, "amplify") {
+		return fmt.Errorf("excessive resonance activity detected")
+	}
 	err := s.pgRepo.AddResonance(ctx, userID, signalID, amplitude)
 	if err != nil { return err }
 	if s.scyllaRepo != nil {
