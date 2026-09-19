@@ -57,14 +57,34 @@ SELECT EXISTS (
 }
 
 func (r *PostgresSocialRepository) Follow(ctx context.Context, followerID, followingID string) error {
-    var fID, tID pgtype.UUID
-    if err := fID.Scan(followerID); err != nil {
-        return fmt.Errorf("invalid uuid followerID: %w", err)
-    }
-    if err := tID.Scan(followingID); err != nil {
-        return fmt.Errorf("invalid uuid followingID: %w", err)
-    }
-    return r.queries.FollowUser(ctx, db.FollowUserParams{FollowerID: fID, FollowingID: tID})
+	var fID, tID pgtype.UUID
+	if err := fID.Scan(followerID); err != nil {
+		return fmt.Errorf("invalid uuid followerID: %w", err)
+	}
+	if err := tID.Scan(followingID); err != nil {
+		return fmt.Errorf("invalid uuid followingID: %w", err)
+	}
+
+	tag, err := r.queries.Exec(ctx, `
+INSERT INTO follows (follower_id, following_id, status)
+SELECT $1, $2, 'accepted'
+FROM users u
+WHERE u.id = $2
+  AND NOT EXISTS (
+      SELECT 1 FROM blocks b
+      WHERE (b.blocker_id = $1 AND b.blocked_id = $2)
+         OR (b.blocker_id = $2 AND b.blocked_id = $1)
+  )
+ON CONFLICT (follower_id, following_id)
+DO UPDATE SET status = 'accepted'
+`, fID, tID)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return fmt.Errorf("follow relationship is not permitted")
+	}
+	return nil
 }
 
 func (r *PostgresSocialRepository) Unfollow(ctx context.Context, followerID, followingID string) error {
@@ -76,6 +96,94 @@ func (r *PostgresSocialRepository) Unfollow(ctx context.Context, followerID, fol
         return fmt.Errorf("invalid uuid followingID: %w", err)
     }
     return r.queries.UnfollowUser(ctx, db.UnfollowUserParams{FollowerID: fID, FollowingID: tID})
+}
+
+func (r *PostgresSocialRepository) IsPrivateUser(ctx context.Context, userID string) (bool, error) {
+	var uid pgtype.UUID
+	if err := uid.Scan(userID); err != nil {
+		return false, fmt.Errorf("invalid uuid: %w", err)
+	}
+	var isPrivate bool
+	if err := r.queries.QueryRow(ctx, `SELECT COALESCE(is_private, FALSE) FROM users WHERE id = $1`, uid).Scan(&isPrivate); err != nil {
+		return false, err
+	}
+	return isPrivate, nil
+}
+
+func (r *PostgresSocialRepository) GetFollowers(ctx context.Context, userID string) ([]*idDomain.User, error) {
+    var uid pgtype.UUID
+    if err := uid.Scan(userID); err != nil {
+        return nil, fmt.Errorf("invalid uuid: %w", err)
+    }
+    users, err := r.queries.GetFollowers(ctx, uid)
+    if err != nil {
+        return nil, err
+    }
+    return r.mapUsers(users), nil
+}
+
+func (r *PostgresSocialRepository) GetFollowing(ctx context.Context, userID string) ([]*idDomain.User, error) {
+    var uid pgtype.UUID
+    if err := uid.Scan(userID); err != nil {
+        return nil, fmt.Errorf("invalid uuid: %w", err)
+    }
+    users, err := r.queries.GetFollowing(ctx, uid)
+    if err != nil {
+        return nil, err
+    }
+    return r.mapUsers(users), nil
+}
+
+func (r *PostgresSocialRepository) GetMutuals(ctx context.Context, userA, userB string) ([]*idDomain.User, error) {
+	var aID, bID pgtype.UUID
+	if err := aID.Scan(userA); err != nil {
+		return nil, fmt.Errorf("invalid uuid userA: %w", err)
+	}
+	if err := bID.Scan(userB); err != nil {
+		return nil, fmt.Errorf("invalid uuid userB: %w", err)
+	}
+
+	rows, err := r.queries.Query(ctx, `
+SELECT u.*
+FROM users u
+JOIN follows fa ON fa.following_id = u.id
+JOIN follows fb ON fb.following_id = u.id
+WHERE fa.follower_id = $1
+  AND fb.follower_id = $2
+  AND fa.status = 'accepted'
+  AND fb.status = 'accepted'
+  AND NOT EXISTS (
+      SELECT 1 FROM blocks b
+      WHERE (b.blocker_id = $1 AND b.blocked_id = u.id)
+         OR (b.blocker_id = u.id AND b.blocked_id = $1)
+         OR (b.blocker_id = $2 AND b.blocked_id = u.id)
+         OR (b.blocker_id = u.id AND b.blocked_id = $2)
+  )
+ORDER BY u.username
+`, aID, bID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []db.User
+	for rows.Next() {
+		var user db.User
+		if err := rows.Scan(
+			&user.ID, &user.TenantID, &user.Username, &user.DisplayName, &user.Bio,
+			&user.Email, &user.PasswordHash, &user.AvatarUrl, &user.IsVerified,
+			&user.MfaEnabled, &user.MfaSecret, &user.LastSeenAt, &user.IsOnline,
+			&user.IsPrivate, &user.ProfileLock, &user.FailedLoginAttempts,
+			&user.LockedUntil, &user.ThemeConfig, &user.CreatedAt, &user.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return r.mapUsers(users), nil
 }
 
 func (r *PostgresSocialRepository) IsPrivateUser(ctx context.Context, userID string) (bool, error) {
@@ -171,14 +279,35 @@ func (r *PostgresSocialRepository) SendFollowRequest(ctx context.Context, follow
 }
 
 func (r *PostgresSocialRepository) RespondToFollowRequest(ctx context.Context, followerID, followingID, status string) error {
-    var fID, tID pgtype.UUID
-    if err := fID.Scan(followerID); err != nil {
-        return fmt.Errorf("invalid uuid followerID: %w", err)
-    }
-    if err := tID.Scan(followingID); err != nil {
-        return fmt.Errorf("invalid uuid followingID: %w", err)
-    }
-    return r.queries.RespondToFollowRequest(ctx, db.RespondToFollowRequestParams{FollowerID: fID, FollowingID: tID, Status: status})
+	var fID, tID pgtype.UUID
+	if err := fID.Scan(followerID); err != nil {
+		return fmt.Errorf("invalid uuid followerID: %w", err)
+	}
+	if err := tID.Scan(followingID); err != nil {
+		return fmt.Errorf("invalid uuid followingID: %w", err)
+	}
+	if status != "accepted" && status != "rejected" && status != "cancelled" {
+		return fmt.Errorf("invalid follow request status")
+	}
+
+	tag, err := r.queries.Exec(ctx, `
+UPDATE follow_requests
+SET status = $3
+WHERE follower_id = $1
+  AND following_id = $2
+  AND status = 'pending'
+  AND NOT EXISTS (
+      SELECT 1 FROM blocks b
+      WHERE (b.blocker_id = $1 AND b.blocked_id = $2)
+         OR (b.blocker_id = $2 AND b.blocked_id = $1)
+  )`, fID, tID, status)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return fmt.Errorf("follow request not found or no longer valid")
+	}
+	return nil
 }
 
 func (r *PostgresSocialRepository) GetFollowRequests(ctx context.Context, userID string) ([]*domain.FollowRequest, error) {
