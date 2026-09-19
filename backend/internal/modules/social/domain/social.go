@@ -40,9 +40,7 @@ type SocialRepository interface {
 	Follow(ctx context.Context, followerID, followingID string) error
 	Unfollow(ctx context.Context, followerID, followingID string) error
 	GetFollowers(ctx context.Context, userID string) ([]*domain.User, error)
-	GetFollowing(ctx context.Context, userID string) ([]*domain.User, error)
 	IsPrivateUser(ctx context.Context, userID string) (bool, error)
-	GetFollowing(ctx context.Context, userID string) ([]*domain.User, error)
 	GetMutuals(ctx context.Context, userA, userB string) ([]*domain.User, error)
 	CanViewProfile(ctx context.Context, viewerID, targetID string) (bool, error)
 	Block(ctx context.Context, blockerID, blockedID string) error
