@@ -1,3 +1,15 @@
+func (r *postgresCommunityRepository) UpdateCommunityStats(ctx context.Context, communityID string) error {
+	var cid pgtype.UUID
+	if err := cid.Scan(strings.TrimSpace(communityID)); err != nil {
+		return fmt.Errorf("invalid community uuid: %w", err)
+	}
+	_, err := r.queries.Exec(ctx, `
+UPDATE communities
+SET updated_at = NOW()
+WHERE id = $1`, cid)
+	return err
+}
+
 package infra
 
 import (
