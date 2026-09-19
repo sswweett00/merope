@@ -40,10 +40,10 @@ type StoryHighlight struct {
 type StoriesRepository interface {
 	CreateStory(ctx context.Context, authorID, mediaURL, mediaType string, expiryHours int) (*Story, error)
 	GetActiveStories(ctx context.Context, userID string) ([]*Story, error)
-	GetLatestStoryForUser(ctx context.Context, userID string) (*Story, error)
+	GetLatestStoryForUser(ctx context.Context, targetUserID, viewerID string) (*Story, error)
 	RecordView(ctx context.Context, storyID, userID string) error
 	React(ctx context.Context, storyID, userID, emoji string) error
-	GetStoryViewers(ctx context.Context, storyID string) ([]*StoryViewer, error)
+	GetStoryViewers(ctx context.Context, storyID, requesterID string) ([]*StoryViewer, error)
 
 	// Highlights
 	CreateHighlight(ctx context.Context, authorID, name, coverURL string) (*StoryHighlight, error)
@@ -54,10 +54,10 @@ type StoriesRepository interface {
 type StoriesService interface {
 	PostStory(ctx context.Context, authorID, mediaURL, mType string, expiryHours int) (*Story, error)
 	GetFeed(ctx context.Context, userID string) ([]*Story, error)
-	GetLatestStoryForUser(ctx context.Context, userID string) (*Story, error)
+	GetLatestStoryForUser(ctx context.Context, targetUserID, viewerID string) (*Story, error)
 	ViewStory(ctx context.Context, storyID, userID string) error
 	ReactToStory(ctx context.Context, storyID, userID, emoji string) error
-	GetStoryViewers(ctx context.Context, storyID string) ([]*StoryViewer, error)
+	GetStoryViewers(ctx context.Context, storyID, requesterID string) ([]*StoryViewer, error)
 
 	// Highlights
 	CreateHighlight(ctx context.Context, authorID, name string, storyIDs []string) (*StoryHighlight, error)
