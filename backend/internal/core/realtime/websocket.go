@@ -42,10 +42,11 @@ type Hub struct {
 }
 
 type WSMessage struct {
-	Type    string          `json:"type"`
-	To      string          `json:"to"`
-	From    string          `json:"from"`
-	Payload json.RawMessage `json:"payload"`
+	Type      string          `json:"type"`
+	To        string          `json:"to"`
+	From      string          `json:"from"`
+	Payload   json.RawMessage `json:"payload"`
+	Timestamp time.Time       `json:"timestamp"`
 }
 
 func NewHub(pub events.Publisher) *Hub {
@@ -108,6 +109,17 @@ func (h *Hub) Run(ctx context.Context) {
 	}
 }
 
+func (h *Hub) Serve(client *Client) {
+	if h == nil || client == nil || client.Conn == nil || client.UserID == "" {
+		return
+	}
+	s := h.getShard(client.UserID)
+	s.mu.Lock()
+	s.clients[client.UserID] = append(s.clients[client.UserID], client)
+	s.mu.Unlock()
+	h.handleIncoming(client)
+}
+
 func (h *Hub) handleIncoming(client *Client) {
 	defer func() {
 		select {
@@ -142,6 +154,9 @@ func (h *Hub) handleIncoming(client *Client) {
 			continue
 		}
 		wsMsg.From = client.UserID
+		if wsMsg.Timestamp.IsZero() {
+			wsMsg.Timestamp = time.Now().UTC()
+		}
 
 		if wsMsg.To != "" && h.pub != nil {
 			ctx, cancel := context.WithTimeout(context.Background(), wsPublishTimeout)
@@ -188,6 +203,9 @@ func (c *Client) writeText(data []byte) error {
 }
 
 func (h *Hub) LocalDelivery(toUserID string, msg WSMessage) {
+	if msg.Timestamp.IsZero() {
+		msg.Timestamp = time.Now().UTC()
+	}
 	data, err := json.Marshal(msg)
 	if err != nil || len(data) > maxWSMessageSize {
 		return
