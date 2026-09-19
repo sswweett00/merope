@@ -2,6 +2,7 @@ package transport
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 
@@ -94,4 +95,40 @@ func (h *SearchHandler) GetNearby(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(fiber.Map{"nearby": users, "user_id": userID})
+}
+
+
+func (h *SearchHandler) GetHistory(c *fiber.Ctx) error {
+	userID := c.Locals("user_id").(string)
+	history, err := h.service.GetRecentHistory(c.Context(), userID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to load search history"})
+	}
+	return c.JSON(fiber.Map{"history": history})
+}
+
+func (h *SearchHandler) GetInterests(c *fiber.Ctx) error {
+	userID := c.Locals("user_id").(string)
+	interests, err := h.service.GetInterests(c.Context(), userID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to load interests"})
+	}
+	return c.JSON(fiber.Map{"interests": interests})
+}
+
+func (h *SearchHandler) UpdateInterests(c *fiber.Ctx) error {
+	userID := c.Locals("user_id").(string)
+	var req struct {
+		Interests []string `json:"interests"`
+	}
+	if err := c.BodyParser(&req); err != nil || len(req.Interests) > 50 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid interests"})
+	}
+	for i, interest := range req.Interests {
+		req.Interests[i] = strings.TrimSpace(interest)
+	}
+	if err := h.service.UpdateInterests(c.Context(), userID, req.Interests); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to update interests"})
+	}
+	return c.SendStatus(fiber.StatusNoContent)
 }
