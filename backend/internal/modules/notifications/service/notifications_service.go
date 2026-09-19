@@ -44,3 +44,16 @@ func (s *notificationsService) GetActivity(ctx context.Context, userID string, p
 func (s *notificationsService) ClearForUser(ctx context.Context, userID string) error {
 	return s.repo.ClearForUser(ctx, userID)
 }
+
+
+func (s *notificationsService) MarkAsRead(ctx context.Context, id, userID string) error {
+	return s.repo.MarkAsRead(ctx, id, userID)
+}
+
+func (s *notificationsService) MarkAllAsRead(ctx context.Context, userID string) error {
+	return s.repo.MarkAllAsRead(ctx, userID)
+}
+
+func (s *notificationsService) GetUnreadCount(ctx context.Context, userID string) (int32, error) {
+	return s.repo.GetUnreadCount(ctx, userID)
+}
