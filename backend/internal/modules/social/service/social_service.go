@@ -71,12 +71,12 @@ func (s *socialService) Follow(ctx context.Context, followerID, followingID stri
         return err
     }
     if privateAccount {
-        return fmt.Errorf("private account requires a follow request")
+        return socialDomain.ErrPrivateAccount
     }
     if s.veritasGuard != nil && s.veritasGuard.TrackInteraction(ctx, followerID, followingID, "follow") {
         return fmt.Errorf("excessive follow activity detected")
     }
-    return s.repo.Follow(ctx, followerID, followingID)
+    return s.repo.Follow(ctx, followerID, viewerID)
 }
 
 func (s *socialService) hydrateUsers(ctx context.Context, basicUsers []*domain.User) []*domain.User {
@@ -134,14 +134,17 @@ func (s *socialService) RequestFollow(ctx context.Context, followerID, following
     return s.repo.SendFollowRequest(ctx, followerID, followingID)
 }
 
-func (s *socialService) HandleFollowRequest(ctx context.Context, followerID, followingID, status string) error {
+func (s *socialService) HandleFollowRequest(ctx context.Context, viewerID, followerID, status string) error {
     switch status {
     case "accepted", "rejected", "cancelled":
     default:
         return fmt.Errorf("invalid follow request status")
     }
 
-    if err := s.repo.RespondToFollowRequest(ctx, followerID, followingID, status); err != nil {
+    if viewerID == "" || followerID == "" || viewerID == followerID {
+        return fmt.Errorf("invalid follow request")
+    }
+    if err := s.repo.RespondToFollowRequest(ctx, followerID, viewerID, status); err != nil {
         return err
     }
     if status != "accepted" {
