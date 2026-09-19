@@ -122,12 +122,17 @@ func (r *PostgresFinanceRepository) CreateEscrow(ctx context.Context, escrow *do
 	if err != nil { return fmt.Errorf("begin escrow transaction: %w", err) }
 	defer tx.Rollback(ctx)
 
-	if _, err := tx.Exec(ctx,
+	var reserved int64
+	if err := tx.QueryRow(ctx,
 		`UPDATE wallets
 		 SET balance = balance - $2, updated_at = NOW()
-		 WHERE user_id = $1 AND balance >= $2`,
+		 WHERE user_id = $1 AND balance >= $2
+		 RETURNING balance`,
 		bid, amountDB,
-	); err != nil {
+	).Scan(&reserved); err != nil {
+		if err == pgx.ErrNoRows {
+			return fmt.Errorf("insufficient balance or buyer wallet not found")
+		}
 		return fmt.Errorf("reserve escrow funds: %w", err)
 	}
 
@@ -180,9 +185,6 @@ func (r *PostgresFinanceRepository) UpdateEscrowStatus(ctx context.Context, id, 
 	}
 	return r.queries.UpdateEscrowStatus(ctx, db.UpdateEscrowStatusParams{ID: eid, Status: status})
 }
-
-var _ domain.RuntimeFinanceRepository = (*PostgresFinanceRepository)(nil)
-
 
 func parseFinanceUUID(value string) (pgtype.UUID, error) {
 	var id pgtype.UUID
