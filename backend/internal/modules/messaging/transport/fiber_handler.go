@@ -36,7 +36,7 @@ func (h *MessagingHandler) CreateDirectChat(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
-			"message": err.Error(),
+			"message": "Unable to process request",
 		})
 	}
 
@@ -62,7 +62,7 @@ func (h *MessagingHandler) CreateGroupChat(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
-			"message": err.Error(),
+			"message": "Unable to process request",
 		})
 	}
 
@@ -105,7 +105,7 @@ func (h *MessagingHandler) GetRooms(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
-			"message": err.Error(),
+			"message": "Unable to process request",
 		})
 	}
 	return c.JSON(rooms)
@@ -172,7 +172,7 @@ func (h *MessagingHandler) SendMessage(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
-			"message": err.Error(),
+			"message": "Unable to process request",
 		})
 	}
 
@@ -198,7 +198,7 @@ func (h *MessagingHandler) EditMessage(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
-			"message": err.Error(),
+			"message": "Unable to process request",
 		})
 	}
 
@@ -213,7 +213,7 @@ func (h *MessagingHandler) DeleteMessage(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
-			"message": err.Error(),
+			"message": "Unable to process request",
 		})
 	}
 
@@ -239,7 +239,7 @@ func (h *MessagingHandler) React(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
-			"message": err.Error(),
+			"message": "Unable to process request",
 		})
 	}
 
@@ -265,7 +265,7 @@ func (h *MessagingHandler) MuteRoom(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
-			"message": err.Error(),
+			"message": "Unable to process request",
 		})
 	}
 
@@ -281,7 +281,7 @@ func (h *MessagingHandler) GetHistory(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
-			"message": err.Error(),
+			"message": "Unable to process request",
 		})
 	}
 
@@ -295,7 +295,7 @@ func (h *MessagingHandler) GetMessageEdits(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
-			"message": err.Error(),
+			"message": "Unable to process request",
 		})
 	}
 
@@ -309,7 +309,7 @@ func (h *MessagingHandler) EnableE2EE(c *fiber.Ctx) error {
 	if err := h.service.EnableE2EE(c.Context(), roomID, userID); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
-			"message": err.Error(),
+			"message": "Unable to process request",
 		})
 	}
 
@@ -322,7 +322,7 @@ func (h *MessagingHandler) DisableE2EE(c *fiber.Ctx) error {
 	if err := h.service.DisableE2EE(c.Context(), roomID); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
-			"message": err.Error(),
+			"message": "Unable to process request",
 		})
 	}
 
@@ -336,7 +336,7 @@ func (h *MessagingHandler) GetE2EEStatus(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
-			"message": err.Error(),
+			"message": "Unable to process request",
 		})
 	}
 
@@ -362,7 +362,7 @@ func (h *MessagingHandler) RecordKeyRotation(c *fiber.Ctx) error {
 	if err := h.service.RecordKeyRotation(c.Context(), roomID, userID, req.PublicKeyID, req.DeviceID); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
-			"message": err.Error(),
+			"message": "Unable to process request",
 		})
 	}
 
@@ -384,7 +384,7 @@ func (h *MessagingHandler) MarkAsRead(c *fiber.Ctx) error {
 	if err := h.service.MarkAsRead(c.Context(), req.MessageID, userID); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code":    errors.GetCode(err),
-			"message": err.Error(),
+			"message": "Unable to process request",
 		})
 	}
 	return c.SendStatus(fiber.StatusOK)
