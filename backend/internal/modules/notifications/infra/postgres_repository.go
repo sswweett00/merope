@@ -172,3 +172,36 @@ func (r *PostgresNotificationsRepository) ClearForUser(ctx context.Context, user
 }
 
 var _ domain.RuntimeNotificationRepository = (*PostgresNotificationsRepository)(nil)
+
+
+func (r *PostgresNotificationsRepository) MarkAsRead(ctx context.Context, id, userID string) error {
+	nid, err := parseNotificationUUID(id)
+	if err != nil {
+		return err
+	}
+	uid, err := parseNotificationUUID(userID)
+	if err != nil {
+		return err
+	}
+	_, err = r.queries.Exec(ctx, `UPDATE notifications SET is_read = TRUE WHERE id = $1 AND user_id = $2`, nid, uid)
+	return err
+}
+
+func (r *PostgresNotificationsRepository) MarkAllAsRead(ctx context.Context, userID string) error {
+	uid, err := parseNotificationUUID(userID)
+	if err != nil {
+		return err
+	}
+	_, err = r.queries.Exec(ctx, `UPDATE notifications SET is_read = TRUE WHERE user_id = $1 AND is_read = FALSE`, uid)
+	return err
+}
+
+func (r *PostgresNotificationsRepository) GetUnreadCount(ctx context.Context, userID string) (int32, error) {
+	uid, err := parseNotificationUUID(userID)
+	if err != nil {
+		return 0, err
+	}
+	var count int32
+	err = r.queries.QueryRow(ctx, `SELECT COUNT(*) FROM notifications WHERE user_id = $1 AND is_read = FALSE`, uid).Scan(&count)
+	return count, err
+}
