@@ -6,13 +6,13 @@ import (
 )
 
 type VaultItem struct {
-	ID            string
-	UserID        string
-	Title         string
-	EncryptedData string
-	ItemType      string
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
+	ID            string    `json:"id"`
+	UserID        string    `json:"userId"`
+	Title         string    `json:"title"`
+	EncryptedData string    `json:"encryptedData"`
+	ItemType      string    `json:"itemType"`
+	CreatedAt     time.Time `json:"createdAt"`
+	UpdatedAt     time.Time `json:"updatedAt"`
 }
 
 type VaultRepository interface {
