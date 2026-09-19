@@ -71,7 +71,7 @@ class AuthController extends StateNotifier<AuthState> {
       }
 
       final sig = await shield.getSecureDeviceSignature();
-      MeropeLogger.info('Binding session to device signature: $sig');
+      MeropeLogger.info('Session successfully bound to the current device');
 
       state = state.copyWith(
         isAuthenticated: true,
