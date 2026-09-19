@@ -47,9 +47,10 @@ func (h *ContentHandler) CreatePost(c *fiber.Ctx) error {
 		EndsAt   string   `json:"ends_at"`
 	}
 	type request struct {
-		Text  string       `json:"text"`
-		Media []string     `json:"media"`
-		Poll  *pollRequest `json:"poll"`
+		Text       string       `json:"text"`
+		Media      []string     `json:"media"`
+		Visibility string       `json:"visibility"`
+		Poll       *pollRequest `json:"poll"`
 	}
 
 	var req request
