@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:merope_core/data/database/database_provider.dart';
-import 'package:merope_core/data/services/connectivity_service.dart';
 import 'package:merope_core/data/services/api_client.dart';
 import 'package:merope_ui/utils/merope_haptics.dart';
 import '../domain/models/transaction_model.dart';
