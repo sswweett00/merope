@@ -365,9 +365,30 @@ class SocialApiService {
     int radius = 5000,
     int limit = 20,
   }) async {
-    return ApiResult.error(
-      'Nearby user search is not supported by the current backend API',
-    );
+    try {
+      final response = await _dio.get(
+        '/api/v10/search/nearby',
+        queryParameters: {
+          'lat': lat,
+          'lon': lon,
+          'radius': radius / 1000,
+          'limit': limit,
+        },
+      );
+      final raw = response.data is Map
+          ? response.data['nearby'] as List<dynamic>? ?? const []
+          : const <dynamic>[];
+      final users = raw
+          .whereType<Map>()
+          .map((e) => UserModel.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+      return ApiResult.success(users, statusCode: response.statusCode);
+    } on DioException catch (e) {
+      return ApiResult.error(
+        MeropeAPIException.fromDioError(e),
+        statusCode: e.response?.statusCode,
+      );
+    }
   }
 
   Future<ApiResult<void>> tipSignal(String signalId, int amount) async {
