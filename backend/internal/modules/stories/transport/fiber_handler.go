@@ -51,11 +51,15 @@ func (h *StoriesHandler) GetFeed(c *fiber.Ctx) error {
 }
 
 func (h *StoriesHandler) GetUserStory(c *fiber.Ctx) error {
+	viewerID, ok := c.Locals("user_id").(string)
+	if !ok || strings.TrimSpace(viewerID) == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "authentication required"})
+	}
 	userID := strings.TrimSpace(c.Params("user_id"))
 	if userID == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "user_id is required"})
 	}
-	story, err := h.service.GetLatestStoryForUser(c.Context(), userID)
+	story, err := h.service.GetLatestStoryForUser(c.Context(), userID, viewerID)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "story not found"})
 	}
@@ -91,7 +95,11 @@ func (h *StoriesHandler) React(c *fiber.Ctx) error {
 }
 
 func (h *StoriesHandler) Viewers(c *fiber.Ctx) error {
-	viewers, err := h.service.GetStoryViewers(c.Context(), c.Params("id"))
+	requesterID, ok := c.Locals("user_id").(string)
+	if !ok || strings.TrimSpace(requesterID) == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "authentication required"})
+	}
+	viewers, err := h.service.GetStoryViewers(c.Context(), c.Params("id"), requesterID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to load story viewers"})
 	}
