@@ -309,6 +309,10 @@ func (r *ScyllaMessagingRepository) GetRoomMedia(ctx context.Context, roomID str
 	return nil, nil
 }
 
+func (r *ScyllaMessagingRepository) GetMessageByID(ctx context.Context, messageID string) (*domain.ChatMessage, error) {
+	return r.getMessageByID(ctx, messageID)
+}
+
 func (r *ScyllaMessagingRepository) getMessageByID(ctx context.Context, messageID string) (*domain.ChatMessage, error) {
 	mid, err := uuid.Parse(messageID)
 	if err != nil {
