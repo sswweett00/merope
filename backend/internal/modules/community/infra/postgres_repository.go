@@ -2,7 +2,9 @@ package infra
 
 import (
 	"context"
+	"fmt"
 	"strings"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"local/merope/internal/core/util"
@@ -86,6 +88,34 @@ func (r *postgresCommunityRepository) JoinCommunity(ctx context.Context, commID,
 		UserID:      uid,
 		Role:        role,
 	})
+}
+
+
+func (r *postgresCommunityRepository) UpdateEvent(ctx context.Context, eventID string, event *domain.Event) error {
+	id, err := parseUUID(eventID)
+	if err != nil {
+		return err
+	}
+	if event == nil {
+		return fmt.Errorf("event is required")
+	}
+
+	result, err := r.queries.Exec(ctx, `
+UPDATE community_proposals
+SET title = $2,
+    description = $3,
+    ends_at = $4
+WHERE id = $1`, id, strings.TrimSpace(event.Title), event.Description,
+		pgtype.Timestamptz{Time: event.EndTime, Valid: !event.EndTime.IsZero()})
+	if err != nil {
+		return err
+	}
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("event not found")
+	}
+	event.ID = eventID
+	event.UpdatedAt = time.Now()
+	return nil
 }
 
 func (r *postgresCommunityRepository) CreateEvent(ctx context.Context, event *domain.Event) error {
