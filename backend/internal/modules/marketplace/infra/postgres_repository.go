@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"local/merope/internal/core/util"
 	"local/merope/internal/database/db"
 	"local/merope/internal/modules/marketplace/domain"
@@ -13,10 +14,11 @@ import (
 
 type PostgresMarketplaceRepository struct {
 	queries *db.Queries
+	pool    *pgxpool.Pool
 }
 
-func NewPostgresMarketplaceRepository(queries *db.Queries) *PostgresMarketplaceRepository {
-	return &PostgresMarketplaceRepository{queries: queries}
+func NewPostgresMarketplaceRepository(queries *db.Queries, pool *pgxpool.Pool) *PostgresMarketplaceRepository {
+	return &PostgresMarketplaceRepository{queries: queries, pool: pool}
 }
 
 func parseMarketplaceUUID(value string) (pgtype.UUID, error) {
@@ -94,13 +96,23 @@ WHERE id = $1`, productID).Scan(
 }
 
 func (r *PostgresMarketplaceRepository) CreateOrder(ctx context.Context, o *domain.Order) error {
+	if r.pool == nil {
+		return fmt.Errorf("postgres pool is required")
+	}
 	buyerID, err := parseMarketplaceUUID(o.BuyerID)
 	if err != nil {
 		return err
 	}
+	if len(o.Items) == 0 {
+		return fmt.Errorf("order must contain at least one item")
+	}
 
-	var orderID pgtype.UUID
-	var createdAt pgtype.Timestamptz
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin marketplace order transaction: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
 	currency := strings.TrimSpace(o.Currency)
 	if currency == "" {
 		currency = "MRO"
@@ -109,12 +121,13 @@ func (r *PostgresMarketplaceRepository) CreateOrder(ctx context.Context, o *doma
 	if status == "" {
 		status = "pending"
 	}
-	address := o.ShippingAddress.AddressLine1
 
-	if err := r.queries.QueryRow(ctx, `
+	var orderID pgtype.UUID
+	var createdAt pgtype.Timestamptz
+	if err := tx.QueryRow(ctx, `
 INSERT INTO orders (buyer_id, total_amount, status, currency, shipping_address)
 VALUES ($1, $2, $3, $4, $5)
-RETURNING id, created_at`, buyerID, o.TotalAmount, status, currency, address).Scan(&orderID, &createdAt); err != nil {
+RETURNING id, created_at`, buyerID, o.TotalAmount, status, currency, o.ShippingAddress.AddressLine1).Scan(&orderID, &createdAt); err != nil {
 		return err
 	}
 
@@ -123,20 +136,31 @@ RETURNING id, created_at`, buyerID, o.TotalAmount, status, currency, address).Sc
 		if parseErr != nil {
 			return parseErr
 		}
-		if _, err := r.queries.Exec(ctx, `
+		if item.Quantity <= 0 {
+			return fmt.Errorf("quantity must be positive")
+		}
+
+		var updatedProductID pgtype.UUID
+		if err := tx.QueryRow(ctx, `
+UPDATE products
+SET stock_quantity = CASE
+    WHEN stock_quantity = 0 THEN 0
+    ELSE stock_quantity - $2
+END
+WHERE id = $1 AND (stock_quantity = 0 OR stock_quantity >= $2)
+RETURNING id`, productID, item.Quantity).Scan(&updatedProductID); err != nil {
+			return fmt.Errorf("reserve stock for product %s: %w", item.ProductID, err)
+		}
+
+		if _, err := tx.Exec(ctx, `
 INSERT INTO order_items (order_id, product_id, quantity, price_at_purchase)
 VALUES ($1, $2, $3, $4)`, orderID, productID, item.Quantity, item.PriceAtPurchase); err != nil {
 			return err
 		}
-		if _, err := r.queries.Exec(ctx, `
-UPDATE products
-SET stock_quantity = CASE
-    WHEN stock_quantity >= $2 AND stock_quantity > 0 THEN stock_quantity - $2
-    ELSE stock_quantity
-END
-WHERE id = $1`, productID, item.Quantity); err != nil {
-			return err
-		}
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit marketplace order transaction: %w", err)
 	}
 
 	o.ID = util.UUIDToString(orderID)
@@ -145,7 +169,6 @@ WHERE id = $1`, productID, item.Quantity); err != nil {
 	o.CreatedAt = createdAt.Time
 	return nil
 }
-
 func (r *PostgresMarketplaceRepository) ListProducts(ctx context.Context, category, search string) ([]*domain.Product, error) {
 	category = strings.TrimSpace(category)
 	search = strings.TrimSpace(search)
