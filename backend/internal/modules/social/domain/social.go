@@ -8,6 +8,7 @@ import (
 )
 
 var ErrProfileForbidden = errors.New("profile access denied")
+var ErrPrivateAccount = errors.New("private account requires a follow request")
 
 type FollowRequest struct {
 	FollowerID  string
