@@ -71,6 +71,7 @@ func (h *ContentHandler) CreatePost(c *fiber.Ctx) error {
 		AuthorID:    userID,
 		ContentText: req.Text,
 		MediaURLs:   req.Media,
+		Visibility:  req.Visibility,
 	}
 
 	post, err := h.service.BroadcastSignal(c.Context(), signal, pollData)
