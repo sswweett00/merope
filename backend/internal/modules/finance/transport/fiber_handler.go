@@ -67,3 +67,55 @@ func (h *FinanceHandler) ReleaseEscrow(c *fiber.Ctx) error {
 	}
 	return c.JSON(fiber.Map{"message": "Escrow released"})
 }
+
+
+func (h *FinanceHandler) GetTransactions(c *fiber.Ctx) error {
+	userID := c.Locals("user_id").(string)
+	page := c.QueryInt("page", 0)
+	limit := c.QueryInt("limit", 25)
+	if page < 0 || limit < 1 || limit > 100 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid pagination"})
+	}
+	transactions, err := h.service.GetTransactions(c.Context(), userID, int32(limit), int32(page*limit))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "operation failed"})
+	}
+	return c.JSON(fiber.Map{"transactions": transactions, "page": page, "limit": limit})
+}
+
+func (h *FinanceHandler) GetEscrow(c *fiber.Ctx) error {
+	userID := c.Locals("user_id").(string)
+	escrowID := c.Params("id")
+	escrow, err := h.service.GetEscrow(c.Context(), escrowID)
+	if err != nil || (escrow.BuyerID != userID && escrow.SellerID != userID) {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "escrow not found"})
+	}
+	return c.JSON(escrow)
+}
+
+func (h *FinanceHandler) RefundEscrow(c *fiber.Ctx) error {
+	userID := c.Locals("user_id").(string)
+	escrowID := c.Params("id")
+	if err := h.service.RefundEscrow(c.Context(), escrowID, userID); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "operation failed"})
+	}
+	return c.JSON(fiber.Map{"message": "Escrow refunded"})
+}
+
+func (h *FinanceHandler) UnlockContent(c *fiber.Ctx) error {
+	userID := c.Locals("user_id").(string)
+	var req map[string]interface{}
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request"})
+	}
+	postID, _ := req["post_id"].(string)
+	amountFloat, _ := req["amount"].(float64)
+	amount := int64(amountFloat)
+	if postID == "" || amount <= 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request"})
+	}
+	if err := h.service.UnlockContent(c.Context(), userID, postID, amount); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "operation failed"})
+	}
+	return c.JSON(fiber.Map{"message": "Content unlocked"})
+}
