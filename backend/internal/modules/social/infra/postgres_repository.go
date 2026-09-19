@@ -78,6 +78,18 @@ func (r *PostgresSocialRepository) Unfollow(ctx context.Context, followerID, fol
     return r.queries.UnfollowUser(ctx, db.UnfollowUserParams{FollowerID: fID, FollowingID: tID})
 }
 
+func (r *PostgresSocialRepository) IsPrivateUser(ctx context.Context, userID string) (bool, error) {
+	var uid pgtype.UUID
+	if err := uid.Scan(userID); err != nil {
+		return false, fmt.Errorf("invalid uuid: %w", err)
+	}
+	var isPrivate bool
+	if err := r.queries.QueryRow(ctx, `SELECT COALESCE(is_private, FALSE) FROM users WHERE id = $1`, uid).Scan(&isPrivate); err != nil {
+		return false, err
+	}
+	return isPrivate, nil
+}
+
 func (r *PostgresSocialRepository) GetFollowers(ctx context.Context, userID string) ([]*idDomain.User, error) {
     var uid pgtype.UUID
     if err := uid.Scan(userID); err != nil {
