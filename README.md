@@ -57,7 +57,7 @@ flutter run --dart-define=API_BASE_URL=https://api.example.com
 ## Local infrastructure
 
 ```bash
-docker compose up -d
+docker compose -f docker-compose.full.yml up -d
 ```
 
 The local stack provides PostgreSQL, Redis, NATS, MinIO, ClickHouse and the API.
@@ -78,4 +78,4 @@ Use `/health/live` for process liveness and `/health/ready` for dependency readi
 
 ## Testing and CI
 
-CI runs Dart analysis/format/tests and Go lint/vet/build/tests. Production changes should also add integration coverage for PostgreSQL, Redis, NATS and the critical realtime/auth flows.
+CI runs Dart analysis/format/tests and Go lint/vet/build/tests, including Go race detection. Security and production-gate workflows also run on pushes to `main`. Production changes should add integration coverage for PostgreSQL, Redis, NATS and the critical realtime/auth flows.
