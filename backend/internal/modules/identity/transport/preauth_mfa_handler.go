@@ -116,8 +116,11 @@ func (h *PreAuthMFAHandler) Verify(c *fiber.Ctx) error {
 	}
 
 	var challenge preAuthChallenge
-	if err := json.Unmarshal(raw, &challenge); err != nil || challenge.UserID == "" {
+	if err := json.Unmarshal(raw, &challenge); err != nil || challenge.UserID == "" || challenge.Fingerprint == "" {
 		_ = h.rdb.Del(context.Background(), key).Err()
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"code": errors.ErrAuthFailed, "message": "Invalid or expired MFA challenge"})
+	}
+	if challenge.Fingerprint != security.GenerateFingerprint(c.IP(), c.Get("User-Agent")) {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"code": errors.ErrAuthFailed, "message": "Invalid or expired MFA challenge"})
 	}
 
