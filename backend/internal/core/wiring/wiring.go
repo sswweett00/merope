@@ -432,6 +432,7 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	finance.Get("/balance", financeHandler.GetBalance)
 	finance.Get("/transactions", financeHandler.GetTransactions)
 	finance.Post("/tip", financeHandler.Tip)
+	finance.Post("/transfer", financeHandler.Transfer)
 	finance.Post("/unlock", financeHandler.UnlockContent)
 	finance.Post("/escrow", financeHandler.CreateEscrow)
 	finance.Get("/escrow/:id", financeHandler.GetEscrow)
