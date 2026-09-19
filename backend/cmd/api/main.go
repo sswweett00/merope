@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"sync/atomic"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -16,6 +17,9 @@ import (
 )
 
 func main() {
+	var ready atomic.Bool
+	ready.Store(true)
+
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
@@ -32,6 +36,10 @@ func main() {
 	})
 
 	app.Get("/health/ready", func(c *fiber.Ctx) error {
+		if !ready.Load() {
+			return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"status": "draining"})
+		}
+
 		checkCtx, cancel := context.WithTimeout(c.Context(), 2*time.Second)
 		defer cancel()
 
@@ -68,6 +76,10 @@ func main() {
 			log.Fatalf("API server stopped unexpectedly: %v", err)
 		}
 	case <-ctx.Done():
+		// Stop advertising readiness before beginning graceful shutdown so a
+		// load balancer can drain this instance instead of sending new work to it.
+		ready.Store(false)
+
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 15*time.Second)
 		defer shutdownCancel()
 		if err := app.ShutdownWithContext(shutdownCtx); err != nil {
