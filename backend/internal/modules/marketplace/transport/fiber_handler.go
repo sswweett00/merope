@@ -60,7 +60,7 @@ func (h *MarketplaceHandler) Purchase(c *fiber.Ctx) error {
 	}
 	order, err := h.service.Purchase(c.Context(), userID, req.ProductIDs, req.Quantities, req.Address)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "operation failed"})
 	}
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"order": order, "order_id": order.ID, "total_amount": order.TotalAmount})
 }
