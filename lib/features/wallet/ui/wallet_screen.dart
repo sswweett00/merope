@@ -85,7 +85,7 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
                         duration: MeropeTokens.durationSlow,
                         builder: (context, value, child) {
                           return Text(
-                            '${value.toStringAsFixed(2)} MRO',
+                            '${value.toStringAsFixed(2)} TRY',
                             style: TextStyle(
                                 fontSize: 32,
                                 fontWeight: FontWeight.bold,
@@ -214,7 +214,7 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
                         subtitle: Text(tx.createdAt.toString().substring(0, 16),
                             style: TextStyle(color: tokens.textSecondary)),
                         trailing: Text(
-                          '${isCredit ? '+' : '-'}${tx.amount.toStringAsFixed(2)} MRO',
+                          '${isCredit ? '+' : '-'}${tx.amount.toStringAsFixed(2)} TRY',
                           style: TextStyle(
                               color: isCredit
                                   ? tokens.primary
@@ -378,7 +378,7 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
           return Padding(
             padding: const EdgeInsets.all(24),
             child: Column(mainAxisSize: MainAxisSize.min, children: [
-              Text('Send MRO',
+              Text('Send TRY',
                   style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -421,7 +421,7 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
           return Padding(
             padding: const EdgeInsets.all(24),
             child: Column(mainAxisSize: MainAxisSize.min, children: [
-              Text('Receive MRO',
+              Text('Receive TRY',
                   style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -547,10 +547,10 @@ class _TransactionDetailScreen extends StatelessWidget {
                     size: 48,
                     color: isCredit ? tokens.primary : tokens.textSecondary)),
             const SizedBox(height: 24),
-            _detailRow('Amount', '${transaction.amount.toStringAsFixed(2)} MRO',
+            _detailRow('Amount', '${transaction.amount.toStringAsFixed(2)} TRY',
                 tokens),
             _detailRow(
-                'Fee', '${transaction.fee.toStringAsFixed(2)} MRO', tokens),
+                'Fee', '${transaction.fee.toStringAsFixed(2)} TRY', tokens),
             _detailRow('Status', transaction.status.name.toUpperCase(), tokens),
             _detailRow('Currency', transaction.currency, tokens),
             if (transaction.category != null)
