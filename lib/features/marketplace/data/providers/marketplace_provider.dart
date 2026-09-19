@@ -47,7 +47,8 @@ class MarketplaceList extends AsyncNotifier<List<MeropeProduct>> {
         : '/marketplace/products?q=${Uri.encodeQueryComponent(query.trim())}';
     final result = await _api.get<dynamic>(path);
     if (result.isError) {
-      throw StateError('Failed to load marketplace (${result.statusCode ?? 0})');
+      throw StateError(
+          'Failed to load marketplace (${result.statusCode ?? 0})');
     }
 
     final payload = result.data;
@@ -58,28 +59,32 @@ class MarketplaceList extends AsyncNotifier<List<MeropeProduct>> {
     final raw = payload['products'];
     if (raw is! List) return const <MeropeProduct>[];
 
-    return raw.whereType<Map>().map((entry) {
-      final item = Map<String, dynamic>.from(entry);
-      final rawPrice = item['price'];
-      final rawRating = item['rating'];
-      final price = rawPrice is num
-          ? rawPrice.toString()
-          : (rawPrice?.toString() ?? '0');
-      final currency = (item['currency'] ?? 'MRO').toString();
-      final rating = rawRating is num
-          ? rawRating.toDouble()
-          : (double.tryParse(rawRating?.toString() ?? '') ?? 0);
+    return raw
+        .whereType<Map>()
+        .map((entry) {
+          final item = Map<String, dynamic>.from(entry);
+          final rawPrice = item['price'];
+          final rawRating = item['rating'];
+          final price = rawPrice is num
+              ? rawPrice.toString()
+              : (rawPrice?.toString() ?? '0');
+          final currency = (item['currency'] ?? 'MRO').toString();
+          final rating = rawRating is num
+              ? rawRating.toDouble()
+              : (double.tryParse(rawRating?.toString() ?? '') ?? 0);
 
-      return MeropeProduct(
-        id: (item['id'] ?? '').toString(),
-        title: (item['name'] ?? '').toString(),
-        price: '$price $currency',
-        category: (item['category'] ?? 'general').toString(),
-        rating: rating,
-        isAuction: false,
-        highestBid: null,
-      );
-    }).where((product) => product.id.isNotEmpty).toList(growable: false);
+          return MeropeProduct(
+            id: (item['id'] ?? '').toString(),
+            title: (item['name'] ?? '').toString(),
+            price: '$price $currency',
+            category: (item['category'] ?? 'general').toString(),
+            rating: rating,
+            isAuction: false,
+            highestBid: null,
+          );
+        })
+        .where((product) => product.id.isNotEmpty)
+        .toList(growable: false);
   }
 
   Future<void> search(String query) async {

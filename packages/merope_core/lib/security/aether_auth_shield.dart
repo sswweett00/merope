@@ -26,7 +26,8 @@ class AetherAuthShieldNotifier extends AsyncNotifier<void> {
     final key =
         await const FlutterSecureStorage().read(key: 'aether_apex_root');
     if (key == null) return 'unsigned';
-    final signature = sha256.convert(utf8.encode(key)).toString().substring(0, 16);
+    final signature =
+        sha256.convert(utf8.encode(key)).toString().substring(0, 16);
     _cachedDeviceSignature = signature;
     return signature;
   }

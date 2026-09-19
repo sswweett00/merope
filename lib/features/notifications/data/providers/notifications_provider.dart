@@ -28,7 +28,8 @@ class NotificationsList extends AsyncNotifier<List<MeropeNotification>> {
   FutureOr<List<MeropeNotification>> build() async {
     final result = await _api.get<dynamic>('/notifications/activity');
     if (result.isError) {
-      throw StateError('Failed to load notifications (${result.statusCode ?? 0})');
+      throw StateError(
+          'Failed to load notifications (${result.statusCode ?? 0})');
     }
 
     final payload = result.data;
@@ -61,7 +62,8 @@ class NotificationsList extends AsyncNotifier<List<MeropeNotification>> {
   Future<void> clearAll() async {
     final result = await _api.delete<dynamic>('/notifications');
     if (result.isError) {
-      throw StateError('Failed to clear notifications (${result.statusCode ?? 0})');
+      throw StateError(
+          'Failed to clear notifications (${result.statusCode ?? 0})');
     }
     state = const AsyncValue.data(<MeropeNotification>[]);
   }

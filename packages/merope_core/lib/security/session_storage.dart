@@ -28,13 +28,15 @@ class SessionStorage {
   }) async {
     final writes = <Future<void>>[_storage.write(key: _tokenKey, value: token)];
     if (user != null) {
-      writes.add(_storage.write(key: _userKey, value: jsonEncode(user.toJson())));
+      writes
+          .add(_storage.write(key: _userKey, value: jsonEncode(user.toJson())));
     }
     if (refreshToken != null) {
       writes.add(_storage.write(key: 'refresh_token', value: refreshToken));
     }
     if (expiresAt != null) {
-      writes.add(_storage.write(key: 'session_expiry', value: expiresAt.toString()));
+      writes.add(
+          _storage.write(key: 'session_expiry', value: expiresAt.toString()));
     }
 
     await Future.wait(writes);
@@ -64,7 +66,8 @@ class SessionStorage {
     }
 
     try {
-      _cachedUser = AuthUser.fromJson(jsonDecode(userJson) as Map<String, dynamic>);
+      _cachedUser =
+          AuthUser.fromJson(jsonDecode(userJson) as Map<String, dynamic>);
     } catch (_) {
       _cachedUser = null;
     }

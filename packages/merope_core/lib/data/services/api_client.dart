@@ -87,7 +87,8 @@ class ApiClient {
       {Map<String, dynamic>? queryParameters}) async {
     try {
       final response = await dio.get(path, queryParameters: queryParameters);
-      return ApiResult.success(response.data as T, statusCode: response.statusCode);
+      return ApiResult.success(response.data as T,
+          statusCode: response.statusCode);
     } catch (e) {
       return ApiResult.error(e, statusCode: _statusOf(e));
     }
@@ -96,8 +97,10 @@ class ApiClient {
   Future<ApiResult<T>> post<T>(String path,
       {dynamic data, Map<String, dynamic>? queryParameters}) async {
     try {
-      final response = await dio.post(path, data: data, queryParameters: queryParameters);
-      return ApiResult.success(response.data as T, statusCode: response.statusCode);
+      final response =
+          await dio.post(path, data: data, queryParameters: queryParameters);
+      return ApiResult.success(response.data as T,
+          statusCode: response.statusCode);
     } catch (e) {
       return ApiResult.error(e, statusCode: _statusOf(e));
     }
@@ -106,8 +109,10 @@ class ApiClient {
   Future<ApiResult<T>> put<T>(String path,
       {dynamic data, Map<String, dynamic>? queryParameters}) async {
     try {
-      final response = await dio.put(path, data: data, queryParameters: queryParameters);
-      return ApiResult.success(response.data as T, statusCode: response.statusCode);
+      final response =
+          await dio.put(path, data: data, queryParameters: queryParameters);
+      return ApiResult.success(response.data as T,
+          statusCode: response.statusCode);
     } catch (e) {
       return ApiResult.error(e, statusCode: _statusOf(e));
     }
@@ -116,8 +121,10 @@ class ApiClient {
   Future<ApiResult<T>> patch<T>(String path,
       {dynamic data, Map<String, dynamic>? queryParameters}) async {
     try {
-      final response = await dio.patch(path, data: data, queryParameters: queryParameters);
-      return ApiResult.success(response.data as T, statusCode: response.statusCode);
+      final response =
+          await dio.patch(path, data: data, queryParameters: queryParameters);
+      return ApiResult.success(response.data as T,
+          statusCode: response.statusCode);
     } catch (e) {
       return ApiResult.error(e, statusCode: _statusOf(e));
     }
@@ -126,8 +133,10 @@ class ApiClient {
   Future<ApiResult<T>> delete<T>(String path,
       {dynamic data, Map<String, dynamic>? queryParameters}) async {
     try {
-      final response = await dio.delete(path, data: data, queryParameters: queryParameters);
-      return ApiResult.success(response.data as T, statusCode: response.statusCode);
+      final response =
+          await dio.delete(path, data: data, queryParameters: queryParameters);
+      return ApiResult.success(response.data as T,
+          statusCode: response.statusCode);
     } catch (e) {
       return ApiResult.error(e, statusCode: _statusOf(e));
     }
@@ -136,8 +145,10 @@ class ApiClient {
   Future<ApiResult<T>> uploadMultipart<T>(String path, FormData data,
       {ProgressCallback? onSendProgress}) async {
     try {
-      final response = await dio.post(path, data: data, onSendProgress: onSendProgress);
-      return ApiResult.success(response.data as T, statusCode: response.statusCode);
+      final response =
+          await dio.post(path, data: data, onSendProgress: onSendProgress);
+      return ApiResult.success(response.data as T,
+          statusCode: response.statusCode);
     } catch (e) {
       return ApiResult.error(e, statusCode: _statusOf(e));
     }
@@ -161,7 +172,8 @@ class ApiVersionInterceptor extends Interceptor {
       return;
     }
 
-    final isAbsolute = path.startsWith('http://') || path.startsWith('https://');
+    final isAbsolute =
+        path.startsWith('http://') || path.startsWith('https://');
     if (!isAbsolute && !path.startsWith('/')) {
       path = '/$path';
     }
@@ -190,7 +202,8 @@ class IdempotencyInterceptor extends Interceptor {
     final current = options.headers['Idempotency-Key']?.toString().trim();
     final isApiRequest = options.path.startsWith('/api/v10/');
 
-    if (isApiRequest && !_safeMethods.contains(method) &&
+    if (isApiRequest &&
+        !_safeMethods.contains(method) &&
         (current == null || current.isEmpty)) {
       final nonce = _random.nextInt(1 << 32);
       options.headers['Idempotency-Key'] =
@@ -330,7 +343,8 @@ class RetryInterceptor extends Interceptor {
       if (_retryableMethods.contains(method)) {
         final attempt = (err.requestOptions.extra['retryAttempt'] as int?) ?? 0;
         if (attempt < _maxRetries) {
-          await Future<void>.delayed(Duration(milliseconds: 250 * (attempt + 1)));
+          await Future<void>.delayed(
+              Duration(milliseconds: 250 * (attempt + 1)));
           try {
             final response = await _dio.fetch(
               err.requestOptions.copyWith(
