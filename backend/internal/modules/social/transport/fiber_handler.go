@@ -1,7 +1,7 @@
 package transport
 
 import (
-	"errors"
+	stdErrors "errors"
 	"local/merope/internal/modules/social/domain"
 	"local/merope/internal/core/errors"
 
@@ -19,7 +19,7 @@ func NewSocialHandler(service domain.SocialService) *SocialHandler {
 func writeSocialError(c *fiber.Ctx, err error) error {
 	status := fiber.StatusInternalServerError
 	message := "social operation failed"
-	if errors.Is(err, domain.ErrProfileForbidden) {
+	if stdErrors.Is(err, domain.ErrProfileForbidden) {
 		status = fiber.StatusForbidden
 		message = "forbidden"
 	} else if err == fiber.ErrUnauthorized {
