@@ -8,7 +8,24 @@ import (
 type DeveloperHandler struct{ service domain.RuntimeDeveloperService }
 func NewDeveloperHandler(service domain.RuntimeDeveloperService)*DeveloperHandler{return &DeveloperHandler{service:service}}
 func userID(c *fiber.Ctx)string{if v,ok:=c.Locals("user_id").(string);ok{return v};return ""}
-func writeErr(c *fiber.Ctx,err error)error{if err==nil{return nil};return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error":err.Error()})}
+func writeErr(c *fiber.Ctx, err error) error {
+	if err == nil {
+		return nil
+	}
+	status := fiber.StatusInternalServerError
+	message := "developer operation failed"
+	switch err {
+	case fiber.ErrUnauthorized:
+		status, message = fiber.StatusUnauthorized, "authentication required"
+	case fiber.ErrForbidden:
+		status, message = fiber.StatusForbidden, "forbidden"
+	case fiber.ErrNotFound:
+		status, message = fiber.StatusNotFound, "not found"
+	case fiber.ErrBadRequest:
+		status, message = fiber.StatusBadRequest, "invalid request"
+	}
+	return c.Status(status).JSON(fiber.Map{"error": message})
+}
 
 func (h *DeveloperHandler) requireAppOwner(c *fiber.Ctx, appID string) error {
 	uid := userID(c)
