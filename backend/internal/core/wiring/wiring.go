@@ -349,6 +349,9 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 
 	notifications := protected.Group("/notifications")
 	notifications.Get("/activity", notificationHandler.GetActivity)
+	notifications.Get("/unread-count", notificationHandler.UnreadCount)
+	notifications.Post("/:id/read", notificationHandler.MarkRead)
+	notifications.Post("/read-all", notificationHandler.MarkAllRead)
 	notifications.Delete("", notificationHandler.ClearAll)
 
 	community := protected.Group("/community")
