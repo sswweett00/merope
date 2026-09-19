@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"time"
+	"strings"
 	"local/merope/internal/database/db"
 	"local/merope/internal/modules/messaging/domain"
 	"local/merope/internal/core/util"
@@ -22,18 +23,43 @@ func NewPostgresMessagingRepository(queries *db.Queries, pool *pgxpool.Pool) *Po
 }
 
 func (r *PostgresMessagingRepository) CreateRoom(ctx context.Context, name string, isGroup bool, userIDs []string) (*domain.ChatRoom, error) {
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("begin room transaction: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
 	var dbRoom domain.ChatRoom
-	err := r.pool.QueryRow(ctx,
+	err = tx.QueryRow(ctx,
 		"INSERT INTO chat_rooms (name, is_group, is_e2ee_enabled) VALUES ($1, $2, $3) RETURNING id, name, is_group, is_e2ee_enabled, created_at",
 		name, isGroup, false).Scan(&dbRoom.ID, &dbRoom.Name, &dbRoom.IsGroup, &dbRoom.IsE2EEEnabled, &dbRoom.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
 
+	seen := make(map[string]struct{}, len(userIDs))
 	for _, uid := range userIDs {
-		_, _ = r.pool.Exec(ctx, "INSERT INTO chat_members (room_id, user_id, role) VALUES ($1, $2, $3)", dbRoom.ID, uid, "member")
+		uid = strings.TrimSpace(uid)
+		if uid == "" {
+			return nil, fmt.Errorf("chat member id is required")
+		}
+		if _, exists := seen[uid]; exists {
+			continue
+		}
+		seen[uid] = struct{}{}
+
+		var memberID pgtype.UUID
+		if err := memberID.Scan(uid); err != nil {
+			return nil, fmt.Errorf("invalid chat member id: %w", err)
+		}
+		if _, err := tx.Exec(ctx, "INSERT INTO chat_members (room_id, user_id, role) VALUES ($1, $2, $3)", dbRoom.ID, memberID, "member"); err != nil {
+			return nil, fmt.Errorf("add chat member: %w", err)
+		}
 	}
 
+	if err := tx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("commit room transaction: %w", err)
+	}
 	return &dbRoom, nil
 }
 
