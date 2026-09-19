@@ -95,7 +95,7 @@ services:
       CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
     ports:
       - "8123:8123"
-      - "9000:9000"
+      - "9002:9000"
     volumes:
       - clickhouse_data:/var/lib/clickhouse
       - ./backend/db/clickhouse_schema.sql:/docker-entrypoint-initdb.d/clickhouse_schema.sql
@@ -159,7 +159,7 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
-      ENV: production
+      ENV: development
       PORT: 8080
       DATABASE_URL: postgres://merope_user:merope_secure_password@postgres:5432/merope_db?sslmode=disable
       JWT_SECRET: ${JWT_SECRET:-change-me-to-a-strong-secret-at-least-32-chars}
