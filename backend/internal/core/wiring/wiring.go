@@ -272,6 +272,9 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	social.Get("/following/:id", socHandler.Following)
 	social.Post("/follow/:id", socHandler.Follow)
 	social.Post("/unfollow/:id", socHandler.Unfollow)
+	social.Post("/follow-requests/:id", socHandler.RequestFollow)
+	social.Get("/follow-requests", socHandler.ListFollowRequests)
+	social.Post("/follow-requests/:id/respond", socHandler.RespondFollowRequest)
 
 	lumia := protected.Group("/lumia")
 	lumia.Post("/tip", lumHandler.Tip)
