@@ -33,9 +33,12 @@ class SocialApiService {
         queryParameters: queryParams,
       );
 
+      if (response.isError) {
+        return SocialFeedState(error: _errorMessage(response.error));
+      }
       final data = response.data;
       if (data == null) {
-        return const SocialFeedState();
+        return const SocialFeedState(error: 'Empty response from server');
       }
 
       final items = (data['items'] as List?)
@@ -74,10 +77,18 @@ class SocialApiService {
         },
       );
 
+      if (response.isError) {
+        return SocialPostActionResult(
+          success: false,
+          error: _errorMessage(response.error),
+        );
+      }
       final data = response.data;
       if (data == null) {
         return SocialPostActionResult(
-            success: false, error: 'No response from server');
+          success: false,
+          error: 'No response from server',
+        );
       }
 
       final post = MeropeSignal.fromJson(data);
@@ -103,10 +114,18 @@ class SocialApiService {
         },
       );
 
+      if (response.isError) {
+        return SocialPostActionResult(
+          success: false,
+          error: _errorMessage(response.error),
+        );
+      }
       final data = response.data;
       if (data == null) {
         return SocialPostActionResult(
-            success: false, error: 'No response from server');
+          success: false,
+          error: 'No response from server',
+        );
       }
 
       final post = MeropeSignal.fromJson(data);
@@ -118,8 +137,8 @@ class SocialApiService {
 
   Future<bool> deletePost(String postId) async {
     try {
-      await _apiClient.delete('/social/posts/$postId');
-      return true;
+      final response = await _apiClient.delete<void>('/social/posts/$postId');
+      return !response.isError;
     } on MeropeAPIException catch (_) {
       return false;
     }
@@ -146,8 +165,8 @@ class SocialApiService {
 
   Future<bool> unlikePost(String postId) async {
     try {
-      await _apiClient.delete('/social/posts/$postId/like');
-      return true;
+      final response = await _apiClient.delete<void>('/social/posts/$postId/like');
+      return !response.isError;
     } on MeropeAPIException catch (_) {
       return false;
     }
@@ -242,8 +261,8 @@ class SocialApiService {
 
   Future<bool> followUser(String userId) async {
     try {
-      await _apiClient.post('/social/follow/$userId');
-      return true;
+      final response = await _apiClient.post<void>('/social/follow/$userId');
+      return !response.isError;
     } on MeropeAPIException catch (_) {
       return false;
     }
@@ -251,8 +270,8 @@ class SocialApiService {
 
   Future<bool> unfollowUser(String userId) async {
     try {
-      await _apiClient.post('/social/unfollow/$userId');
-      return true;
+      final response = await _apiClient.post<void>('/social/unfollow/$userId');
+      return !response.isError;
     } on MeropeAPIException catch (_) {
       return false;
     }
@@ -269,6 +288,7 @@ class SocialApiService {
         queryParameters: queryParams,
       );
 
+      if (response.isError) return [];
       final data = response.data;
       if (data == null) return [];
 
@@ -320,6 +340,12 @@ class SocialApiService {
     }
   }
 }
+
+  String _errorMessage(dynamic error) {
+    if (error is MeropeAPIException) return error.message;
+    return error?.toString() ?? 'Request failed';
+  }
+
 
 final socialApiServiceProvider = Provider<SocialApiService>((ref) {
   return SocialApiService(ApiClient());
