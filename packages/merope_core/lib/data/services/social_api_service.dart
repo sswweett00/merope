@@ -149,6 +149,12 @@ class SocialApiService {
       final response = await _apiClient.post<Map<String, dynamic>>(
         '/social/posts/$postId/like',
       );
+      if (response.isError) {
+        return SocialPostActionResult(
+          success: false,
+          error: _errorMessage(response.error),
+        );
+      }
 
       final data = response.data;
       if (data == null) {
@@ -177,6 +183,12 @@ class SocialApiService {
       final response = await _apiClient.post<Map<String, dynamic>>(
         '/social/posts/$postId/repost',
       );
+      if (response.isError) {
+        return SocialPostActionResult(
+          success: false,
+          error: _errorMessage(response.error),
+        );
+      }
 
       final data = response.data;
       if (data == null) {
@@ -209,6 +221,9 @@ class SocialApiService {
         '/social/profile/$userId',
       );
 
+      if (response.isError) {
+        throw _asApiException(response.error);
+      }
       final data = response.data;
       if (data == null) {
         throw const MeropeAPIException(message: 'Failed to load user profile');
@@ -236,6 +251,9 @@ class SocialApiService {
         queryParameters: queryParams,
       );
 
+      if (response.isError) {
+        throw _asApiException(response.error);
+      }
       final data = response.data;
       if (data == null) {
         return SearchResult(users: [], posts: []);
@@ -289,6 +307,8 @@ class SocialApiService {
       );
 
       if (response.isError) return [];
+      if (response.isError) return [];
+      if (response.isError) return [];
       final data = response.data;
       if (data == null) return [];
 
@@ -328,6 +348,16 @@ class SocialApiService {
     }
   }
 
+  MeropeAPIException _asApiException(dynamic error) {
+    if (error is MeropeAPIException) return error;
+    return MeropeAPIException(message: error?.toString() ?? 'Request failed');
+  }
+
+  String _errorMessage(dynamic error) {
+    if (error is MeropeAPIException) return error.message;
+    return error?.toString() ?? 'Request failed';
+  }
+
   Future<ApiResult<void>> tipSignal(String signalId, int amount) async {
     try {
       await _apiClient.post(
@@ -340,12 +370,7 @@ class SocialApiService {
     }
   }
 }
-
-  String _errorMessage(dynamic error) {
-    if (error is MeropeAPIException) return error.message;
-    return error?.toString() ?? 'Request failed';
-  }
-
+}
 
 final socialApiServiceProvider = Provider<SocialApiService>((ref) {
   return SocialApiService(ApiClient());
