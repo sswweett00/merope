@@ -132,9 +132,12 @@ class ContentApiService {
         queryParameters: queryParams,
       );
 
+      if (response.isError) {
+        return ContentFeedState(error: _errorMessage(response.error));
+      }
       final data = response.data;
       if (data == null) {
-        return const ContentFeedState();
+        return const ContentFeedState(error: 'Empty response from server');
       }
 
       final items = (data['items'] as List?)
@@ -166,9 +169,12 @@ class ContentApiService {
         queryParameters: queryParams,
       );
 
+      if (response.isError) {
+        return ContentFeedState(error: _errorMessage(response.error));
+      }
       final data = response.data;
       if (data == null) {
-        return const ContentFeedState();
+        return const ContentFeedState(error: 'Empty response from server');
       }
 
       final items = (data['comments'] as List?)
@@ -193,6 +199,9 @@ class ContentApiService {
         data: {'text': content},
       );
 
+      if (response.isError) {
+        return CommentResult(success: false, error: _errorMessage(response.error));
+      }
       final data = response.data;
       if (data == null) {
         return CommentResult(success: false, error: 'No response from server');
@@ -205,9 +214,9 @@ class ContentApiService {
 
   Future<bool> deleteComment(String postId, String commentId) async {
     try {
-      await _apiClient
-          .delete('/api/v10/content/posts/$postId/comments/$commentId');
-      return true;
+      final response = await _apiClient
+          .delete<void>('/api/v10/content/posts/$postId/comments/$commentId');
+      return !response.isError;
     } on MeropeAPIException catch (_) {
       return false;
     }
@@ -218,7 +227,12 @@ class ContentApiService {
       final response = await _apiClient.post<Map<String, dynamic>>(
         '/api/v10/content/posts/$postId/like',
       );
-
+      if (response.isError) {
+        return SocialPostActionResult(
+          success: false,
+          error: _errorMessage(response.error),
+        );
+      }
       return const SocialPostActionResult(success: true);
     } on MeropeAPIException catch (e) {
       return SocialPostActionResult(success: false, error: e.message);
@@ -227,8 +241,9 @@ class ContentApiService {
 
   Future<bool> unlikePost(String postId) async {
     try {
-      await _apiClient.delete('/api/v10/content/posts/$postId/like');
-      return true;
+      final response =
+          await _apiClient.delete<void>('/api/v10/content/posts/$postId/like');
+      return !response.isError;
     } on MeropeAPIException catch (_) {
       return false;
     }
@@ -239,7 +254,12 @@ class ContentApiService {
       final response = await _apiClient.post<Map<String, dynamic>>(
         '/api/v10/content/posts/$postId/repost',
       );
-
+      if (response.isError) {
+        return SocialPostActionResult(
+          success: false,
+          error: _errorMessage(response.error),
+        );
+      }
       return const SocialPostActionResult(success: true);
     } on MeropeAPIException catch (e) {
       return SocialPostActionResult(success: false, error: e.message);
@@ -252,6 +272,7 @@ class ContentApiService {
         '/api/v10/content/posts/$postId/analytics',
       );
 
+      if (response.isError) throw _asApiException(response.error);
       final data = response.data;
       if (data == null) {
         throw const MeropeAPIException(message: 'Failed to load analytics');
@@ -288,10 +309,18 @@ class ContentApiService {
         onSendProgress: onProgress,
       );
 
+      if (response.isError) {
+        return MediaUploadResult(
+          success: false,
+          error: _errorMessage(response.error),
+        );
+      }
       final data = response.data;
       if (data == null) {
         return MediaUploadResult(
-            success: false, error: 'No response from server');
+          success: false,
+          error: 'No response from server',
+        );
       }
 
       return MediaUploadResult(
@@ -369,6 +398,12 @@ class ContentApiService {
         },
       );
 
+      if (response.isError) {
+        return SocialPostActionResult(
+          success: false,
+          error: _errorMessage(response.error),
+        );
+      }
       final data = response.data;
       if (data == null) {
         return const SocialPostActionResult(
@@ -400,10 +435,18 @@ class ContentApiService {
         },
       );
 
+      if (response.isError) {
+        return SocialPostActionResult(
+          success: false,
+          error: _errorMessage(response.error),
+        );
+      }
       final data = response.data;
       if (data == null) {
         return SocialPostActionResult(
-            success: false, error: 'No response from server');
+          success: false,
+          error: 'No response from server',
+        );
       }
 
       final post = MeropeSignal.fromJson(data);
@@ -415,11 +458,22 @@ class ContentApiService {
 
   Future<bool> deletePost(String postId) async {
     try {
-      await _apiClient.delete('/api/v10/content/posts/$postId');
-      return true;
+      final response =
+          await _apiClient.delete<void>('/api/v10/content/posts/$postId');
+      return !response.isError;
     } on MeropeAPIException catch (_) {
       return false;
     }
+  }
+
+  String _errorMessage(dynamic error) {
+    if (error is MeropeAPIException) return error.message;
+    return error?.toString() ?? 'Request failed';
+  }
+
+  MeropeAPIException _asApiException(dynamic error) {
+    if (error is MeropeAPIException) return error;
+    return MeropeAPIException(message: error?.toString() ?? 'Request failed');
   }
 
   String _getMimeType(String fileName) {
