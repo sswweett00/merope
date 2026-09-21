@@ -361,10 +361,25 @@ class ContentApiService {
           'text': content,
           'media': mediaUrls ?? [],
           'visibility': visibility,
+          if (cards != null && cards.isNotEmpty && cards.first.data['question'] != null)
+            'poll': {
+              'question': cards.first.data['question'],
+              'options': (cards.first.data['options'] as List?)?.cast<String>() ?? const <String>[],
+            },
         },
       );
 
-      return const SocialPostActionResult(success: true);
+      final data = response.data;
+      if (data == null) {
+        return const SocialPostActionResult(
+          success: false,
+          error: 'No response from server',
+        );
+      }
+      return SocialPostActionResult(
+        success: true,
+        post: MeropeSignal.fromJson(data),
+      );
     } on MeropeAPIException catch (e) {
       return SocialPostActionResult(success: false, error: e.message);
     }
