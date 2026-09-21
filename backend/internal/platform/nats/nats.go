@@ -27,18 +27,28 @@ func New(url string) (*Client, error) {
 }
 
 func (c *Client) EnsureStreams() error {
-	streams := []string{"SOCIAL", "MESSAGING", "AI"}
-	for _, s := range streams {
-		_, err := c.JS.StreamInfo(s)
+	streams := []struct {
+		name     string
+		subjects []string
+	}{
+		{Name: "SOCIAL", Subjects: []string{"SOCIAL.*"}},
+		{Name: "MESSAGING", Subjects: []string{"MESSAGING.*", "chat.*"}},
+		{Name: "E2EE", Subjects: []string{"e2ee.*"}},
+		{Name: "FLOW", Subjects: []string{"flow.*"}},
+		{Name: "AI", Subjects: []string{"AI.*"}},
+	}
+	for _, spec := range streams {
+		_, err := c.JS.StreamInfo(spec.name)
+		if err == nil {
+			continue
+		}
+		_, err = c.JS.AddStream(&nats.StreamConfig{
+			Name:     spec.name,
+			Subjects: spec.subjects,
+			Storage:  nats.FileStorage,
+		})
 		if err != nil {
-			_, err = c.JS.AddStream(&nats.StreamConfig{
-				Name:     s,
-				Subjects: []string{fmt.Sprintf("%s.*", s)},
-				Storage:  nats.FileStorage,
-			})
-			if err != nil {
-				return fmt.Errorf("failed to create stream %s: %w", s, err)
-			}
+			return fmt.Errorf("failed to create stream %s: %w", spec.name, err)
 		}
 	}
 	return nil
