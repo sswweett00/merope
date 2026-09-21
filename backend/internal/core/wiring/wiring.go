@@ -93,6 +93,7 @@ type Handlers struct {
 	Community     *communityTransport.CommunityHandler
 	Marketplace   *marketplaceTransport.MarketplaceHandler
 	Notifications *notificationsTransport.NotificationsHandler
+	Progression    *growthTransport.GrowthHandler
 	VeritasGuard  socialService.VeritasContentGuard
 }
 
@@ -222,6 +223,10 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	moderationSvc := moderationService.NewModerationService(moderationRepo)
 	moderationHandler := moderationTransport.NewModerationHandler(moderationSvc)
 
+	growthRepo := growthInfra.NewPostgresGrowthRepository(pgPool)
+	growthSvc := growthService.NewGrowthService(growthRepo)
+	growthHandler := growthTransport.NewGrowthHandler(growthSvc)
+
 	handlers := &Handlers{
 		Identity:      idHandler,
 		Content:       contHandler,
@@ -232,6 +237,7 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 		Community:     communityHandler,
 		Marketplace:   marketplaceHandler,
 		Notifications: notificationHandler,
+		Progression:    growthHandler,
 		VeritasGuard:  veritasGuard,
 	}
 
@@ -450,6 +456,16 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	finance.Get("/escrow/:id", financeHandler.GetEscrow)
 	finance.Post("/escrow/:id/release", financeHandler.ReleaseEscrow)
 	finance.Post("/escrow/:id/refund", financeHandler.RefundEscrow)
+
+	progression := protected.Group("/progression")
+	progression.Get("/profile", growthHandler.Profile)
+	progression.Get("/quests", growthHandler.Quests)
+	progression.Post("/events", growthHandler.RecordEvent)
+	progression.Post("/quests/:id/claim", growthHandler.ClaimQuest)
+	progression.Post("/boost", growthHandler.ActivateBoost)
+	progression.Post("/streak-shield", growthHandler.StreakShield)
+	progression.Get("/achievements", growthHandler.Achievements)
+	progression.Get("/leaderboard", growthHandler.SeasonLeaderboard)
 
 	moderation := protected.Group("/moderation")
 	moderation.Get("/queue", moderationHandler.GetQueue)
