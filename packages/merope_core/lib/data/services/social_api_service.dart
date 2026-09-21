@@ -173,27 +173,21 @@ class SocialApiService {
   }
 
   Future<bool> bookmarkPost(String postId) async {
-    try {
-      await _apiClient.post('/social/posts/$postId/bookmark');
-      return true;
-    } on MeropeAPIException catch (_) {
-      return false;
-    }
+    throw UnsupportedError(
+      'Bookmarking posts is not exposed by the active backend contract',
+    );
   }
 
   Future<bool> unbookmarkPost(String postId) async {
-    try {
-      await _apiClient.delete('/social/posts/$postId/bookmark');
-      return true;
-    } on MeropeAPIException catch (_) {
-      return false;
-    }
+    throw UnsupportedError(
+      'Bookmarking posts is not exposed by the active backend contract',
+    );
   }
 
   Future<UserProfile> getUserProfile(String userId) async {
     try {
       final response = await _apiClient.get<Map<String, dynamic>>(
-        '/social/users/$userId',
+        '/social/profile/$userId',
       );
 
       final data = response.data;
@@ -248,7 +242,7 @@ class SocialApiService {
 
   Future<bool> followUser(String userId) async {
     try {
-      await _apiClient.post('/social/users/$userId/follow');
+      await _apiClient.post('/social/follow/$userId');
       return true;
     } on MeropeAPIException catch (_) {
       return false;
@@ -257,7 +251,7 @@ class SocialApiService {
 
   Future<bool> unfollowUser(String userId) async {
     try {
-      await _apiClient.delete('/social/users/$userId/follow');
+      await _apiClient.post('/social/unfollow/$userId');
       return true;
     } on MeropeAPIException catch (_) {
       return false;
@@ -271,7 +265,7 @@ class SocialApiService {
       if (cursor != null) queryParams['cursor'] = cursor;
 
       final response = await _apiClient.get<Map<String, dynamic>>(
-        '/social/users/$userId/followers',
+        '/social/followers/$userId',
         queryParameters: queryParams,
       );
 
@@ -296,7 +290,7 @@ class SocialApiService {
       if (cursor != null) queryParams['cursor'] = cursor;
 
       final response = await _apiClient.get<Map<String, dynamic>>(
-        '/social/users/$userId/following',
+        '/social/following/$userId',
         queryParameters: queryParams,
       );
 
@@ -317,8 +311,8 @@ class SocialApiService {
   Future<ApiResult<void>> tipSignal(String signalId, int amount) async {
     try {
       await _apiClient.post(
-        '/social/signals/$signalId/tip',
-        data: {'amount': amount},
+        '/lumia/tip',
+        data: {'signal_id': signalId, 'amount': amount},
       );
       return const ApiResult.success(null);
     } on MeropeAPIException catch (e) {
