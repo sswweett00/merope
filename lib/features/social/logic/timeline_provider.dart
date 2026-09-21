@@ -56,8 +56,8 @@ class TimelineNotifier extends AsyncNotifier<TimelineState> {
     state = AsyncValue.data(current.copyWith(isLoadingMore: true));
 
     final api = ref.read(contentApiServiceProvider);
-    final lastItem = current.items.last;
-    final result = await api.getFeed(limit: 10, cursor: lastItem.id);
+    final cursor = current.items.isNotEmpty ? current.items.last.id : null;
+    final result = await api.getFeed(limit: 10, cursor: cursor);
 
     state = AsyncValue.data(current.copyWith(
       items: [...current.items, ...result.items],
@@ -99,26 +99,15 @@ class TimelineNotifier extends AsyncNotifier<TimelineState> {
 
   Future<void> resonateSignal(
       String signalId, String resonanceType, int addedAmplitude) async {
-    final previousState = state.value;
-    if (previousState == null) return;
+    if (addedAmplitude <= 0) return;
 
-    final updatedItems = previousState.items.map((signal) {
-      if (signal.id == signalId) {
-        final updatedResonances = signal.resonances.map((r) {
-          if (r.type == resonanceType) {
-            return r.copyWith(
-              amplitude: r.amplitude + addedAmplitude,
-              isResonated: true,
-            );
-          }
-          return r;
-        }).toList();
-        return signal.copyWith(resonances: updatedResonances);
-      }
-      return signal;
-    }).toList();
+    final api = ref.read(contentApiServiceProvider);
+    final result = await api.likePost(signalId);
+    if (!result.success) {
+      throw StateError(result.error ?? 'Failed to amplify signal');
+    }
 
-    state = AsyncValue.data(previousState.copyWith(items: updatedItems));
+    state = await AsyncValue.guard(() => _fetchInitial());
   }
 }
 
@@ -132,19 +121,11 @@ final userProfileProvider =
 
   if (userId == 'me') {
     final result = await api.getCurrentUser();
-    return result.data!;
+    if (result.isSuccess && result.data != null) return result.data!;
+    throw StateError(result.error ?? 'Failed to load current user');
   }
 
   final result = await api.getProfile(userId);
-  if (result.isSuccess) {
-    return result.data!;
-  }
-
-  // Minimal fallback for missing users
-  return social_api.UserModel(
-    id: userId,
-    username: 'explorer',
-    displayName: 'Nexus Explorer',
-    createdAt: 0,
-  );
+  if (result.isSuccess && result.data != null) return result.data!;
+  throw StateError(result.error ?? 'Failed to load profile');
 });
