@@ -68,9 +68,13 @@ class NotificationApiService {
         },
       );
 
-      final data = response.data as List<dynamic>;
+      final raw = response.data;
+      final data = raw is Map<String, dynamic>
+          ? (raw['notifications'] as List<dynamic>? ?? const [])
+          : (raw as List<dynamic>? ?? const []);
       final notifications = data
-          .map((e) => NotificationModel.fromJson(e as Map<String, dynamic>))
+          .whereType<Map>()
+          .map((e) => NotificationModel.fromJson(Map<String, dynamic>.from(e)))
           .toList();
       return ApiResult.success(notifications, statusCode: response.statusCode);
     } on DioException catch (e) {
