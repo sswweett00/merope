@@ -291,6 +291,7 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	auth.Post("/login", preAuthHandler.Login)
 	auth.Post("/refresh", idHandler.RefreshToken)
 	auth.Post("/mfa/verify", preAuthHandler.Verify)
+	auth.Get("/mfa/setup", security.AuthMiddleware(cfg.JWTSecret, rdb.Conn), security.RBACMiddleware(rbacEnforcer), idHandler.SetupMFA)
 	auth.Get("/me", security.AuthMiddleware(cfg.JWTSecret, rdb.Conn), security.RBACMiddleware(rbacEnforcer), idHandler.Me)
 	auth.Post("/logout", security.AuthMiddleware(cfg.JWTSecret, rdb.Conn), security.RBACMiddleware(rbacEnforcer), idHandler.Logout)
 	protected := api.Group("/", security.AuthMiddleware(cfg.JWTSecret, rdb.Conn), security.RBACMiddleware(rbacEnforcer))
@@ -447,6 +448,10 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	moderation.Post("/reviews/:id/resolve", moderationHandler.ResolveReview)
 	moderation.Post("/classify", moderationHandler.ClassifyContent)
 
+	if err := RegisterStoriesRoutes(app, cfg, pgPool, rdb); err != nil {
+		log.Fatalf("failed to register stories routes: %v", err)
+	}
+
 	content.Post("/media/upload", func(c *fiber.Ctx) error {
 		file, err := c.FormFile("file")
 		if err != nil {
@@ -466,8 +471,39 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 		return c.Status(fiber.StatusCreated).JSON(fiber.Map{"url": url, "media_url": url, "media_id": strings.TrimSuffix(uuid.NewString(), "")})
 	})
 
-	app.Get("/health", func(c *fiber.Ctx) error {
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "ok", "request_id": coreMiddleware.GetRequestID(c)})
+	liveHandler := func(c *fiber.Ctx) error {
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"status": "ok",
+			"request_id": coreMiddleware.GetRequestID(c),
+		})
+	}
+	app.Get("/health/live", liveHandler)
+	app.Get("/health", liveHandler)
+	app.Get("/health/ready", func(c *fiber.Ctx) error {
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+
+		ready := true
+		if err := pgPool.Ping(ctx); err != nil {
+			ready = false
+		}
+		if rdb == nil || rdb.Conn == nil || rdb.Conn.Ping(ctx).Err() != nil {
+			ready = false
+		}
+		if bus == nil || bus.Conn == nil || !bus.Conn.IsConnected() {
+			ready = false
+		}
+
+		status := fiber.StatusOK
+		state := "ready"
+		if !ready {
+			status = fiber.StatusServiceUnavailable
+			state = "not_ready"
+		}
+		return c.Status(status).JSON(fiber.Map{
+			"status": state,
+			"request_id": coreMiddleware.GetRequestID(c),
+		})
 	})
 	cleanup := func() {
 		zapLogger.Info("shutting down API")
