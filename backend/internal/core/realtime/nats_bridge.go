@@ -8,21 +8,12 @@ import (
 
 	"github.com/nats-io/nats.go"
 
-	coreEvents "local/merope/internal/core/events"
+	"local/merope/internal/modules/messaging/domain"
 )
 
 type RoomMemberProvider interface {
-	GetRoomMembers(ctx context.Context, roomID string) ([]RoomMember, error)
-	GetMessageByID(ctx context.Context, messageID string) (*MessageEnvelope, error)
-}
-
-type RoomMember struct {
-	ID string
-}
-
-type MessageEnvelope struct {
-	RoomID  string
-	SenderID string
+	GetRoomMembers(ctx context.Context, roomID string) ([]*domain.ChatRoomMember, error)
+	GetMessageByID(ctx context.Context, messageID string) (*domain.ChatMessage, error)
 }
 
 type natsEventEnvelope struct {
@@ -142,5 +133,3 @@ func firstNonEmpty(values ...string) string {
 	}
 	return ""
 }
-
-var _ coreEvents.Publisher
