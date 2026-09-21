@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:merope_models/auth/auth_user.dart';
@@ -46,8 +45,6 @@ class AuthApi {
     } on DioException catch (e) {
       return ApiResult.error(MeropeAPIException.fromDioError(e),
           statusCode: e.response?.statusCode);
-    } on SocketException catch (_) {
-      return ApiResult.error(NetworkTimeoutException(), statusCode: null);
     } catch (e) {
       return ApiResult.error(e.toString(), statusCode: null);
     }
