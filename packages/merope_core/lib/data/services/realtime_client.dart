@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/status.dart' as status;
 
@@ -76,11 +77,18 @@ class RealtimeClient {
     String? roomId,
   }) {
     return RealtimeClient._internal(
-      baseUrl: baseUrl ?? 'ws://localhost:8080',
+      baseUrl: baseUrl ?? _defaultRealtimeBaseUrl(),
       token: token ?? '',
       roomId: roomId ?? '',
       eventController: StreamController<RealtimeMessage>.broadcast(),
     );
+  }
+
+  static String _defaultRealtimeBaseUrl() {
+    const configured = String.fromEnvironment('API_BASE_URL');
+    if (configured.isNotEmpty) return configured;
+    if (kIsWeb) return Uri.base.origin;
+    return 'https://api.merope.enterprise:8443';
   }
 
   WebSocketChannel? _channel;
