@@ -183,6 +183,15 @@ class SettingsScreen extends ConsumerWidget {
                         onTap: () => context.push('/developer'),
                       ),
                       ListTile(
+                        leading: Icon(Icons.auto_awesome_rounded,
+                            color: tokens.primary),
+                        title: Text('Pulse Center',
+                            style: TextStyle(color: tokens.textPrimary)),
+                        subtitle: const Text(
+                            'XP, seviyeler, görevler, streak ve sezon sıralaması'),
+                        onTap: () => context.push('/growth'),
+                      ),
+                      ListTile(
                         leading: Icon(Icons.analytics_outlined,
                             color: tokens.primary),
                         title: Text('Insights',
