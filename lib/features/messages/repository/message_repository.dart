@@ -12,7 +12,7 @@ abstract class IMessageRepository {
   Future<void> addReaction(String messageId, String emoji);
   Future<void> removeReaction(String messageId, String emoji);
   Future<void> pinMessage(String messageId);
-  Future<void> markAsRead(String messageId);
+  Future<void> markAsRead(String channelId, String messageId);
   Future<void> forwardMessage(String messageId, String toChannelId);
   Future<List<Conversation>> getConversations();
   Future<void> createDirectChat(String otherUserId);
@@ -100,8 +100,13 @@ class RemoteMessageRepository implements IMessageRepository {
       _unsupported('Pinning messages');
 
   @override
-  Future<void> markAsRead(String messageId) =>
-      _unsupported('Room-aware message read receipts');
+  Future<void> markAsRead(String channelId, String messageId) async {
+    final response = await _api.post<Map<String, dynamic>>(
+      '/messaging/rooms/$channelId/read',
+      data: {'message_id': messageId},
+    );
+    if (response.isError) throw StateError('Failed to mark message as read');
+  }
 
   @override
   Future<void> forwardMessage(String messageId, String toChannelId) =>
