@@ -301,14 +301,19 @@ func (r *PostgresGrowthRepository) ClaimQuest(ctx context.Context,userID,questID
 func (r *PostgresGrowthRepository) ClaimStreakShield(ctx context.Context,userID string)(*domain.Profile,error){
 	tx,err:=r.pool.Begin(ctx);if err!=nil{return nil,err};defer tx.Rollback(ctx)
 	if err=r.ensureProfile(ctx,tx,userID);err!=nil{return nil,err}
-	var last *time.Time;var streak,shields int
-	err=tx.QueryRow(ctx,`SELECT last_activity_date,current_streak,streak_shields FROM progression_profiles WHERE user_id=$1 FOR UPDATE`,userID).Scan(&last,&streak,&shields);if err!=nil{return nil,err}
+
+	var last *time.Time
+	var shields int
+	if err=tx.QueryRow(ctx,`SELECT last_activity_date,streak_shields FROM progression_profiles WHERE user_id=$1 FOR UPDATE`,userID).Scan(&last,&shields);err!=nil{return nil,err}
 	if shields<=0{return nil,fmt.Errorf("no streak shield available")}
 	if last==nil{return nil,fmt.Errorf("nothing to protect")}
-	_,err=tx.Exec(ctx,`UPDATE progression_profiles SET streak_shields=streak_shields-1,last_activity_date=CURRENT_DATE,updated_at=NOW() WHERE user_id=$1`,userID);if err!=nil{return nil,err}
-	p:=&domain.Profile{UserID:userID,CurrentStreak:streak-0,StreakShields:shields-1}
-	p.NextLevelXP=nextLevelXP(1)
-	return p,tx.Commit(ctx)
+	today:=time.Now().UTC().Truncate(24*time.Hour)
+	lastDay:=last.UTC().Truncate(24*time.Hour)
+	if !lastDay.Before(today){return nil,fmt.Errorf("streak shield is only usable before today's activity")}
+	if today.Sub(lastDay)>48*time.Hour{return nil,fmt.Errorf("streak gap is too large for a shield")}
+
+	if _,err=tx.Exec(ctx,`UPDATE progression_profiles SET streak_shields=streak_shields-1,last_activity_date=CURRENT_DATE,updated_at=NOW() WHERE user_id=$1`,userID);err!=nil{return nil,err}
+	return r.profileForTx(ctx,tx,userID)
 }
 
 func (r *PostgresGrowthRepository) ActivateBoost(ctx context.Context,userID string,energyCost int,duration time.Duration)(*domain.Profile,error){
