@@ -163,6 +163,7 @@ func (r *PostgresGrowthRepository) RecordEvent(ctx context.Context, userID, acti
 	`,userID).Scan(&xp,&level,&reputation,&streak,&longest,&combo,&energy,&lastDate,&comboAt,&boostUntil)
 	if err!=nil{return nil,err}
 
+	previousStreak:=streak
 	now:=time.Now()
 	today:=now.UTC().Truncate(24*time.Hour)
 	if lastDate==nil {streak=1} else {
@@ -235,12 +236,13 @@ func (r *PostgresGrowthRepository) RecordEvent(ctx context.Context, userID, acti
 	achievements,err:=unlockAchievements(ctx,tx,userID,action,streak,level)
 	if err!=nil{return nil,err}
 
-	_,err=tx.Exec(ctx,`
+\tshieldAward:=0
+\tif (streak==7 || streak==30) && previousStreak < streak { shieldAward=1 }
+\t_,err=tx.Exec(ctx,`
 		UPDATE progression_profiles
-		SET streak_shields=LEAST(3,streak_shields+
-			CASE WHEN current_streak IN(7,30) THEN 1 ELSE 0 END)
+		SET streak_shields=LEAST(3,streak_shields+$2)
 		WHERE user_id=$1
-	`,userID)
+	`,userID,shieldAward)
 	if err!=nil{return nil,err}
 
 	result:=&domain.EventResult{
@@ -321,7 +323,8 @@ func (r *PostgresGrowthRepository) ActivateBoost(ctx context.Context,userID stri
 	if err=r.ensureProfile(ctx,tx,userID);err!=nil{return nil,err}
 	tag,err:=tx.Exec(ctx,`
 		UPDATE progression_profiles
-		SET energy=energy-$2,
+		SET energy=LEAST(100,energy+floor(EXTRACT(EPOCH FROM (NOW()-energy_updated_at))/60)::int)-$2,
+		    energy_updated_at=NOW(),
 		    boost_until=GREATEST(COALESCE(boost_until,NOW()),NOW()+($3 || ' minutes')::interval),
 		    updated_at=NOW()
 		WHERE user_id=$1 AND energy>=$2
