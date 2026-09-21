@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:merope_core/data/services/realtime_client.dart';
+import 'package:merope_core/data/services/messaging_api_service.dart';
 import '../domain/models/message_model.dart';
 import '../domain/models/chat_models.dart';
 import '../repository/message_repository.dart';
@@ -28,16 +29,18 @@ class MessageController
 
     // Subscribe to real-time updates
     _subscription = realtime.subscribeToChannel(arg).listen((event) {
-      if (event['type'] == 'new_message') {
-        ref.invalidateSelf();
-      } else if (event['type'] == 'message_updated') {
-        ref.invalidateSelf();
-      } else if (event['type'] == 'message_deleted') {
-        ref.invalidateSelf();
-      } else if (event['type'] == 'typing') {
-        _handleTypingIndicator(event);
-      } else if (event['type'] == 'reaction_added') {
-        ref.invalidateSelf();
+      switch (event['type']) {
+        case 'MESSAGE_SENT':
+        case 'E2EE_MESSAGE_SENT':
+        case 'MESSAGE_EDITED':
+        case 'MESSAGE_DELETED':
+        case 'REACTION_ADDED':
+        case 'READ_RECEIPT':
+          ref.invalidateSelf();
+          break;
+        case 'TYPING':
+          _handleTypingIndicator(event);
+          break;
       }
     });
 
@@ -172,8 +175,11 @@ class MessageController
   }
 
   void _sendTypingIndicator(bool isTyping) {
-    final realtime = ref.read(realtimeClientProvider);
-    realtime.sendTypingIndicator(arg, isTyping);
+    unawaited(
+      ref
+          .read(messagingApiServiceProvider)
+          .sendTypingIndicator(arg, isTyping),
+    );
   }
 
   List<String> get typingUsers => _typingUsers.toList();
