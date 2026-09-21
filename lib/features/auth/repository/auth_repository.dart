@@ -252,7 +252,7 @@ class AuthRepository implements IAuthRepository {
     );
   }
 
-  Future<MfaChallenge> getMfaSetup(String userId) async {
+  Future<MfaChallenge> getMfaSetup(String _userId) async {
     final response = await _apiClient.get<Map<String, dynamic>>(
       '/auth/mfa/setup',
     );
@@ -324,14 +324,7 @@ class AuthRepository implements IAuthRepository {
 
   @override
   Future<AuthUser?> getCurrentUser() async {
-    final userJson = await _secureStorage.read(key: 'auth_user');
-    if (userJson == null) return null;
-
-    try {
-      return AuthUser.fromJson(jsonDecode(userJson) as Map<String, dynamic>);
-    } catch (_) {
-      return null;
-    }
+    return _sessionStorage.getUser();
   }
 
   @override
