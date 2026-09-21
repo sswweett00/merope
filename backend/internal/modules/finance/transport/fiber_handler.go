@@ -152,8 +152,8 @@ func (h *FinanceHandler) UnlockContent(c *fiber.Ctx) error {
 func (h *FinanceHandler) Transfer(c *fiber.Ctx) error {
 	senderID := c.Locals("user_id").(string)
 	var req struct {
-		ReceiverID string `json:\"receiver_id\"`
-		Amount     int64  `json:\"amount\"`
+		ReceiverID string `json:"receiver_id"`
+		Amount     int64  `json:"amount"`
 	}
 	if err := c.BodyParser(&req); err != nil || req.ReceiverID == "" || req.Amount <= 0 {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid transfer"})
