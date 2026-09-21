@@ -1,10 +1,8 @@
-import 'dart:io';
-import 'dart:ui';
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter_windowmanager/flutter_windowmanager.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/security/biometric_provider.dart';
+import '../../core/security/platform_security.dart';
 import '../../core/theme/tokens/merope_tokens.dart';
 
 class PrivacyGuard extends ConsumerStatefulWidget {
@@ -46,17 +44,9 @@ class _PrivacyGuardState extends ConsumerState<PrivacyGuard>
     super.dispose();
   }
 
-  Future<void> _enablePrivacy() async {
-    if (Platform.isAndroid) {
-      await FlutterWindowManager.addFlags(FlutterWindowManager.FLAG_SECURE);
-    }
-  }
+  Future<void> _enablePrivacy() => setScreenCaptureProtection(true);
 
-  Future<void> _disablePrivacy() async {
-    if (Platform.isAndroid) {
-      await FlutterWindowManager.clearFlags(FlutterWindowManager.FLAG_SECURE);
-    }
-  }
+  Future<void> _disablePrivacy() => setScreenCaptureProtection(false);
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
