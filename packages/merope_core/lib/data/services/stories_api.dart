@@ -1,6 +1,3 @@
-import 'dart:async';
-import 'dart:io';
-
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:merope_core/data/services/api_client.dart';
@@ -83,10 +80,13 @@ class StoriesApiService {
     }
   }
 
-  Future<ApiResult<String>> uploadStoryMedia(File file) async {
+  Future<ApiResult<String>> uploadStoryMedia({
+    required String filename,
+    required List<int> bytes,
+  }) async {
     try {
       final formData = FormData.fromMap({
-        'file': await MultipartFile.fromFile(file.path),
+        'file': MultipartFile.fromBytes(bytes, filename: filename),
       });
       final response = await _apiClient.post<Map<String, dynamic>>(
         '/content/media/upload',
