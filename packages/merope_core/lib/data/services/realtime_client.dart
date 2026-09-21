@@ -151,10 +151,19 @@ class RealtimeClient {
 
   String _buildWsUrl() {
     final uri = Uri.parse(baseUrl);
-    final wsScheme = uri.scheme == 'https' ? 'wss' : 'ws';
-    final wsUri =
-        Uri.parse('$wsScheme://${uri.host}:${uri.port}/ws?token=$token');
-    return wsUri.toString();
+    final wsScheme =
+        uri.scheme == 'https' || uri.scheme == 'wss' ? 'wss' : 'ws';
+    final query = <String, String>{
+      ...uri.queryParameters,
+      'token': _token,
+    };
+    return uri
+        .replace(
+          scheme: wsScheme,
+          path: '/ws',
+          queryParameters: query,
+        )
+        .toString();
   }
 
   void _onData(dynamic data) {
