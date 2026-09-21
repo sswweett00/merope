@@ -299,17 +299,34 @@ class AuthInterceptor extends Interceptor {
 
   Future<Response> _retry(RequestOptions requestOptions) async {
     final token = await _sessionStorage.getToken();
+    final headers = <String, dynamic>{...requestOptions.headers};
+
+    if (token != null && token.isNotEmpty) {
+      final authValue = 'Bearer $token';
+      headers['Authorization'] = authValue;
+      try {
+        headers['X-Aether-Signature'] =
+            await AetherAuthShield.signApexChallenge(authValue);
+        final deviceSignature =
+            await AetherAuthShieldNotifier().getSecureDeviceSignature();
+        headers['X-Merope-Device-Sig'] = deviceSignature;
+      } catch (_) {
+        headers.remove('X-Aether-Signature');
+        headers.remove('X-Merope-Device-Sig');
+      }
+    } else {
+      headers.remove('Authorization');
+      headers.remove('X-Aether-Signature');
+      headers.remove('X-Merope-Device-Sig');
+    }
+
     return _dio.fetch(
       requestOptions.copyWith(
         extra: {
           ...requestOptions.extra,
           'skipAuthRefresh': true,
         },
-        headers: {
-          ...requestOptions.headers,
-          if (token != null && token.isNotEmpty)
-            'Authorization': 'Bearer $token',
-        },
+        headers: headers,
       ),
     );
   }
