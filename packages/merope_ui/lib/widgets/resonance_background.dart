@@ -1,10 +1,11 @@
-import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:merope_ui/theme/resonance_frequency_provider.dart';
 import 'package:merope_ui/theme/master_theme_provider.dart';
+import 'package:merope_ui/widgets/platform_local_image.dart';
 
 class ResonanceBackground extends ConsumerStatefulWidget {
   final Widget child;
@@ -49,8 +50,8 @@ class _ResonanceBackgroundState extends ConsumerState<ResonanceBackground>
         // Primary Custom Image Layer
         if (masterTheme.primaryImagePath != null)
           Positioned.fill(
-            child: Image.file(
-              File(masterTheme.primaryImagePath!),
+            child: platformLocalImage(
+              masterTheme.primaryImagePath!,
               fit: BoxFit.cover,
             ),
           ),
@@ -59,8 +60,8 @@ class _ResonanceBackgroundState extends ConsumerState<ResonanceBackground>
           Positioned.fill(
             child: Opacity(
               opacity: 0.7,
-              child: Image.file(
-                File(masterTheme.secondaryImagePath!),
+              child: platformLocalImage(
+                masterTheme.secondaryImagePath!,
                 fit: BoxFit.cover,
               ),
             ),
