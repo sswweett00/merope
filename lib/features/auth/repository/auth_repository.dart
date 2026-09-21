@@ -128,6 +128,7 @@ class AuthRepository implements IAuthRepository {
         },
       );
 
+      if (response.isError) throw _apiError(response);
       final data = response.data;
       if (data == null) return null;
 
@@ -181,6 +182,9 @@ class AuthRepository implements IAuthRepository {
         },
       );
 
+      if (response.isError) {
+        throw _apiError(response);
+      }
       final data = response.data;
       if (data == null) return null;
 
@@ -209,10 +213,18 @@ class AuthRepository implements IAuthRepository {
         },
       );
 
+      if (response.isError) {
+        return MfaVerificationResult(
+          success: false,
+          error: _apiError(response).message,
+        );
+      }
       final data = response.data;
       if (data == null) {
         return MfaVerificationResult(
-            success: false, error: 'No response from server');
+          success: false,
+          error: 'No response from server',
+        );
       }
 
       if (data['success'] == true) {
@@ -243,13 +255,14 @@ class AuthRepository implements IAuthRepository {
   }
 
   Future<void> enableMfa(String userId, String password) async {
-    await _apiClient.post(
+    final response = await _apiClient.post<void>(
       '/auth/mfa/enable',
       data: {
         'user_id': userId,
         'password': password,
       },
     );
+    if (response.isError) throw _apiError(response);
   }
 
   Future<MfaChallenge> getMfaSetup(String _userId) async {
@@ -373,6 +386,12 @@ class AuthRepository implements IAuthRepository {
           'code': code,
         },
       );
+      if (response.isError) {
+        return MfaVerificationResult(
+          success: false,
+          error: _apiError(response).message,
+        );
+      }
       final data = response.data;
       if (data == null || data['success'] != true) {
         return MfaVerificationResult(
@@ -457,7 +476,16 @@ class AuthRepository implements IAuthRepository {
     return user;
   }
 
-  int? _resolveExpiresIn(Map<String, dynamic> data, String token) {
+  int? _resolveExpiresIn(Map<String, dynamic> data, String token) {  MeropeAPIException _apiError(ApiResult<dynamic> response) {
+    final error = response.error;
+    if (error is MeropeAPIException) return error;
+    return MeropeAPIException(
+      message: error?.toString() ?? 'Authentication request failed',
+      statusCode: response.statusCode,
+    );
+  }
+
+
     final explicit = data['expires_in'];
     if (explicit is num) return explicit.toInt();
     try {
