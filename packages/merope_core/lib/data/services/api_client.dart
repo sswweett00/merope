@@ -1,15 +1,13 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:math';
 
-import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
-import 'package:dio/io.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../plugins/isolate_manager.dart';
 import '../../security/aether_auth_shield.dart';
 import '../../security/session_storage.dart';
+import 'api_client_adapter.dart';
 
 class ApiClient {
   factory ApiClient() => _instance;
@@ -40,23 +38,11 @@ class ApiClient {
       ),
     );
 
-    if (!kIsWeb) {
-      (dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
-        final client = HttpClient()
-          ..connectionTimeout = _connectTimeout
-          ..idleTimeout = const Duration(seconds: 30)
-          ..maxConnectionsPerHost = 12;
-        client.badCertificateCallback =
-            (X509Certificate cert, String host, int port) {
-          if (expectedCertSha256 == null || expectedCertSha256.trim().isEmpty) {
-            return false;
-          }
-          final fingerprint = sha256.convert(cert.der).toString().toLowerCase();
-          return fingerprint == expectedCertSha256.trim().toLowerCase();
-        };
-        return client;
-      };
-    }
+    configureDioHttpClient(
+      dio,
+      expectedCertSha256: expectedCertSha256,
+      connectTimeout: _connectTimeout,
+    );
 
     dio.transformer = BackgroundTransformer(_isolateManager);
     dio.interceptors.add(ApiVersionInterceptor());
