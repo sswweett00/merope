@@ -44,7 +44,7 @@ class NotificationModel {
         metadata: json['metadata'] as Map<String, dynamic>?,
         isRead: json['is_read'] as bool? ?? false,
         isSeen: json['is_seen'] as bool? ?? false,
-        createdAt: json['created_at'] as int? ?? 0,
+        createdAt: (json['created_at'] as num?)?.toInt() ?? int.tryParse(json['created_at']?.toString() ?? '') ?? 0,
       );
 }
 
@@ -60,10 +60,9 @@ class NotificationApiService {
   }) async {
     try {
       final response = await _dio.get(
-        '/api/v10/notifications',
+        '/api/v10/notifications/activity',
         queryParameters: {
-          'limit': limit,
-          'offset': offset,
+          'page': offset ~/ limit,
           if (unreadOnly) 'unread_only': true,
         },
       );
