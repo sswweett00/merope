@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:merope_core/data/services/realtime_client.dart';
+import 'package:merope_core/data/services/api_client.dart';
 import 'package:merope_core/data/services/messaging_api_service.dart';
 import '../domain/models/message_model.dart';
 import '../domain/models/chat_models.dart';
@@ -95,6 +96,13 @@ class MessageController
     final repo = ref.read(messageRepositoryProvider);
     await repo.sendMessage(message);
 
+    try {
+      await ApiClient().post<void>(
+        '/progression/events',
+        data: {'action': 'message_sent', 'source_id': message.id},
+      );
+    } catch (_) {}
+
     _sendTypingIndicator(false);
     ref.invalidateSelf();
   }
@@ -141,6 +149,12 @@ class MessageController
   Future<void> addReaction(String messageId, String emoji) async {
     final repo = ref.read(messageRepositoryProvider);
     await repo.addReaction(messageId, emoji);
+    try {
+      await ApiClient().post<void>(
+        '/progression/events',
+        data: {'action': 'reaction_added', 'source_id': messageId},
+      );
+    } catch (_) {}
     ref.invalidateSelf();
   }
 
