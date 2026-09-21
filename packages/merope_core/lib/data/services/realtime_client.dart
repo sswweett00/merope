@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:merope_core/security/session_storage.dart';
 import 'package:web_socket_channel/status.dart' as status;
 
 enum ConnectionStatus { disconnected, connecting, connected, error }
@@ -41,7 +42,8 @@ class RealtimeClient {
   static const Duration _reconnectMaxDelay = Duration(seconds: 10);
 
   final String baseUrl;
-  final String token;
+  final String? _providedToken;
+  String _token;
   final List<RealtimeMessage> _messageBuffer = [];
   final StreamController<RealtimeMessage> _eventController;
   final String _roomId;
@@ -53,7 +55,9 @@ class RealtimeClient {
     required this.token,
     required String roomId,
     required StreamController<RealtimeMessage> eventController,
-  })  : _roomId = roomId,
+  })  : _providedToken = token,
+        _token = token ?? '',
+        _roomId = roomId,
         _eventController = eventController {
     events = _eventController.stream.asBroadcastStream();
     onMessage = events.where(
@@ -65,10 +69,7 @@ class RealtimeClient {
     onConnected = Stream.fromFuture(Future.value(null));
     onDisconnected = Stream.fromFuture(Future.value(null));
 
-    // Don't auto-connect if no token provided
-    if (token.isNotEmpty) {
-      unawaited(connect());
-    }
+    unawaited(connect());
   }
 
   factory RealtimeClient({
@@ -117,6 +118,9 @@ class RealtimeClient {
 
   Future<void> connect() async {
     if (_isDisposed || _isConnected) return;
+
+    _token = _providedToken ?? await SessionStorage().getToken() ?? '';
+    if (_token.isEmpty) return;
 
     WebSocketChannel? channel;
     try {
