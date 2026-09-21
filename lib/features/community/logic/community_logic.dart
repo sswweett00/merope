@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../domain/models/community_model.dart';
 import '../repository/community_repository.dart';
 import '../data/repositories/community_remote_repository.dart';
+import 'package:merope_core/data/services/api_client.dart';
 
 final communityRepositoryProvider = Provider<ICommunityRepository>((ref) {
   return ApiCommunityRepository();
@@ -32,6 +33,12 @@ class CommunityController extends AsyncNotifier<List<Community>> {
   Future<void> join(String communityId) async {
     final repo = ref.read(communityRepositoryProvider);
     await repo.joinCommunity(communityId);
+    try {
+      await ApiClient().post<void>(
+        '/progression/events',
+        data: {'action': 'community_joined', 'source_id': communityId},
+      );
+    } catch (_) {}
     ref.invalidateSelf();
   }
 
@@ -114,6 +121,14 @@ class EventController extends AsyncNotifier<List<CommunityEvent>> {
   Future<void> rsvp(String eventId, String status) async {
     final repo = ref.read(communityRepositoryProvider);
     await repo.rsvpEvent(eventId, status);
+    if (status == 'attending') {
+      try {
+        await ApiClient().post<void>(
+          '/progression/events',
+          data: {'action': 'community_event_rsvp', 'source_id': eventId},
+        );
+      } catch (_) {}
+    }
     ref.invalidateSelf();
   }
 
