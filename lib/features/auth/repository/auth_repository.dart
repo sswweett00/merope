@@ -248,27 +248,22 @@ class AuthRepository implements IAuthRepository {
   }
 
   Future<void> sendMfaCode(String email) async {
-    await _apiClient.post(
-      '/auth/mfa/send-code',
-      data: {'email': email},
+    throw UnsupportedError(
+      'Email MFA code delivery is not exposed by the active backend contract.',
     );
   }
 
   Future<void> enableMfa(String userId, String password) async {
-    final response = await _apiClient.post<void>(
-      '/auth/mfa/enable',
-      data: {
-        'user_id': userId,
-        'password': password,
-      },
+    throw UnsupportedError(
+      'MFA enrollment is exposed through GET /auth/mfa/setup in the active backend contract.',
     );
-    if (response.isError) throw _apiError(response);
   }
 
   Future<MfaChallenge> getMfaSetup(String _userId) async {
     final response = await _apiClient.get<Map<String, dynamic>>(
       '/auth/mfa/setup',
     );
+    if (response.isError) throw _apiError(response);
     final data = response.data;
     if (data == null) {
       throw const MeropeAPIException(message: 'Failed to get MFA setup');
@@ -283,21 +278,8 @@ class AuthRepository implements IAuthRepository {
   }
 
   Future<AccountLockoutInfo> getAccountLockoutStatus(String email) async {
-    final response = await _apiClient.get<Map<String, dynamic>>(
-      '/auth/lockout-status',
-      queryParameters: {'email': email},
-    );
-    final data = response.data;
-    if (data == null) {
-      return AccountLockoutInfo(isLocked: false, remainingAttempts: 5);
-    }
-    return AccountLockoutInfo(
-      isLocked: data['is_locked'] as bool? ?? false,
-      remainingAttempts: data['remaining_attempts'] as int? ?? 5,
-      lockoutUntil: data['lockout_until'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(data['lockout_until'] as int)
-          : null,
-      maxAttempts: data['max_attempts'] as int? ?? 5,
+    throw UnsupportedError(
+      'The active backend contract does not expose a lockout-status endpoint.',
     );
   }
 
