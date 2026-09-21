@@ -242,8 +242,9 @@ class _QuestTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final ratio = (quest.progress / quest.target).clamp(0.0, 1.0);
-    return MeropeCard(
-      margin: const EdgeInsets.only(bottom: 10),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: MeropeCard(
       color: Theme.of(context).colorScheme.surface,
       child: ListTile(
         title: Text(quest.title),
@@ -278,6 +279,7 @@ class _QuestTile extends ConsumerWidget {
                 ? const Icon(Icons.check_circle)
                 : null,
       ),
+    ),
     );
   }
 }
@@ -293,8 +295,9 @@ class _AchievementList extends ConsumerWidget {
           data: (items) => Column(
             children: items
                 .map(
-                  (achievement) => MeropeCard(
-                    margin: const EdgeInsets.only(bottom: 10),
+                  (achievement) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: MeropeCard(
                     color: Theme.of(context).colorScheme.surface,
                     child: ListTile(
                       leading: Icon(
@@ -309,6 +312,7 @@ class _AchievementList extends ConsumerWidget {
                             ? 'Unlocked'
                             : '+' + achievement.xpReward.toString() + ' XP',
                       ),
+                    ),
                     ),
                   ),
                 )
