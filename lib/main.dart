@@ -1,20 +1,24 @@
-import 'dart:io';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_windowmanager/flutter_windowmanager.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:merope_core/data/services/api_client.dart';
 import 'package:merope_core/utils/enterprise_logger.dart';
+import 'core/security/platform_security.dart';
 
 import 'app/merope_app.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized();
-  await _configurePlatformSecurity();
+  await configurePlatformSecurity();
 
-  const baseUrl = String.fromEnvironment('API_BASE_URL',
+  const configuredBaseUrl = String.fromEnvironment('API_BASE_URL');
+  final baseUrl = configuredBaseUrl.isNotEmpty
+      ? configuredBaseUrl
+      : (kIsWeb ? Uri.base.origin : 'https://api.merope.enterprise:8443');
+
+  const certPin = String.fromEnvironment('API_BASE_URL',
       defaultValue: 'https://api.merope.enterprise:8443');
   const certPin = String.fromEnvironment('SSL_CERT_SHA256');
 
