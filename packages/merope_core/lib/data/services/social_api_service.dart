@@ -334,6 +334,7 @@ class SocialApiService {
         queryParameters: queryParams,
       );
 
+      if (response.isError) return [];
       final data = response.data;
       if (data == null) return [];
 
@@ -360,16 +361,16 @@ class SocialApiService {
 
   Future<ApiResult<void>> tipSignal(String signalId, int amount) async {
     try {
-      await _apiClient.post(
+      final response = await _apiClient.post<void>(
         '/lumia/tip',
         data: {'signal_id': signalId, 'amount': amount},
       );
+      if (response.isError) return ApiResult.error(response.error);
       return const ApiResult.success(null);
     } on MeropeAPIException catch (e) {
       return ApiResult.error(e);
     }
   }
-}
 }
 
 final socialApiServiceProvider = Provider<SocialApiService>((ref) {
