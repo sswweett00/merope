@@ -197,8 +197,20 @@ class MessagingApiService {
     }
   }
 
-  void sendTypingIndicator(String conversationId) {
-    _realtimeClient?.sendTyping(conversationId);
+  Future<bool> sendTypingIndicator(
+    String conversationId,
+    bool isTyping,
+  ) async {
+    if (!isTyping) return true;
+
+    try {
+      await _apiClient.post<void>(
+        '/api/v10/messaging/rooms/$conversationId/typing',
+      );
+      return true;
+    } on MeropeAPIException catch (_) {
+      return false;
+    }
   }
 
   void sendReadReceipt(String messageId) {
