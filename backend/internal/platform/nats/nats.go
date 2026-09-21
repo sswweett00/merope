@@ -31,25 +31,46 @@ func (c *Client) EnsureStreams() error {
 		name     string
 		subjects []string
 	}{
-		{Name: "SOCIAL", Subjects: []string{"SOCIAL.*"}},
-		{Name: "MESSAGING", Subjects: []string{"MESSAGING.*", "chat.*"}},
-		{Name: "E2EE", Subjects: []string{"e2ee.*"}},
-		{Name: "FLOW", Subjects: []string{"flow.*"}},
-		{Name: "AI", Subjects: []string{"AI.*"}},
+		{name: "SOCIAL", subjects: []string{"SOCIAL.*"}},
+		{name: "MESSAGING", subjects: []string{"MESSAGING.*", "chat.*"}},
+		{name: "E2EE", subjects: []string{"e2ee.*"}},
+		{name: "FLOW", subjects: []string{"flow.*"}},
+		{name: "AI", subjects: []string{"AI.*"}},
 	}
 	for _, spec := range streams {
-		_, err := c.JS.StreamInfo(spec.name)
-		if err == nil {
-			continue
-		}
-		_, err = c.JS.AddStream(&nats.StreamConfig{
+		config := &nats.StreamConfig{
 			Name:     spec.name,
 			Subjects: spec.subjects,
 			Storage:  nats.FileStorage,
-		})
+		}
+		info, err := c.JS.StreamInfo(spec.name)
 		if err != nil {
-			return fmt.Errorf("failed to create stream %s: %w", spec.name, err)
+			if _, err = c.JS.AddStream(config); err != nil {
+				return fmt.Errorf("failed to create stream %s: %w", spec.name, err)
+			}
+			continue
+		}
+		if !sameSubjects(info.Config.Subjects, config.Subjects) {
+			if _, err = c.JS.UpdateStream(config); err != nil {
+				return fmt.Errorf("failed to update stream %s: %w", spec.name, err)
+			}
 		}
 	}
 	return nil
+}
+
+func sameSubjects(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	set := make(map[string]struct{}, len(a))
+	for _, subject := range a {
+		set[subject] = struct{}{}
+	}
+	for _, subject := range b {
+		if _, ok := set[subject]; !ok {
+			return false
+		}
+	}
+	return true
 }
