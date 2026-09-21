@@ -5,6 +5,22 @@ import (
     "time"
 )
 
+type Referral struct {
+	ID            string
+	ReferrerID    string
+	ReferredID    string
+	Code          string
+	RewardGranted bool
+	CreatedAt     time.Time
+}
+
+type InfluenceRank struct {
+	UserID    string
+	Score     float64
+	Rank      int
+	UpdatedAt time.Time
+}
+
 type Profile struct {
     UserID          string    `json:"user_id"`
     XP              int64     `json:"xp"`
