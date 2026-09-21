@@ -162,8 +162,11 @@ class RealtimeClient {
       final json = jsonDecode(data as String) as Map<String, dynamic>;
       final msg = RealtimeMessage.fromJson(json);
 
-      if (msg.payload['room_id'] != null && msg.payload['room_id'] != _roomId)
+      if (_roomId.isNotEmpty &&
+          msg.payload['room_id'] != null &&
+          msg.payload['room_id'] != _roomId) {
         return;
+      }
 
       switch (msg.type) {
         case 'MESSAGE_SENT':
