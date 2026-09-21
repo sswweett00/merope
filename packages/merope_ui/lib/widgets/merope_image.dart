@@ -1,8 +1,8 @@
-import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:merope_core/media/image_cache_manager.dart';
+import 'package:merope_core/media/image_source_reader.dart';
 import 'package:merope_ui/widgets/merope_image_viewer.dart';
 
 /// High-Performance Image Rendering Widget for Merope.
@@ -11,7 +11,7 @@ import 'package:merope_ui/widgets/merope_image_viewer.dart';
 class MeropeImage extends StatefulWidget {
   final String? imageUrl;
   final String? assetPath;
-  final File? file;
+  final Object? file;
   final Uint8List? bytes;
   final double? width;
   final double? height;
@@ -126,6 +126,23 @@ class _MeropeImageState extends State<MeropeImage> {
           _hasError = false;
         });
       }
+      return;
+    }
+
+    if (widget.file != null) {
+      if (mounted) {
+        setState(() {
+          _isLoading = true;
+          _hasError = false;
+        });
+      }
+      final bytes = await readImageSourceBytes(widget.file!);
+      if (!mounted) return;
+      setState(() {
+        _cachedBytes = bytes;
+        _isLoading = false;
+        _hasError = bytes == null;
+      });
       return;
     }
 
@@ -252,16 +269,7 @@ class _MeropeImageState extends State<MeropeImage> {
         },
       );
     } else if (widget.file != null) {
-      imageWidget = Image.file(
-        widget.file!,
-        width: widget.width,
-        height: widget.height,
-        fit: widget.fit,
-        cacheWidth: _resolveMemCacheWidth(context),
-        cacheHeight: _resolveMemCacheHeight(context),
-        errorBuilder: (context, error, stackTrace) =>
-            _buildErrorWidget(context),
-      );
+      imageWidget = _buildErrorWidget(context);
     } else if (widget.assetPath != null && widget.assetPath!.isNotEmpty) {
       imageWidget = Image.asset(
         widget.assetPath!,
