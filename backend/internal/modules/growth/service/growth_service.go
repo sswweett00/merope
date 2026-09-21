@@ -40,7 +40,12 @@ func (s *growthService) GetTopInfluencers(ctx context.Context, limit int) ([]*do
 }
 
 func (s *growthService) GetProfile(ctx context.Context, userID string) (*domain.Profile, error) {
-    return s.repo.GetProfile(ctx, userID)
+    profile, err := s.repo.GetProfile(ctx, userID)
+    if err != nil {
+        return nil, err
+    }
+    profile.Tier = TierForLevel(profile.Level)
+    return profile, nil
 }
 
 func (s *growthService) RecordEvent(ctx context.Context, userID, action, sourceID string) (*domain.EventResult, error) {
