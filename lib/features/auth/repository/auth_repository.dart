@@ -40,6 +40,7 @@ class MfaChallenge {
   final String method;
   final String? totpUri;
   final String? backupCode;
+  final String? secret;
   final int expiresInSeconds;
 
   MfaChallenge({
@@ -47,16 +48,18 @@ class MfaChallenge {
     required this.method,
     this.totpUri,
     this.backupCode,
+    this.secret,
     required this.expiresInSeconds,
   });
 
   factory MfaChallenge.fromJson(Map<String, dynamic> json) {
     return MfaChallenge(
-      challengeId: json['challenge_id'] as String,
-      method: json['method'] as String? ?? 'totp',
-      totpUri: json['totp_uri'] as String?,
+      challengeId: json['challenge_id']?.toString() ?? '',
+      method: json['method']?.toString() ?? 'totp',
+      totpUri: json['totp_uri'] as String? ?? json['url'] as String?,
       backupCode: json['backup_code'] as String?,
-      expiresInSeconds: json['expires_in_seconds'] as int? ?? 300,
+      secret: json['secret'] as String?,
+      expiresInSeconds: (json['expires_in_seconds'] as num?)?.toInt() ?? 300,
     );
   }
 
@@ -66,6 +69,7 @@ class MfaChallenge {
       'method': method,
       'totp_uri': totpUri,
       'backup_code': backupCode,
+      'secret': secret,
       'expires_in_seconds': expiresInSeconds,
     };
   }
@@ -133,7 +137,8 @@ class AuthRepository implements IAuthRepository {
           method: data['mfa_method'] as String? ?? 'totp',
           totpUri: data['totp_uri'] as String?,
           backupCode: data['backup_code'] as String?,
-          expiresInSeconds: data['expires_in_seconds'] as int? ?? 300,
+          secret: data['secret'] as String?,
+          expiresInSeconds: (data['expires_in_seconds'] as num?)?.toInt() ?? 300,
         );
         await _secureStorage.write(
           key: 'mfa_challenge',
@@ -249,13 +254,19 @@ class AuthRepository implements IAuthRepository {
 
   Future<MfaChallenge> getMfaSetup(String userId) async {
     final response = await _apiClient.get<Map<String, dynamic>>(
-      '/auth/mfa/setup/$userId',
+      '/auth/mfa/setup',
     );
     final data = response.data;
     if (data == null) {
       throw const MeropeAPIException(message: 'Failed to get MFA setup');
     }
-    return MfaChallenge.fromJson(data);
+    return MfaChallenge(
+      challengeId: '',
+      method: 'totp',
+      totpUri: data['url'] as String? ?? data['totp_uri'] as String?,
+      secret: data['secret'] as String?,
+      expiresInSeconds: (data['expires_in_seconds'] as num?)?.toInt() ?? 0,
+    );
   }
 
   Future<AccountLockoutInfo> getAccountLockoutStatus(String email) async {
@@ -413,15 +424,29 @@ class AuthRepository implements IAuthRepository {
   }
 
   Future<AuthUser> _processAuthResponse(Map<String, dynamic> data) async {
-    final userJson = data['user'] as Map<String, dynamic>? ?? {};
-    final user = AuthUser.fromJson(userJson);
-
     final token = data['token'] as String? ?? '';
+    if (token.isEmpty) {
+      throw const MeropeAPIException(message: 'Authentication token missing');
+    }
+
+    final rawUser = data['user'];
+    final user = rawUser is Map<String, dynamic>
+        ? AuthUser.fromJson(rawUser)
+        : await getCurrentUser();
+    if (user == null) {
+      throw const MeropeAPIException(message: 'Authenticated user missing');
+    }
+
     final refreshToken = data['refresh_token'] as String?;
-    final expiresIn = data['expires_in'] as int?;
+    final expiresIn = _resolveExpiresIn(data, token);
+    final expiresAt = expiresIn != null
+        ? DateTime.now().millisecondsSinceEpoch + expiresIn * 1000
+        : null;
 
     await _sessionStorage.saveSession(
       token: token,
+      refreshToken: refreshToken,
+      expiresAt: expiresAt,
       user: user,
     );
 
@@ -429,15 +454,31 @@ class AuthRepository implements IAuthRepository {
     if (refreshToken != null) {
       await _secureStorage.write(key: 'refresh_token', value: refreshToken);
     }
-    if (expiresIn != null) {
-      final expiryMs = DateTime.now().millisecondsSinceEpoch + expiresIn * 1000;
+    if (expiresAt != null) {
       await _secureStorage.write(
         key: 'session_expiry',
-        value: expiryMs.toString(),
+        value: expiresAt.toString(),
       );
     }
 
     return user;
+  }
+
+  int? _resolveExpiresIn(Map<String, dynamic> data, String token) {
+    final explicit = data['expires_in'];
+    if (explicit is num) return explicit.toInt();
+    try {
+      final parts = token.split('.');
+      if (parts.length == 3) {
+        final payload = jsonDecode(utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))));
+        if (payload is Map<String, dynamic> && payload['exp'] is num) {
+          final exp = (payload['exp'] as num).toInt();
+          final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+          return exp > now ? exp - now : 0;
+        }
+      }
+    } catch (_) {}
+    return 900;
   }
 
   Map<String, dynamic> _getDeviceInfo() {
