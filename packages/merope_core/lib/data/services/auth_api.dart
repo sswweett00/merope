@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:merope_models/auth/auth_user.dart';
 import '../../security/session_storage.dart';
@@ -84,8 +85,6 @@ class AuthApi {
     } on DioException catch (e) {
       return ApiResult.error(MeropeAPIException.fromDioError(e),
           statusCode: e.response?.statusCode);
-    } on SocketException catch (_) {
-      return ApiResult.error(NetworkTimeoutException(), statusCode: null);
     } catch (e) {
       return ApiResult.error(e.toString(), statusCode: null);
     }
@@ -132,6 +131,17 @@ class AuthApi {
 }
 
 final authApiServiceProvider = Provider<AuthApi>((ref) {
-  final apiClient = ApiClient();
-  return AuthApi(apiClient.dio, SessionStorage());
+  const configuredBaseUrl = String.fromEnvironment('API_BASE_URL');
+  final baseUrl = configuredBaseUrl.isNotEmpty
+      ? configuredBaseUrl
+      : (kIsWeb ? null : 'https://api.merope.enterprise:8443');
+
+  final dio = Dio(
+    BaseOptions(
+      baseUrl: baseUrl ?? Uri.base.origin,
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 20),
+    ),
+  );
+  return AuthApi(dio, SessionStorage());
 });
