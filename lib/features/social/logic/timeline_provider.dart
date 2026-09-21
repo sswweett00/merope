@@ -3,12 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:merope_core/data/services/content_api_service.dart';
 import 'package:merope_core/data/services/social_api.dart' as social_api;
 import 'package:merope_models/social/post_model.dart';
-import './veritas_integrity_engine.dart';
-import '../data/repository/social_repository.dart';
-
-final socialRepositoryProvider = Provider<ISocialRepository>((ref) {
-  return DriftSocialRepository();
-});
 
 class TimelineState {
   final List<MeropeSignal> items;
@@ -76,54 +70,31 @@ class TimelineNotifier extends AsyncNotifier<TimelineState> {
       {List<SignalMedia> media = const [],
       String? pollQuestion,
       List<String>? pollOptions}) async {
-    final veritas = ref.read(veritasIntegrityProvider.notifier);
+    final api = ref.read(contentApiServiceProvider);
+    final cards = pollQuestion != null && pollOptions != null
+        ? [
+            MeropeAppCard(
+              id: DateTime.now().millisecondsSinceEpoch.toString(),
+              type: AppCardType.poll,
+              data: {
+                'question': pollQuestion,
+                'options': pollOptions,
+              },
+            ),
+          ]
+        : null;
 
-    // Sign the post payload via Veritas
-    veritas.signPost(
-      userId: 'current_user',
+    final result = await api.createPost(
       content: content,
-      mediaIds: media.map((m) => m.url).toList(),
+      mediaUrls: media.map((item) => item.url).toList(),
+      cards: cards,
     );
 
-    List<MeropeAppCard>? cards;
-    if (pollQuestion != null && pollOptions != null) {
-      cards = [
-        MeropeAppCard(
-          id: DateTime.now().toString(),
-          type: AppCardType.poll,
-          data: {
-            'question': pollQuestion,
-            'options': pollOptions,
-          },
-        ),
-      ];
+    if (!result.success) {
+      throw StateError(result.error ?? 'Failed to create post');
     }
 
-    final newSignal = MeropeSignal(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      author: const MeropeAuthor(
-        id: 'current_user',
-        username: 'merope_user',
-        displayName: 'Merope Explorer',
-        isVerified: true,
-        influenceScore: 4.8,
-      ),
-      content: content,
-      media: media,
-      cards: cards ?? [],
-      createdAt: DateTime.now().millisecondsSinceEpoch,
-      resonances: [
-        const SignalResonance(type: '❤️', amplitude: 0),
-        const SignalResonance(type: '🔄', amplitude: 0),
-        const SignalResonance(type: '🔥', amplitude: 0),
-      ],
-    );
-
-    final previousState = state.value;
-    if (previousState != null) {
-      state = AsyncValue.data(
-          previousState.copyWith(items: [newSignal, ...previousState.items]));
-    }
+    state = await AsyncValue.guard(() => _fetchInitial());
   }
 
   Future<void> resonateSignal(
