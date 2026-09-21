@@ -17,6 +17,19 @@ class _ProgressionScreenState extends ConsumerState<ProgressionScreen> {
   int tab = 0;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final day = DateTime.now().toIso8601String().substring(0, 10);
+      try {
+        await ref.read(progressionApiProvider).recordEvent('daily_login', day);
+        ref.invalidate(progressionProfileProvider);
+        ref.invalidate(dailyProgressionQuestsProvider);
+      } catch (_) {}
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final tokens = ref.watch(themeProvider).currentTokens;
     final profile = ref.watch(progressionProfileProvider);
