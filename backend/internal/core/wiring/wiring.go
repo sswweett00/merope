@@ -15,6 +15,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	natsgo "github.com/nats-io/nats.go"
 	"go.uber.org/zap"
 
 	"local/merope/internal/core/config"
@@ -165,14 +166,12 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 
 	msgRepo := messagingInfra.NewPostgresMessagingRepository(queries, pgPool)
 
-	realtimeSubscriptions, err := realtime.SubscribeEventBridge(ctx, func() *nats.Client {
-		if bus == nil {
-			return nil
+	var realtimeSubscriptions []*natsgo.Subscription
+	if bus != nil {
+		realtimeSubscriptions, err = realtime.SubscribeEventBridge(ctx, bus.Conn, wsHub, msgRepo)
+		if err != nil {
+			log.Fatalf("failed to initialize realtime event bridge: %v", err)
 		}
-		return bus
-	}().Conn, wsHub, msgRepo)
-	if err != nil {
-		log.Fatalf("failed to initialize realtime event bridge: %v", err)
 	}
 
 	e2eeService := messagingService.NewE2EEService(msgRepo, bus)
