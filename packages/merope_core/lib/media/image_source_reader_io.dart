@@ -3,6 +3,11 @@ import 'dart:typed_data';
 
 Future<Uint8List?> readImageSourceBytes(Object source) async {
   if (source is Uint8List) return source;
+  if (source is String && source.isNotEmpty) {
+    try {
+      return await File(source).readAsBytes();
+    } catch (_) {}
+  }
   if (source is File) {
     try {
       return await source.readAsBytes();
