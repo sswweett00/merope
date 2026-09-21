@@ -118,3 +118,16 @@ VALUES
 ('referral_star', 'Referral Star', 'Complete three successful referrals.', 'referral_completed', 3, 450, 35, 'person_add'),
 ('creator_50', 'Creator Momentum', 'Publish fifty signals.', 'post_created', 50, 1000, 60, 'auto_awesome')
 ON CONFLICT (code) DO NOTHING;
+
+
+CREATE TABLE IF NOT EXISTS growth_referrals (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    referrer_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    referred_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    code TEXT NOT NULL DEFAULT '',
+    reward_granted BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(referrer_id, referred_id)
+);
+CREATE INDEX IF NOT EXISTS idx_growth_referrals_referrer
+    ON growth_referrals(referrer_id, created_at DESC);
