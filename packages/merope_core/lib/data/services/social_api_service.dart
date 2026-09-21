@@ -307,8 +307,6 @@ class SocialApiService {
       );
 
       if (response.isError) return [];
-      if (response.isError) return [];
-      if (response.isError) return [];
       final data = response.data;
       if (data == null) return [];
 
