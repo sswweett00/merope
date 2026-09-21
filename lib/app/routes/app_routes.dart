@@ -13,6 +13,7 @@ import '../../features/video/ui/screens/multi_stream_screen.dart';
 import '../../features/wallet/ui/screens/escrow_details_screen.dart';
 import '../../features/developer/ui/bot_dashboard_screen.dart';
 import '../../features/growth/ui/analytics_dashboard.dart';
+import '../../features/growth/ui/progression_screen.dart';
 import '../../features/social/ui/shared_memory_screen.dart';
 import '../../features/social/ui/post_detail_screen.dart';
 import '../../features/stories/ui/screens/stories_screen.dart';
@@ -72,6 +73,10 @@ final List<GoRoute> appRoutes = [
     path: '/enterprise-dashboard',
     builder: (context, state) =>
         const EnterpriseDashboardScreen(appId: 'merope-prime-internal'),
+  ),
+  GoRoute(
+    path: '/growth',
+    builder: (context, state) => const ProgressionScreen(),
   ),
   GoRoute(
       path: '/analytics',
