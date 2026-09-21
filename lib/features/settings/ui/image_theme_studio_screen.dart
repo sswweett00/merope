@@ -1,8 +1,7 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:merope_core/plugins/media_compression_isolate.dart';
+import '../../../core/media/media_compression.dart';
 import 'package:merope_ui/merope_ui.dart';
 import 'package:merope_ui/theme/tokens/merope_tokens.dart';
 import 'package:merope_ui/theme/theme_provider.dart';
@@ -186,7 +185,7 @@ class _ImagePickerBox extends StatelessWidget {
                 children: [
                   Positioned.fill(
                     child: MeropeImage(
-                      file: File(imagePath!),
+                      file: imagePath!,
                       fit: BoxFit.cover,
                       borderRadius:
                           BorderRadius.circular(MeropeTokens.radiusMd - 1.5),
