@@ -252,7 +252,12 @@ class RealtimeClient {
       final payloadRoomId = msg.payload['room_id'] as String?;
       final payloadChannelId = msg.payload['channel_id'] as String?;
       return payloadRoomId == channelId || payloadChannelId == channelId;
-    }).map((msg) => msg.payload);
+    }).map((msg) {
+      return <String, dynamic>{
+        'type': msg.type,
+        ...msg.payload,
+      };
+    });
   }
 
   void _send(String type, Map<String, dynamic> payload) {
