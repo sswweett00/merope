@@ -407,6 +407,9 @@ class AuthRepository implements IAuthRepository {
         data: {'refresh_token': refreshToken},
       );
 
+      if (response.isError) {
+        throw _apiError(response);
+      }
       final data = response.data;
       if (data == null) return null;
 
@@ -458,22 +461,16 @@ class AuthRepository implements IAuthRepository {
     return user;
   }
 
-  int? _resolveExpiresIn(Map<String, dynamic> data, String token) {  MeropeAPIException _apiError(ApiResult<dynamic> response) {
-    final error = response.error;
-    if (error is MeropeAPIException) return error;
-    return MeropeAPIException(
-      message: error?.toString() ?? 'Authentication request failed',
-      statusCode: response.statusCode,
-    );
-  }
-
-
+  int? _resolveExpiresIn(Map<String, dynamic> data, String token) {
     final explicit = data['expires_in'];
     if (explicit is num) return explicit.toInt();
+
     try {
       final parts = token.split('.');
       if (parts.length == 3) {
-        final payload = jsonDecode(utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))));
+        final payload = jsonDecode(
+          utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
+        );
         if (payload is Map<String, dynamic> && payload['exp'] is num) {
           final exp = (payload['exp'] as num).toInt();
           final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
@@ -481,9 +478,18 @@ class AuthRepository implements IAuthRepository {
         }
       }
     } catch (_) {}
+
     return 900;
   }
 
+  MeropeAPIException _apiError(ApiResult<dynamic> response) {
+    final error = response.error;
+    if (error is MeropeAPIException) return error;
+    return MeropeAPIException(
+      message: error?.toString() ?? 'Authentication request failed',
+      statusCode: response.statusCode,
+    );
+  }
   Map<String, dynamic> _getDeviceInfo() {
     return {
       'platform': 'flutter',
