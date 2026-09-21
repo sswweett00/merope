@@ -357,22 +357,45 @@ func (r *PostgresGrowthRepository) GetSeasonLeaderboard(ctx context.Context,user
 	return out,rows.Err()
 }
 
-func unlockAchievements(ctx context.Context,tx pgx.Tx,userID,action string,streak,level int)([]domain.Achievement,error){
-	rows,err:=tx.Query(ctx,`
+func unlockAchievements(ctx context.Context, tx pgx.Tx, userID, action string, streak, level int) ([]domain.Achievement, error) {
+	rows, err := tx.Query(ctx, `
 		SELECT a.id,a.code,a.name,a.description,a.icon,a.xp_reward,a.reputation_reward
 		FROM progression_achievements a
-		WHERE a.active AND NOT EXISTS(
-			SELECT 1 FROM progression_user_achievements ua WHERE ua.user_id=$1 AND ua.achievement_id=a.id
-		)
-		AND (
-			(a.metric=$2 AND (SELECT COUNT(*) FROM progression_events e WHERE e.user_id=$1 AND e.action=a.metric)>=a.threshold)
-			OR (a.metric='streak' AND $3>=a.threshold)
-			OR (a.metric='level' AND $4>=a.threshold)
-		)
-	`,userID,action,streak,level);if err!=nil{return nil,err};defer rows.Close()
-	out:=make([]domain.Achievement,0)
-	for rows.Next(){var a domain.Achievement;if err:=rows.Scan(&a.ID,&a.Code,&a.Name,&a.Description,&a.Icon,&a.XPReward,&a.ReputationReward);err!=nil{return nil,err};if _,err=tx.Exec(ctx,`INSERT INTO progression_user_achievements(user_id,achievement_id) VALUES($1,$2) ON CONFLICT DO NOTHING`,userID,a.ID);err!=nil{return nil,err};if _,err=tx.Exec(ctx,`UPDATE progression_profiles SET xp=xp+$2,reputation=reputation+$3,level=$4,updated_at=NOW() WHERE user_id=$1`,userID,a.XPReward,a.ReputationReward,nextLevel(a.XPReward));err!=nil{return nil,err};a.Unlocked=true;out=append(out,a)}
-	return out,rows.Err()
+		WHERE a.active
+		  AND NOT EXISTS (
+		    SELECT 1 FROM progression_user_achievements ua
+		    WHERE ua.user_id=$1 AND ua.achievement_id=a.id
+		  )
+		  AND (
+		    (a.metric=$2 AND (SELECT COUNT(*) FROM progression_events e WHERE e.user_id=$1 AND e.action=a.metric)>=a.threshold)
+		    OR (a.metric='streak' AND $3>=a.threshold)
+		    OR (a.metric='level' AND $4>=a.threshold)
+		  )
+	`, userID, action, streak, level)
+	if err != nil { return nil, err }
+	defer rows.Close()
+
+	out := make([]domain.Achievement, 0)
+	for rows.Next() {
+		var a domain.Achievement
+		if err := rows.Scan(&a.ID,&a.Code,&a.Name,&a.Description,&a.Icon,&a.XPReward,&a.ReputationReward); err != nil {
+			return nil, err
+		}
+		if _, err := tx.Exec(ctx, `INSERT INTO progression_user_achievements(user_id,achievement_id) VALUES($1,$2) ON CONFLICT DO NOTHING`, userID, a.ID); err != nil {
+			return nil, err
+		}
+		var currentXP int64
+		if err := tx.QueryRow(ctx, `SELECT xp FROM progression_profiles WHERE user_id=$1 FOR UPDATE`, userID).Scan(&currentXP); err != nil {
+			return nil, err
+		}
+		currentXP += a.XPReward
+		if _, err := tx.Exec(ctx, `UPDATE progression_profiles SET xp=$2,level=$3,reputation=reputation+$4,updated_at=NOW() WHERE user_id=$1`, userID, currentXP, nextLevel(currentXP), a.ReputationReward); err != nil {
+			return nil, err
+		}
+		a.Unlocked = true
+		out = append(out, a)
+	}
+	return out, rows.Err()
 }
 
 func nextLevel(xp int64) int { if xp<=0{return 1}; return int(math.Floor(math.Sqrt(float64(xp)/100)))+1 }
