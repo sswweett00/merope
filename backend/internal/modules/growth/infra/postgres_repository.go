@@ -317,7 +317,7 @@ func (r *PostgresGrowthRepository) ActivateBoost(ctx context.Context,userID stri
 	tag,err:=tx.Exec(ctx,`
 		UPDATE progression_profiles
 		SET energy=energy-$2,
-		    boost_until=GREATEST(COALESCE(boost_until,NOW()),NOW()+make_interval(mins=>$3)),
+		    boost_until=GREATEST(COALESCE(boost_until,NOW()),NOW()+($3 || ' minutes')::interval),
 		    updated_at=NOW()
 		WHERE user_id=$1 AND energy>=$2
 		  AND (boost_until IS NULL OR boost_until<=NOW())
