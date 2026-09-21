@@ -164,6 +164,17 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	contHandler := contentTransport.NewContentHandler(contService)
 
 	msgRepo := messagingInfra.NewPostgresMessagingRepository(queries, pgPool)
+
+	realtimeSubscriptions, err := realtime.SubscribeEventBridge(ctx, func() *nats.Client {
+		if bus == nil {
+			return nil
+		}
+		return bus
+	}().Conn, wsHub, msgRepo)
+	if err != nil {
+		log.Fatalf("failed to initialize realtime event bridge: %v", err)
+	}
+
 	e2eeService := messagingService.NewE2EEService(msgRepo, bus)
 	e2eeKeyRepo := messagingInfra.NewPostgresE2EEPublicKeyRepository(pgPool)
 	e2eeKeyHandler := messagingTransport.NewE2EEKeyHandler(e2eeKeyRepo)
@@ -308,6 +319,7 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	messaging.Delete("/messages/:msg_id", msgHandler.DeleteMessage)
 	messaging.Post("/messages/:msg_id/react", msgHandler.React)
 	messaging.Post("/rooms/:id/mute", msgHandler.MuteRoom)
+	messaging.Post("/rooms/:id/typing", msgHandler.SendTypingIndicator)
 	messaging.Post("/rooms/:id/read", msgHandler.MarkAsRead)
 	messaging.Get("/e2ee/keys/:user_id", e2eeKeyHandler.Get)
 	messaging.Post("/e2ee/keys", e2eeKeyHandler.Upload)
@@ -507,6 +519,9 @@ func BuildApp(ctx context.Context, cfg *config.Config) (*fiber.App, *Resources, 
 	})
 	cleanup := func() {
 		zapLogger.Info("shutting down API")
+		for _, sub := range realtimeSubscriptions {
+			_ = sub.Unsubscribe()
+		}
 		if wsHub != nil {
 			wsHub.Stop()
 		}
