@@ -1,18 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:merope_core/data/database/database_provider.dart';
 import 'package:merope_core/data/services/realtime_client.dart';
 import '../domain/models/message_model.dart';
 import '../domain/models/chat_models.dart';
 import '../repository/message_repository.dart';
 import 'package:uuid/uuid.dart';
 import 'aegis_message_crypt.dart';
-
-final messageRepositoryProvider = Provider<IMessageRepository>((ref) {
-  final db = ref.watch(meropeDatabaseProvider);
-  return DriftMessageRepository(db);
-});
 
 final realtimeClientProvider = Provider<RealtimeClient>((ref) {
   return RealtimeClient();
