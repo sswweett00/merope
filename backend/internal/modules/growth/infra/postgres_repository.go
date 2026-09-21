@@ -236,9 +236,9 @@ func (r *PostgresGrowthRepository) RecordEvent(ctx context.Context, userID, acti
 	achievements,err:=unlockAchievements(ctx,tx,userID,action,streak,level)
 	if err!=nil{return nil,err}
 
-\tshieldAward:=0
-\tif (streak==7 || streak==30) && previousStreak < streak { shieldAward=1 }
-\t_,err=tx.Exec(ctx,`
+	shieldAward:=0
+	if (streak==7 || streak==30) && previousStreak < streak { shieldAward=1 }
+	_,err=tx.Exec(ctx,`
 		UPDATE progression_profiles
 		SET streak_shields=LEAST(3,streak_shields+$2)
 		WHERE user_id=$1
