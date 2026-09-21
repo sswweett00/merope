@@ -51,7 +51,9 @@ func (c *Client) EnsureStreams() error {
 			continue
 		}
 		if !sameSubjects(info.Config.Subjects, config.Subjects) {
-			if _, err = c.JS.UpdateStream(config); err != nil {
+			updated := info.Config
+			updated.Subjects = append([]string(nil), config.Subjects...)
+			if _, err = c.JS.UpdateStream(&updated); err != nil {
 				return fmt.Errorf("failed to update stream %s: %w", spec.name, err)
 			}
 		}
