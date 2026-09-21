@@ -87,7 +87,7 @@ func (h *ContentHandler) CreatePost(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(post)
+	return c.Status(fiber.StatusCreated).JSON(toMeropeSignalDTO(post))
 }
 
 func (h *ContentHandler) Vote(c *fiber.Ctx) error {
