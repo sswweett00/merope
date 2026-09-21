@@ -357,6 +357,12 @@ class ContentApiService {
         onSendProgress: onProgress,
       );
 
+      if (response.isError) {
+        return MediaUploadResult(
+          success: false,
+          error: _errorMessage(response.error),
+        );
+      }
       final data = response.data;
       if (data == null) {
         return MediaUploadResult(
