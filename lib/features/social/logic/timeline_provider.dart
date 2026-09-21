@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:merope_core/data/services/content_api_service.dart';
 import 'package:merope_core/data/services/social_api.dart' as social_api;
+import 'package:merope_core/data/services/api_client.dart';
 import 'package:merope_models/social/post_model.dart';
 
 class TimelineState {
@@ -94,6 +95,14 @@ class TimelineNotifier extends AsyncNotifier<TimelineState> {
       throw StateError(result.error ?? 'Failed to create post');
     }
 
+    final createdId = result.post?.id ?? 'post-created';
+    try {
+      await ApiClient().post<void>(
+        '/progression/events',
+        data: {'action': 'post_created', 'source_id': createdId},
+      );
+    } catch (_) {}
+
     state = await AsyncValue.guard(() => _fetchInitial());
   }
 
@@ -106,6 +115,13 @@ class TimelineNotifier extends AsyncNotifier<TimelineState> {
     if (!result.success) {
       throw StateError(result.error ?? 'Failed to amplify signal');
     }
+
+    try {
+      await ApiClient().post<void>(
+        '/progression/events',
+        data: {'action': 'reaction_added', 'source_id': signalId},
+      );
+    } catch (_) {}
 
     state = await AsyncValue.guard(() => _fetchInitial());
   }
