@@ -31,21 +31,34 @@ class NotificationModel {
     required this.createdAt,
   });
 
-  factory NotificationModel.fromJson(Map<String, dynamic> json) =>
-      NotificationModel(
-        id: json['id'] as String? ?? '',
-        type: json['type'] as String? ?? 'generic',
-        actorId: json['actor_id'] as String?,
-        actorName: json['actor_name'] as String?,
-        actorAvatar: json['actor_avatar'] as String?,
-        targetId: json['target_id'] as String?,
-        targetType: json['target_type'] as String?,
-        content: json['content'] as String?,
-        metadata: json['metadata'] as Map<String, dynamic>?,
-        isRead: json['is_read'] as bool? ?? false,
-        isSeen: json['is_seen'] as bool? ?? false,
-        createdAt: (json['created_at'] as num?)?.toInt() ?? int.tryParse(json['created_at']?.toString() ?? '') ?? 0,
-      );
+  factory NotificationModel.fromJson(Map<String, dynamic> json) {
+    final rawCreatedAt = json['created_at'] ?? json['createdAt'];
+    final createdAt = rawCreatedAt is num
+        ? rawCreatedAt.toInt()
+        : int.tryParse(rawCreatedAt?.toString() ?? '') ??
+            (DateTime.tryParse(rawCreatedAt?.toString() ?? '')
+                    ?.millisecondsSinceEpoch ??
+                0);
+
+    return NotificationModel(
+      id: json['id']?.toString() ?? '',
+      type: json['type']?.toString() ?? 'generic',
+      actorId: (json['actor_id'] ?? json['senderId'])?.toString(),
+      actorName: (json['actor_name'] ?? json['senderUsername'])?.toString(),
+      actorAvatar: (json['actor_avatar'] ?? json['senderAvatar'])?.toString(),
+      targetId: (json['target_id'] ?? json['entityId'])?.toString(),
+      targetType: (json['target_type'] ?? json['entityType'])?.toString(),
+      content: (json['content'] ?? json['body'] ?? json['title'])?.toString(),
+      metadata: json['metadata'] is Map
+          ? Map<String, dynamic>.from(json['metadata'] as Map)
+          : json['data'] is Map
+              ? Map<String, dynamic>.from(json['data'] as Map)
+              : null,
+      isRead: (json['is_read'] ?? json['isRead']) as bool? ?? false,
+      isSeen: (json['is_seen'] ?? json['isSeen']) as bool? ?? false,
+      createdAt: createdAt,
+    );
+  }
 }
 
 class NotificationApiService {
