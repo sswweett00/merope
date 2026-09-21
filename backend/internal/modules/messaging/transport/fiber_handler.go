@@ -247,6 +247,18 @@ func (h *MessagingHandler) React(c *fiber.Ctx) error {
 	return c.SendStatus(fiber.StatusOK)
 }
 
+func (h *MessagingHandler) SendTypingIndicator(c *fiber.Ctx) error {
+	userID := c.Locals("user_id").(string)
+	roomID := c.Params("id")
+	if err := h.service.SendTypingIndicator(c.Context(), roomID, userID); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code":    errors.GetCode(err),
+			"message": "Unable to publish typing state",
+		})
+	}
+	return c.SendStatus(fiber.StatusNoContent)
+}
+
 func (h *MessagingHandler) MuteRoom(c *fiber.Ctx) error {
 	userID := c.Locals("user_id").(string)
 	roomID := c.Params("id")
