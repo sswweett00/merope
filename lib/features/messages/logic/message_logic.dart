@@ -155,7 +155,7 @@ class MessageController
 
   Future<void> markAsRead(String messageId) async {
     final repo = ref.read(messageRepositoryProvider);
-    await repo.markAsRead(messageId);
+    await repo.markAsRead(arg, messageId);
   }
 
   Future<void> forwardMessage(String messageId, String toChannelId) async {
