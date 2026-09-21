@@ -22,7 +22,7 @@ class ImageThemeStudioScreen extends ConsumerWidget {
       if (picked != null) {
         // High-performance compression via Isolate before setting theme image
         final compressedPath =
-            await MediaCompressionIsolate.compressMedia(picked.path);
+            await compressMediaForTheme(picked.path);
 
         if (isPrimary) {
           ref.read(imageThemeProvider.notifier).setPrimaryImage(compressedPath);
