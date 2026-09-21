@@ -66,9 +66,16 @@ class MessagingApiService {
         queryParameters: {'limit': limit},
       );
 
+      if (response.isError) {
+        return ConversationListState(
+          error: _errorMessage(response.error),
+        );
+      }
       final data = response.data;
       if (data == null) {
-        return const ConversationListState();
+        return const ConversationListState(
+          error: 'Empty response from server',
+        );
       }
 
       final conversations = (data['conversations'] as List?)
@@ -96,9 +103,16 @@ class MessagingApiService {
         queryParameters: queryParams,
       );
 
+      if (response.isError) {
+        return MessageListState(
+          error: _errorMessage(response.error),
+        );
+      }
       final data = response.data;
       if (data == null) {
-        return const MessageListState();
+        return const MessageListState(
+          error: 'Empty response from server',
+        );
       }
 
       final messages = (data['messages'] as List?)
@@ -145,10 +159,18 @@ class MessagingApiService {
         data: payload,
       );
 
+      if (response.isError) {
+        return SendMessageResult(
+          success: false,
+          error: _errorMessage(response.error),
+        );
+      }
       final data = response.data;
       if (data == null) {
-        return SendMessageResult(
-            success: false, error: 'No response from server');
+        return const SendMessageResult(
+          success: false,
+          error: 'No response from server',
+        );
       }
 
       final message = _parseMessage(data);
@@ -160,11 +182,11 @@ class MessagingApiService {
 
   Future<bool> markAsRead(String conversationId, String messageId) async {
     try {
-      await _apiClient.post(
+      final response = await _apiClient.post<void>(
         '/api/v10/messaging/rooms/$conversationId/read',
         data: {'message_id': messageId},
       );
-      return true;
+      return !response.isError;
     } on MeropeAPIException catch (_) {
       return false;
     }
@@ -183,6 +205,7 @@ class MessagingApiService {
         '/api/v10/messaging/rooms/$conversationId/unread',
       );
 
+      if (response.isError) return [];
       final data = response.data;
       if (data == null) return [];
 
@@ -204,10 +227,10 @@ class MessagingApiService {
     if (!isTyping) return true;
 
     try {
-      await _apiClient.post<void>(
+      final response = await _apiClient.post<void>(
         '/api/v10/messaging/rooms/$conversationId/typing',
       );
-      return true;
+      return !response.isError;
     } on MeropeAPIException catch (_) {
       return false;
     }
@@ -223,6 +246,7 @@ class MessagingApiService {
         '/api/v10/messaging/e2ee/keys/$userId',
       );
 
+      if (response.isError) return null;
       final data = response.data;
       if (data == null) return null;
 
@@ -234,11 +258,11 @@ class MessagingApiService {
 
   Future<bool> uploadE2eePublicKey(String publicKey) async {
     try {
-      await _apiClient.post(
+      final response = await _apiClient.post<void>(
         '/api/v10/messaging/e2ee/keys',
         data: {'public_key': publicKey},
       );
-      return true;
+      return !response.isError;
     } on MeropeAPIException catch (_) {
       return false;
     }
@@ -254,6 +278,11 @@ class MessagingApiService {
 
   String? decryptMessage(String encryptedHex, String keyHex) {
     return E2EECryptoService.decryptMessage(encryptedHex, keyHex);
+  }
+
+  String _errorMessage(dynamic error) {
+    if (error is MeropeAPIException) return error.message;
+    return error?.toString() ?? 'Request failed';
   }
 
   MeropeMessage _parseMessage(Map<String, dynamic> json) {
