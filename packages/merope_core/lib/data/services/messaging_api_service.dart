@@ -170,15 +170,11 @@ class MessagingApiService {
     }
   }
 
-  Future<bool> markConversationAsRead(String conversationId) async {
-    try {
-      await _apiClient.post(
-        '/api/v10/messaging/rooms/$conversationId/read',
-      );
-      return true;
-    } on MeropeAPIException catch (_) {
-      return false;
-    }
+  Future<bool> markConversationAsRead(
+    String conversationId, {
+    required String messageId,
+  }) {
+    return markAsRead(conversationId, messageId);
   }
 
   Future<List<MeropeMessage>> getUnreadMessages(String conversationId) async {
@@ -251,8 +247,17 @@ class MessagingApiService {
   MeropeMessage _parseMessage(Map<String, dynamic> json) {
     final blocksJson = json['blocks'] as List? ?? [];
     final blocks = blocksJson
-        .map((e) => MessageBlock.fromJson(e as Map<String, dynamic>))
+        .whereType<Map>()
+        .map((e) => MessageBlock.fromJson(Map<String, dynamic>.from(e)))
         .toList();
+    if (blocks.isEmpty) {
+      final content = json['content']?.toString() ?? '';
+      if (content.isNotEmpty) {
+        blocks.add(
+          MessageBlock(type: MessageBlockType.text, content: content),
+        );
+      }
+    }
 
     return MeropeMessage(
       id: json['id'] as String? ?? '',
@@ -264,10 +269,13 @@ class MessagingApiService {
       blocks: blocks,
       createdAt: json['created_at'] as int? ?? json['timestamp'] as int? ?? 0,
       updatedAt: json['updated_at'] as int? ?? 0,
-      version: json['version'] as int? ?? 1,
-      reactions: (json['reactions'] as List?)?.cast<String>() ?? [],
+      version: (json['version'] as num?)?.toInt() ?? 1,
+      reactions: (json['reactions'] as List?)?.map((e) => e.toString()).toList() ?? [],
       isEncrypted: json['is_encrypted'] as bool? ?? false,
       threadId: json['thread_id'] as String?,
+      messageType: (json['message_type'] ?? json['type'])?.toString(),
+      fileUrl: json['file_url']?.toString(),
+      encryptedPayload: json['encrypted_payload']?.toString(),
     );
   }
 }
