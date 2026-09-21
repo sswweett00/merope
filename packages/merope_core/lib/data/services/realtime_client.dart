@@ -52,7 +52,7 @@ class RealtimeClient {
 
   RealtimeClient._internal({
     required this.baseUrl,
-    required this.token,
+    String? token,
     required String roomId,
     required StreamController<RealtimeMessage> eventController,
   })  : _providedToken = token,
@@ -79,7 +79,7 @@ class RealtimeClient {
   }) {
     return RealtimeClient._internal(
       baseUrl: baseUrl ?? _defaultRealtimeBaseUrl(),
-      token: token ?? '',
+      token: token,
       roomId: roomId ?? '',
       eventController: StreamController<RealtimeMessage>.broadcast(),
     );
